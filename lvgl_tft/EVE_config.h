@@ -35,7 +35,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #ifndef EVE_CONFIG_H_
 #define EVE_CONFIG_H_
 
-#ifdef LV_LVGL_H_INCLUDE_SIMPLE
+#ifdef LV_CONFIG_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
 #include "lvgl/lvgl.h"
