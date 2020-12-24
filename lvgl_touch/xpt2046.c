@@ -18,8 +18,11 @@
  *********************/
 #define TAG "XPT2046"
 
-#define CMD_X_READ  0b10010000
-#define CMD_Y_READ  0b11010000
+#define CMD_X_READ  0b10010000  // NOTE: XPT2046 data sheet says this is actually Y
+#define CMD_Y_READ  0b11010000  // NOTE: XPT2046 data sheet says this is actually X
+#define CMD_Z1_READ 0b10110000
+#define CMD_Z2_READ 0b11000000
+#define Z_MIN 400
 
 /**********************
  *      TYPEDEFS
@@ -65,6 +68,14 @@ void xpt2046_init(void)
     assert(ret == ESP_OK);
 }
 
+static int16_t readVal(uint8_t cmd)
+{
+    uint8_t data[2];
+    tp_spi_read_reg(cmd, data, 2);
+    int16_t val = (data[0] << 8) | data[1];
+    return val;
+}
+
 /**
  * Get the current position and state of the touchpad
  * @param data store the read data here
@@ -78,19 +89,26 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 
     int16_t x = 0;
     int16_t y = 0;
+    int16_t z = 0;
 
     uint8_t irq = gpio_get_level(XPT2046_IRQ);
 
-    if (irq == 0) {
-		uint8_t data[2];
-		
-		tp_spi_read_reg(CMD_X_READ, data, 2);
-		x = (data[0] << 8) | data[1];
-		
-		tp_spi_read_reg(CMD_Y_READ, data, 2);
-		y = (data[0] << 8) | data[1];
-		ESP_LOGI(TAG, "P(%d,%d)", x, y);
-		
+    // only compute Z if we think its pressed (irq)
+    if (irq == 0)
+    {
+        int16_t z1 = readVal(CMD_Z1_READ) >> 3;
+        int16_t z2 = readVal(CMD_Z2_READ) >> 3;
+
+        z = z1 + 4096;
+        z -= z2;
+    }
+
+    if (irq == 0 && z >= Z_MIN) {
+
+		x = readVal(CMD_X_READ);
+        y = readVal(CMD_Y_READ);
+		ESP_LOGI(TAG, "P(%d,%d,%d)", x, y, z);
+
         /*Normalize Data back to 12-bits*/
         x = x >> 4;
         y = y >> 4;
