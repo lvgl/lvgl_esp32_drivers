@@ -180,6 +180,10 @@ menu "LVGL Touch controller"
             prompt "Invert Y coordinate value."
             default y
 
+        config LV_TOUCH_CHECK
+            bool
+            prompt "Check touch pressure to validate LV_TOUCH_PIN_IRQ"
+            default n
     endmenu
 
     menu "Touchpanel (FT6X06) Pin Assignments"

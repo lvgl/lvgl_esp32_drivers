@@ -33,6 +33,7 @@
  **********************/
 static void xpt2046_corr(int16_t * x, int16_t * y);
 static void xpt2046_avg(int16_t * x, int16_t * y);
+static int16_t xpt2046_cmd(uint8_t cmd);
 
 /**********************
  *  STATIC VARIABLES
@@ -68,14 +69,6 @@ void xpt2046_init(void)
     assert(ret == ESP_OK);
 }
 
-static int16_t readVal(uint8_t cmd)
-{
-    uint8_t data[2];
-    tp_spi_read_reg(cmd, data, 2);
-    int16_t val = (data[0] << 8) | data[1];
-    return val;
-}
-
 /**
  * Get the current position and state of the touchpad
  * @param data store the read data here
@@ -85,46 +78,52 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 {
     static int16_t last_x = 0;
     static int16_t last_y = 0;
-    bool valid = true;
+    bool valid = false;
 
-    int16_t x = 0;
-    int16_t y = 0;
-    int16_t z = 0;
+    int16_t x = last_x;
+    int16_t y = last_y;
 
     uint8_t irq = gpio_get_level(XPT2046_IRQ);
 
-    // only compute Z if we think its pressed (irq)
-    if (irq == 0)
-    {
-        int16_t z1 = readVal(CMD_Z1_READ) >> 3;
-        int16_t z2 = readVal(CMD_Z2_READ) >> 3;
+    if (irq == 0) {
+#if XPT2046_TOUCH_CHECK != 0
+        int16_t z1 = xpt2046_cmd(CMD_Z1_READ) >> 3;
+        int16_t z2 = xpt2046_cmd(CMD_Z2_READ) >> 3;
 
-        z = z1 + 4096;
-        z -= z2;
+        // this is not what the confusing datasheet says but it seems to
+        // be enough to detect real touches on the panel
+        int16_t z = z1 + 4096 - z2;
+
+        // seems the irq can be noisy so we only accept this as a touch if
+        // there is some pressure (z) detected
+        if (z >= Z_MIN)
+        {
+#endif
+            valid = true;
+
+            x = xpt2046_cmd(CMD_X_READ);
+            y = xpt2046_cmd(CMD_Y_READ);
+            ESP_LOGI(TAG, "P(%d,%d)", x, y);
+
+            /*Normalize Data back to 12-bits*/
+            x = x >> 4;
+            y = y >> 4;
+            ESP_LOGI(TAG, "P_norm(%d,%d)", x, y);
+            
+            xpt2046_corr(&x, &y);
+            xpt2046_avg(&x, &y);
+            last_x = x;
+            last_y = y;
+
+            ESP_LOGI(TAG, "x = %d, y = %d", x, y);
+#if XPT2046_TOUCH_CHECK != 0
+        }
+#endif
     }
 
-    if (irq == 0 && z >= Z_MIN) {
-
-		x = readVal(CMD_X_READ);
-        y = readVal(CMD_Y_READ);
-		ESP_LOGI(TAG, "P(%d,%d,%d)", x, y, z);
-
-        /*Normalize Data back to 12-bits*/
-        x = x >> 4;
-        y = y >> 4;
-        ESP_LOGI(TAG, "P_norm(%d,%d)", x, y);
-		
-        xpt2046_corr(&x, &y);
-        xpt2046_avg(&x, &y);
-        last_x = x;
-        last_y = y;
-
-		ESP_LOGI(TAG, "x = %d, y = %d", x, y);
-    } else {
-        x = last_x;
-        y = last_y;
+    if (!valid)
+    {
         avg_last = 0;
-        valid = false;
     }
 
     data->point.x = x;
@@ -137,6 +136,14 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+static int16_t xpt2046_cmd(uint8_t cmd)
+{
+    uint8_t data[2];
+    tp_spi_read_reg(cmd, data, 2);
+    int16_t val = (data[0] << 8) | data[1];
+    return val;
+}
+
 static void xpt2046_corr(int16_t * x, int16_t * y)
 {
 #if XPT2046_XY_SWAP != 0
