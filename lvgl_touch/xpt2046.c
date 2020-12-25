@@ -55,6 +55,9 @@ uint8_t avg_last;
  */
 void xpt2046_init(void)
 {
+    ESP_LOGI(TAG, "XPT2046 Initialization");
+
+#if XPT2046_TOUCH_ONLY == 0
     gpio_config_t irq_config = {
         .pin_bit_mask = BIT64(XPT2046_IRQ),
         .mode = GPIO_MODE_INPUT,
@@ -63,10 +66,9 @@ void xpt2046_init(void)
         .intr_type = GPIO_INTR_DISABLE,
     };
     
-    ESP_LOGI(TAG, "XPT2046 Initialization");
-
     esp_err_t ret = gpio_config(&irq_config);
     assert(ret == ESP_OK);
+#endif
 }
 
 /**
@@ -82,10 +84,11 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 
     int16_t x = last_x;
     int16_t y = last_y;
-
+#if XPT2046_TOUCH_ONLY == 0
     uint8_t irq = gpio_get_level(XPT2046_IRQ);
 
     if (irq == 0) {
+#endif
 #if XPT2046_TOUCH_CHECK != 0
         int16_t z1 = xpt2046_cmd(CMD_Z1_READ) >> 3;
         int16_t z2 = xpt2046_cmd(CMD_Z2_READ) >> 3;
@@ -119,8 +122,9 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 #if XPT2046_TOUCH_CHECK != 0
         }
 #endif
+#if XPT2046_TOUCH_ONLY == 0
     }
-
+#endif
     if (!valid)
     {
         avg_last = 0;

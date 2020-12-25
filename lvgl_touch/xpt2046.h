@@ -36,6 +36,12 @@ extern "C" {
 #define XPT2046_Y_INV       CONFIG_LV_TOUCH_INVERT_Y
 #define XPT2046_XY_SWAP		CONFIG_LV_TOUCH_XY_SWAP
 #define XPT2046_TOUCH_CHECK CONFIG_LV_TOUCH_CHECK
+#if defined(CONFIG_LV_TOUCH_ONLY)
+#define XPT2046_TOUCH_ONLY  CONFIG_LV_TOUCH_ONLY
+#else
+#define XPT2046_TOUCH_ONLY  0
+#endif
+
 /**********************
  *      TYPEDEFS
  **********************/
