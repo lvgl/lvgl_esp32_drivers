@@ -27,6 +27,7 @@
 #endif
 #include "ft6x36.h"
 #include "tp_i2c.h"
+#include "../lvgl_i2c_conf.h"
 
 #define TAG "FT6X36"
 
@@ -46,7 +47,7 @@ esp_err_t ft6x06_i2c_read8(uint8_t slave_addr, uint8_t register_addr, uint8_t *d
 
     i2c_master_read_byte(i2c_cmd, data_buf, I2C_MASTER_NACK);
     i2c_master_stop(i2c_cmd);
-    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, i2c_cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(TOUCH_I2C_PORT, i2c_cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(i2c_cmd);
     return ret;
 }
@@ -145,7 +146,7 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     i2c_master_read_byte(i2c_cmd, &data_xy[0], I2C_MASTER_ACK);     // reads FT6X36_P1_XH_REG
     i2c_master_read_byte(i2c_cmd, &data_xy[1], I2C_MASTER_NACK);    // reads FT6X36_P1_XL_REG
     i2c_master_stop(i2c_cmd);
-    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, i2c_cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(TOUCH_I2C_PORT, i2c_cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(i2c_cmd);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Error getting X coordinates: %s", esp_err_to_name(ret));
@@ -168,7 +169,7 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     i2c_master_read_byte(i2c_cmd, &data_xy[2], I2C_MASTER_ACK);     // reads FT6X36_P1_YH_REG
     i2c_master_read_byte(i2c_cmd, &data_xy[3], I2C_MASTER_NACK);    // reads FT6X36_P1_YL_REG
     i2c_master_stop(i2c_cmd);
-    ret = i2c_master_cmd_begin(I2C_NUM_0, i2c_cmd, 1000 / portTICK_RATE_MS);
+    ret = i2c_master_cmd_begin(TOUCH_I2C_PORT, i2c_cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(i2c_cmd);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Error getting Y coordinates: %s", esp_err_to_name(ret));
