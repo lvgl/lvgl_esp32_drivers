@@ -178,17 +178,19 @@ menu "LVGL Touch controller"
             prompt "Invert Y coordinate value."
             default y
 
+        choice
+            prompt "Select touch detection method."
+            default LV_TOUCH_DETECT_IRQ
+            help
+                Select the controller for your touch panel.
 
-        config LV_TOUCH_CHECK
-            bool
-            prompt "Check touch pressure to validate LV_TOUCH_PIN_IRQ"
-            default n
-
-        config LV_TOUCH_ONLY
-            bool
-            prompt "Only use touch pressure and not IRQ to detect a touch"
-            depends on LV_TOUCH_CHECK
-            default n
+            config LV_TOUCH_DETECT_IRQ
+                bool "IRQ pin only"
+            config LV_TOUCH_DETECT_IRQ_PRESSURE
+                bool "IRQ pin and pressure"
+            config LV_TOUCH_DETECT_PRESSURE
+                bool "Pressure only"
+        endchoice
     endmenu
 
     menu "Touchpanel (FT6X06) Pin Assignments"

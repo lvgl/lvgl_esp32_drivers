@@ -61,7 +61,7 @@ void xpt2046_init(void)
 {
     ESP_LOGI(TAG, "XPT2046 Initialization");
 
-#if XPT2046_TOUCH_ONLY == 0
+#if XPT2046_TOUCH_IRQ || XPT2046_TOUCH_IRQ_PRESS
     gpio_config_t irq_config = {
         .pin_bit_mask = BIT64(XPT2046_IRQ),
         .mode = GPIO_MODE_INPUT,
@@ -125,15 +125,16 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
  **********************/
 static xpt2046_touch_detect_t xpt2048_is_touch_detected()
 {
-    // check IRQ if we are not touch only OR are not checking touch
-#if XPT2046_TOUCH_ONLY == 0 || XPT2046_TOUCH_CHECK == 0
+    // check IRQ pin if we IRQ or IRQ and preessure
+#if XPT2046_TOUCH_IRQ ||  XPT2046_TOUCH_IRQ_PRESS
     uint8_t irq = gpio_get_level(XPT2046_IRQ);
 
     if (irq != 0) {
         return TOUCH_NOT_DETECTED;
     }
 #endif
-#if XPT2046_TOUCH_CHECK != 0
+    // check pressure if we are pressure or IRQ and pressure
+#if  XPT2046_TOUCH_PRESS || XPT2046_TOUCH_IRQ_PRESS
     int16_t z1 = xpt2046_cmd(CMD_Z1_READ) >> 3;
     int16_t z2 = xpt2046_cmd(CMD_Z2_READ) >> 3;
 
