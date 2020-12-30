@@ -18,18 +18,26 @@
  *********************/
 #define TAG "XPT2046"
 
-#define CMD_X_READ  0b10010000
-#define CMD_Y_READ  0b11010000
+#define CMD_X_READ  0b10010000  // NOTE: XPT2046 data sheet says this is actually Y
+#define CMD_Y_READ  0b11010000  // NOTE: XPT2046 data sheet says this is actually X
+#define CMD_Z1_READ 0b10110000
+#define CMD_Z2_READ 0b11000000
 
 /**********************
  *      TYPEDEFS
  **********************/
+typedef enum {
+    TOUCH_NOT_DETECTED = 0,
+    TOUCH_DETECTED = 1,
+} xpt2046_touch_detect_t;
 
 /**********************
  *  STATIC PROTOTYPES
  **********************/
 static void xpt2046_corr(int16_t * x, int16_t * y);
 static void xpt2046_avg(int16_t * x, int16_t * y);
+static int16_t xpt2046_cmd(uint8_t cmd);
+static xpt2046_touch_detect_t xpt2048_is_touch_detected();
 
 /**********************
  *  STATIC VARIABLES
@@ -51,6 +59,9 @@ uint8_t avg_last;
  */
 void xpt2046_init(void)
 {
+    ESP_LOGI(TAG, "XPT2046 Initialization");
+
+#if XPT2046_TOUCH_IRQ || XPT2046_TOUCH_IRQ_PRESS
     gpio_config_t irq_config = {
         .pin_bit_mask = BIT64(XPT2046_IRQ),
         .mode = GPIO_MODE_INPUT,
@@ -59,10 +70,9 @@ void xpt2046_init(void)
         .intr_type = GPIO_INTR_DISABLE,
     };
     
-    ESP_LOGI(TAG, "XPT2046 Initialization");
-
     esp_err_t ret = gpio_config(&irq_config);
     assert(ret == ESP_OK);
+#endif
 }
 
 /**
@@ -74,39 +84,33 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 {
     static int16_t last_x = 0;
     static int16_t last_y = 0;
-    bool valid = true;
+    bool valid = false;
 
-    int16_t x = 0;
-    int16_t y = 0;
+    int16_t x = last_x;
+    int16_t y = last_y;
+    if (xpt2048_is_touch_detected() == TOUCH_DETECTED)
+    {
+        valid = true;
 
-    uint8_t irq = gpio_get_level(XPT2046_IRQ);
+        x = xpt2046_cmd(CMD_X_READ);
+        y = xpt2046_cmd(CMD_Y_READ);
+        ESP_LOGI(TAG, "P(%d,%d)", x, y);
 
-    if (irq == 0) {
-		uint8_t data[2];
-		
-		tp_spi_read_reg(CMD_X_READ, data, 2);
-		x = (data[0] << 8) | data[1];
-		
-		tp_spi_read_reg(CMD_Y_READ, data, 2);
-		y = (data[0] << 8) | data[1];
-		ESP_LOGI(TAG, "P(%d,%d)", x, y);
-		
         /*Normalize Data back to 12-bits*/
         x = x >> 4;
         y = y >> 4;
         ESP_LOGI(TAG, "P_norm(%d,%d)", x, y);
-		
+        
         xpt2046_corr(&x, &y);
         xpt2046_avg(&x, &y);
         last_x = x;
         last_y = y;
 
-		ESP_LOGI(TAG, "x = %d, y = %d", x, y);
-    } else {
-        x = last_x;
-        y = last_y;
+        ESP_LOGI(TAG, "x = %d, y = %d", x, y);
+    }
+    else
+    {
         avg_last = 0;
-        valid = false;
     }
 
     data->point.x = x;
@@ -119,6 +123,42 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+static xpt2046_touch_detect_t xpt2048_is_touch_detected()
+{
+    // check IRQ pin if we IRQ or IRQ and preessure
+#if XPT2046_TOUCH_IRQ ||  XPT2046_TOUCH_IRQ_PRESS
+    uint8_t irq = gpio_get_level(XPT2046_IRQ);
+
+    if (irq != 0) {
+        return TOUCH_NOT_DETECTED;
+    }
+#endif
+    // check pressure if we are pressure or IRQ and pressure
+#if  XPT2046_TOUCH_PRESS || XPT2046_TOUCH_IRQ_PRESS
+    int16_t z1 = xpt2046_cmd(CMD_Z1_READ) >> 3;
+    int16_t z2 = xpt2046_cmd(CMD_Z2_READ) >> 3;
+
+    // this is not what the confusing datasheet says but it seems to
+    // be enough to detect real touches on the panel
+    int16_t z = z1 + 4096 - z2;
+
+    if (z < XPT2046_TOUCH_THRESHOLD)
+    {
+        return TOUCH_NOT_DETECTED;
+    }
+#endif
+
+    return TOUCH_DETECTED;
+}
+
+static int16_t xpt2046_cmd(uint8_t cmd)
+{
+    uint8_t data[2];
+    tp_spi_read_reg(cmd, data, 2);
+    int16_t val = (data[0] << 8) | data[1];
+    return val;
+}
+
 static void xpt2046_corr(int16_t * x, int16_t * y)
 {
 #if XPT2046_XY_SWAP != 0
