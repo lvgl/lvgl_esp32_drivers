@@ -186,6 +186,7 @@ menu "LVGL TFT Display controller"
             bool "Landscape"
         config LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
             bool "Landscaoe inverted"
+    endchoice
 
     config LV_DISPLAY_ORIENTATION
         int
