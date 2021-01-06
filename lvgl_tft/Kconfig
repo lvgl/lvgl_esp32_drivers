@@ -174,9 +174,29 @@ menu "LVGL TFT Display controller"
         help
             Display controller protocol I2C
 
+    # Used in display init function to send display orientation commands
+    choice DISPLAY_ORIENTATION
+        prompt "Display orientation"
+        default LV_DISPLAY_ORIENTATION_PORTRAIT
+        config LV_DISPLAY_ORIENTATION_PORTRAIT
+            bool "Portrait"
+        config LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED
+            bool "Portrait inverted"
+        config LV_DISPLAY_ORIENTATION_LANDSCAPE
+            bool "Landscape"
+        config LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
+            bool "Landscaoe inverted"
+
+    config LV_DISPLAY_ORIENTATION
+        int
+        default 0 if DISPLAY_ORIENTATION_PORTRAIT
+        default 1 if DISPLAY_ORIENTATION_PORTRAIT_INVERTED
+        default 2 if DISPLAY_ORIENTATION_LANDSCAPE
+        default 3 if DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
+
     config LV_TFT_DISPLAY_OFFSETS
         bool
-    help
+        help
         Display area doesn't start at address 0
 
     config LV_TFT_DISPLAY_X_OFFSET
