@@ -3,6 +3,12 @@
 **NOTE:** You need to set the display horizontal and vertical size, color depth and
 swap of RGB565 color on the LVGL configuration menuconfig (it's not handled automatically).
 
+[Supported display controllers](#Supported-display-controllers)
+
+[Supported indev controllers](#Supported-indev-controllers)
+
+[Support for predefined development kits](#Support-fot-predefined-development-kits)
+
 # Supported display controllers
 
 
