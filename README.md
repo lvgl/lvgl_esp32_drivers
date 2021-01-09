@@ -1,15 +1,17 @@
-# lvgl esp32 drivers
+# Display and touchpad drivers for ESP32 using LVGL
+
+For a ready to use ESP32 project take look at the [lv_port_esp32](https://github.com/lvgl/lv_port_esp32) repository.
+
+#### Table of content
+- [Supported display controllers](#supported-display-controllers)
+- [Supported indev controllers](#supported-indev-controllers)
+- [Support for predefined development kits](#support-for-predefined-development-kits)
 
 **NOTE:** You need to set the display horizontal and vertical size, color depth and
 swap of RGB565 color on the LVGL configuration menuconfig (it's not handled automatically).
 
-[Supported display controllers](#Supported-display-controllers)
 
-[Supported indev controllers](#Supported-indev-controllers)
-
-[Support for predefined development kits](#Support-fot-predefined-development-kits)
-
-# Supported display controllers
+## Supported display controllers
 
 
 | Display Controller                          | Type       | Interface              | Color depth (LV_COLOR_DEPTH) | Swap RGB565 color (LV_COLOR_16_SWAP)   |
@@ -29,7 +31,7 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 | UC8151D/ GoodDisplay GDEW0154M10 DES        | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | FitiPower JD79653A/ GoodDisplay GDEW0154M09 | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 
-# Supported indev controllers
+## Supported indev controllers
 
 - XPT2046
 - FT3236
@@ -40,7 +42,7 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 If your display or input device (touch) controller is not supported consider contributing to this repo by
 adding support to it! [Contribute controller support](CONTRIBUTE_CONTROLLER_SUPPORT.md)
 
-# Support for predefined development kits
+## Support for predefined development kits
 
 You can also use the predefined kits, which selects the correct display controllers on the kit,
 and sets the gpio numbers for the interface.
@@ -59,5 +61,5 @@ and sets the gpio numbers for the interface.
 | TTGO T-Display            | ST7789                | SPI       | 135       | 240       |
 | TTGO Camera Plus          | ST7789                | SPI       | 240       | 240       |
 
-**NOTE:** See [Supported display controllers](#Supported-display-controllers) for more information on display configuration.
-**NOTE:** See [Supported indev controllers](#Supported-indev-controllers) for more information about indev configuration.
+**NOTE:** See [Supported display controllers](#supported-display-controllers) for more information on display configuration.
+**NOTE:** See [Supported indev controllers](#supported-indev-controllers) for more information about indev configuration.
