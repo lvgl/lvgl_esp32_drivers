@@ -130,7 +130,7 @@ void ssd1306_init()
 	i2c_cmd_link_delete(cmd);
 }
 
-void ssd1306_set_px_cb(struct _disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
+void ssd1306_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
         lv_color_t color, lv_opa_t opa) {
     uint16_t byte_index = x + (( y>>3 ) * buf_w);
     uint8_t  bit_index  = y & 0x7;
@@ -147,13 +147,9 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
     uint8_t row1 = 0, row2 = 0;
    	i2c_cmd_handle_t cmd;
 
-#if defined CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE		
-    row1 = area->y1>>3;
-    row2 = area->y2>>3;
-#else
-    row1 = area->y1>>3;
-    row2 = area->y2>>3;
-#endif
+    // Divide by 8
+    row1 = area->y1 >> 3;
+    row2 = area->y2 >> 3;
 
 	cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
@@ -185,16 +181,19 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
     lv_disp_flush_ready(disp_drv);
 }
 
-void ssd1306_rounder(struct _disp_drv_t * disp_drv, lv_area_t *area)
+// workaround: always send complete size display buffer, no partial update
+void ssd1306_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
 {
   	// area->y1 = (area->y1 & (~0x7));
   	// area->y2 = (area->y2 & (~0x7)) + 7;
 
-	// workaround: always send complete size display buffer
+    uint8_t hor_max = disp_drv->hor_res;
+    uint8_t ver_max = disp_drv->ver_res;
+
 	area->x1 = 0;
 	area->y1 = 0;
-	area->x2 = LV_HOR_RES_MAX-1;
-	area->y2 = LV_VER_RES_MAX-1;
+	area->x2 = hor_max - 1;
+	area->y2 = ver_max - 1;
 }
 
 void ssd1306_sleep_in()
