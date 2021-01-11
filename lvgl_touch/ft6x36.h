@@ -21,7 +21,13 @@
 
 #define __FT6X06_H
 
-#include <lvgl/src/lv_hal/lv_hal.h>
+#include <stdint.h>
+#include <stdbool.h>
+#ifdef LV_LVGL_H_INCLUDE_SIMPLE
+#include "lvgl.h"
+#else
+#include "lvgl/lvgl.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
