@@ -476,45 +476,6 @@ menu "LVGL TFT Display controller"
             bool "I2C PORT 1"
     endchoice
 
-    choice
-    prompt "Display orientation"
-        depends on  LV_TFT_DISPLAY_CONTROLLER_ILI9341 || \
-                    LV_TFT_DISPLAY_CONTROLLER_ILI9481 || \
-                    LV_TFT_DISPLAY_CONTROLLER_ILI9486 || \
-                    LV_TFT_DISPLAY_CONTROLLER_ILI9488 || \
-                    LV_TFT_DISPLAY_CONTROLLER_SH1107 || \
-                    LV_TFT_DISPLAY_CONTROLLER_SSD1306 || \
-                    LV_TFT_DISPLAY_CONTROLLER_FT81X || \
-                    LV_TFT_DISPLAY_CONTROLLER_ST7789  || \
-                    LV_TFT_DISPLAY_CONTROLLER_GC9A01 || \
-                    LV_TFT_DISPLAY_CONTROLLER_ST7735S || \
-                    LV_TFT_DISPLAY_CONTROLLER_IL3820 || \
-                    LV_TFT_DISPLAY_CONTROLLER_RA8875 || \
-                    LV_TFT_DISPLAY_CONTROLLER_JD79653A || \
-                    LV_TFT_DISPLAY_CONTROLLER_UC8151D
-        default LV_DISPLAY_ORIENTATION_LANDSCAPE \
-                    if !LV_TFT_DISPLAY_CONTROLLER_JD79653A || \
-                        !LV_TFT_DISPLAY_CONTROLLER_UC8151D
-        default LV_DISPLAY_ORIENTATION_PORTRAIT if LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
-        help
-            Display orientation.
-
-        config LV_DISPLAY_ORIENTATION_PORTRAIT
-            bool "Portrait"
-        config LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED
-            bool "Inverted Portrait"
-            depends on !LV_TFT_DISPLAY_CONTROLLER_IL3820
-        config LV_DISPLAY_ORIENTATION_LANDSCAPE
-            bool "Landscape"
-            depends on !LV_TFT_DISPLAY_CONTROLLER_JD79653A
-            depends on !LV_TFT_DISPLAY_CONTROLLER_UC8151D
-        config LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
-            bool "Inverted Landscape"
-            depends on !LV_TFT_DISPLAY_CONTROLLER_IL3820
-            depends on !LV_TFT_DISPLAY_CONTROLLER_JD79653A
-            depends on !LV_TFT_DISPLAY_CONTROLLER_UC8151D
-    endchoice
-
     config LV_TFT_USE_CUSTOM_SPI_CLK_DIVIDER
         bool "Use custom SPI clock frequency." if LV_TFT_DISPLAY_PROTOCOL_SPI
         default n
