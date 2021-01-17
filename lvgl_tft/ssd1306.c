@@ -98,47 +98,40 @@ static uint8_t send_colors(lv_disp_drv_t *disp_drv, void *color_buffer, size_t b
  **********************/
 void ssd1306_init()
 {
-	esp_err_t ret;
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-	i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_STREAM, true);
-
-	i2c_master_write_byte(cmd, OLED_CMD_SET_CHARGE_PUMP, true);
-	i2c_master_write_byte(cmd, 0x14, true);
+    uint8_t orientation_1 = 0;
+    uint8_t orientation_2 = 0;
 
 #if defined (CONFIG_DISPLAY_ORIENTATION_PORTRAIT)
-        i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP, true);
-	i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_REMAP, true);
+    orientation_1 = OLED_CMD_SET_SEGMENT_REMAP;
+    orientation_2 = OLED_CMD_SET_COM_SCAN_MODE_REMAP;
 #elif defined (CONFIG_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
-        i2c_master_write_byte(cmd, 0xA0, true);
-        i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_NORMAL, true);
+    orientation_1 = 0xA0;
+    orientation_2 = OLED_CMD_SET_COM_SCAN_MODE_NORMAL;
 #else
-    #error "Unsopported orientation"
+    #error "Unsupported orientation"
 #endif
 
-	i2c_master_write_byte(cmd, OLED_CMD_SET_CONTRAST, true);
+    uint8_t display_mode = 0;
 
 #if defined CONFIG_LV_INVERT_DISPLAY
-	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_INVERTED, true); // Inverted display
+    display_mode = OLED_CMD_DISPLAY_INVERTED;
 #else
-	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_NORMAL, true); // Non-inverted display
-#endif 
+    display_mode = OLED_CMD_DISPLAY_NORMAL;
+#endif
 
-
-	i2c_master_write_byte(cmd, 0xFF, true);
-
-	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_ON, true);
-	i2c_master_stop(cmd);
-
-	ret = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
-	if (ret == ESP_OK) {
-		ESP_LOGI(TAG, "OLED configured successfully");
-	} else {
-		ESP_LOGE(TAG, "OLED configuration failed. code: 0x%.2X", ret);
-	}
-	i2c_cmd_link_delete(cmd);
+    uint8_t conf[] = {
+        OLED_CONTROL_BYTE_CMD_STREAM,
+        OLED_CMD_SET_CHARGE_PUMP,
+        0x14,
+        orientation_1,
+        orientation_2,
+        OLED_CMD_SET_CONTRAST,
+        display_mode,
+        0xFF,
+        OLED_CMD_DISPLAY_ON
+    };
+    
+    send_bytes(NULL, conf, sizeof conf);
 }
 
 void ssd1306_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
@@ -188,39 +181,22 @@ void ssd1306_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
 
 void ssd1306_sleep_in()
 {
-    esp_err_t ret;
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    uint8_t conf[] = {
+        OLED_CONTROL_BYTE_CMD_STREAM,
+        OLED_CMD_DISPLAY_OFF
+    };
 
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-	i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_STREAM, true);
-
-	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_OFF, true);
-	i2c_master_stop(cmd);
-
-	ret = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
-	if (ret != ESP_OK) {
-		ESP_LOGE(TAG, "ssd1306_display_off configuration failed. code: 0x%.2X", ret);
-	}
-	i2c_cmd_link_delete(cmd);
+    send_bytes(NULL, conf, sizeof conf);
 }
 
 void ssd1306_sleep_out()
 {
-    esp_err_t ret;
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    uint8_t conf[] = {
+        OLED_CONTROL_BYTE_CMD_STREAM,
+        OLED_CMD_DISPLAY_ON
+    };
 
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-	i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_STREAM, true);
-	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_ON, true);
-	i2c_master_stop(cmd);
-
-	ret = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
-	if (ret != ESP_OK) {
-		ESP_LOGE(TAG, "ssd1306_display_on configuration failed. code: 0x%.2X", ret);
-	}
-	i2c_cmd_link_delete(cmd);
+    send_bytes(NULL, conf, sizeof conf);
 }
 
 /**********************
