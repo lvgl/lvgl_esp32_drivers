@@ -105,8 +105,17 @@ void ssd1306_init()
 
 	i2c_master_write_byte(cmd, OLED_CMD_SET_CHARGE_PUMP, true);
 	i2c_master_write_byte(cmd, 0x14, true);
-    i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP, true);
+
+#if defined (CONFIG_DISPLAY_ORIENTATION_PORTRAIT)
+        i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP, true);
 	i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_REMAP, true);
+#elif defined (CONFIG_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+        i2c_master_write_byte(cmd, 0xA0, true);
+        i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_NORMAL, true);
+#else
+    #error "Unsopported orientation"
+#endif
+
 	i2c_master_write_byte(cmd, OLED_CMD_SET_CONTRAST, true);
 
 #if defined CONFIG_LV_INVERT_DISPLAY
