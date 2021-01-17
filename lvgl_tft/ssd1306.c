@@ -80,7 +80,8 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-
+static uint8_t send_bytes(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len);
+static uint8_t send_colors(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -154,56 +155,35 @@ void ssd1306_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w
 
 void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    uint8_t row1 = 0, row2 = 0;
-   	i2c_cmd_handle_t cmd;
+    ESP_LOGI(TAG, "X1: %d, X2: %d, Y1: %d, Y2: %d",
+        area->x1, area->x2, area->y1, area->y2);
+    
+    /* Divide by 8 */
+    uint8_t row1 = area->y1 >> 3;
+    uint8_t row2 = area->y2 >> 3;
 
-    // Divide by 8
-    row1 = area->y1 >> 3;
-    row2 = area->y2 >> 3;
+    uint8_t conf[] = {
+        OLED_CONTROL_BYTE_CMD_STREAM,
+        OLED_CMD_SET_MEMORY_ADDR_MODE,
+        0x00,
+        OLED_CMD_SET_COLUMN_RANGE,
+        (uint8_t) area->x1,
+        (uint8_t) area->x2,
+        OLED_CMD_SET_PAGE_RANGE,
+        row1,
+        row2,
+    };
 
-	cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-
-	i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_STREAM, true);
-	i2c_master_write_byte(cmd, OLED_CMD_SET_MEMORY_ADDR_MODE, true);
-	i2c_master_write_byte(cmd, 0x00, true);
-	i2c_master_write_byte(cmd, OLED_CMD_SET_COLUMN_RANGE, true);
-	i2c_master_write_byte(cmd, area->x1, true);
-	i2c_master_write_byte(cmd, area->x2, true);
-	i2c_master_write_byte(cmd, OLED_CMD_SET_PAGE_RANGE, true);
-	i2c_master_write_byte(cmd, row1, true);
-	i2c_master_write_byte(cmd, row2, true);
-	i2c_master_stop(cmd);
-	i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
-	i2c_cmd_link_delete(cmd);
-
-	cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-
-	i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_DATA_STREAM, true);
-	i2c_master_write(cmd, (uint8_t *)color_p, OLED_COLUMNS * (1+row2-row1), true);
-	i2c_master_stop(cmd);
-	i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
-	i2c_cmd_link_delete(cmd);
+    send_bytes(disp_drv, conf, sizeof conf);
+    send_colors(disp_drv, color_p, OLED_COLUMNS * (1 + row2 - row1));
 
     lv_disp_flush_ready(disp_drv);
 }
 
-// workaround: always send complete size display buffer, no partial update
 void ssd1306_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
 {
-  	// area->y1 = (area->y1 & (~0x7));
-  	// area->y2 = (area->y2 & (~0x7)) + 7;
-
-    uint8_t hor_max = disp_drv->hor_res;
-    uint8_t ver_max = disp_drv->ver_res;
-
-	area->x1 = 0;
-	area->y1 = 0;
-	area->x2 = hor_max - 1;
-	area->y2 = ver_max - 1;
+    area->x1 = area->x1 & ~(0x07);
+    area->x2 = area->x2 | 0x07;
 }
 
 void ssd1306_sleep_in()
@@ -246,4 +226,41 @@ void ssd1306_sleep_out()
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+static uint8_t send_bytes(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
+{
+    (void) disp_drv;
 
+    uint8_t *data = (uint8_t *) bytes;
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
+
+    for (size_t idx = 0; idx < bytes_len; idx++) {
+        i2c_master_write_byte(cmd, data[idx], true);
+    }
+
+    i2c_master_stop(cmd);
+    i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
+    i2c_cmd_link_delete(cmd);
+
+    return 0;
+}
+
+static uint8_t send_colors(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len)
+{
+    (void) disp_drv;
+	
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
+
+    i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_DATA_STREAM, true);
+    i2c_master_write(cmd, (uint8_t *) color_buffer, buffer_len, true);
+    i2c_master_stop(cmd);
+    i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
+    i2c_cmd_link_delete(cmd);
+
+    return 0;
+}
