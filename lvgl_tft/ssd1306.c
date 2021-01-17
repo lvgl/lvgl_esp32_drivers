@@ -8,11 +8,12 @@
  *********************/
 #include "ssd1306.h"
 #include "driver/i2c.h"
-#include "disp_spi.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#include "lvgl_i2c_conf.h"
 
 /*********************
  *      DEFINES
@@ -130,7 +131,7 @@ void ssd1306_init()
 	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_ON, true);
 	i2c_master_stop(cmd);
 
-	ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+	ret = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
 	if (ret == ESP_OK) {
 		ESP_LOGI(TAG, "OLED configured successfully");
 	} else {
@@ -174,7 +175,7 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
 	i2c_master_write_byte(cmd, row1, true);
 	i2c_master_write_byte(cmd, row2, true);
 	i2c_master_stop(cmd);
-	i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+	i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(cmd);
 
 	cmd = i2c_cmd_link_create();
@@ -217,7 +218,7 @@ void ssd1306_sleep_in()
 	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_OFF, true);
 	i2c_master_stop(cmd);
 
-	ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+	ret = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
 	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "ssd1306_display_off configuration failed. code: 0x%.2X", ret);
 	}
@@ -235,7 +236,7 @@ void ssd1306_sleep_out()
 	i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_ON, true);
 	i2c_master_stop(cmd);
 
-	ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+	ret = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10/portTICK_PERIOD_MS);
 	if (ret != ESP_OK) {
 		ESP_LOGE(TAG, "ssd1306_display_on configuration failed. code: 0x%.2X", ret);
 	}
