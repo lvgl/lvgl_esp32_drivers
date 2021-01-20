@@ -148,9 +148,6 @@ void ssd1306_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w
 
 void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    ESP_LOGI(TAG, "X1: %d, X2: %d, Y1: %d, Y2: %d",
-        area->x1, area->x2, area->y1, area->y2);
-    
     /* Divide by 8 */
     uint8_t row1 = area->y1 >> 3;
     uint8_t row2 = area->y2 >> 3;
