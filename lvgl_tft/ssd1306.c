@@ -1,30 +1,28 @@
 /**
  * @file ssd1306.c
  *
+ * Code from https://github.com/yanbe/ssd1306-esp-idf-i2c.git is used as a starting point,
+ * in addition to code from https://github.com/espressif/esp-iot-solution.
+ * 
+ * Definitions are borrowed from:
+ * http://robotcantalk.blogspot.com/2015/03/interfacing-arduino-with-ssd1306-driven.html
+ * 
+ * For LVGL the forum has been used, in particular: https://blog.littlevgl.com/2019-05-06/oled
  */
 
 /*********************
  *      INCLUDES
  *********************/
-#include "ssd1306.h"
 #include "driver/i2c.h"
-#include "driver/gpio.h"
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 #include "lvgl_i2c_conf.h"
+
+#include "ssd1306.h"
 
 /*********************
  *      DEFINES
  *********************/
 #define TAG "SSD1306"
-
-// Code from https://github.com/yanbe/ssd1306-esp-idf-i2c.git is used as a starting point,
-// in addition to code from https://github.com/espressif/esp-iot-solution.
-// Following definitions are borrowed from
-// http://robotcantalk.blogspot.com/2015/03/interfacing-arduino-with-ssd1306-driven.html
-// For LittlevGL the forum has been used, in particular: https://blog.littlevgl.com/2019-05-06/oled
 
 // SLA (0x3C) + WRITE_MODE (0x00) =  0x78 (0b01111000)
 #define OLED_I2C_ADDRESS                    0x3C
@@ -80,8 +78,9 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static uint8_t send_bytes(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len);
-static uint8_t send_colors(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len);
+static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len);
+static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len);
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -131,11 +130,12 @@ void ssd1306_init()
         OLED_CMD_DISPLAY_ON
     };
     
-    send_bytes(NULL, conf, sizeof conf);
+    send_data(NULL, conf, sizeof conf);
 }
 
 void ssd1306_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
-        lv_color_t color, lv_opa_t opa) {
+        lv_color_t color, lv_opa_t opa)
+{
     uint16_t byte_index = x + (( y>>3 ) * buf_w);
     uint8_t  bit_index  = y & 0x7;
 
@@ -164,8 +164,8 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
         row2,
     };
 
-    send_bytes(disp_drv, conf, sizeof conf);
-    send_colors(disp_drv, color_p, OLED_COLUMNS * (1 + row2 - row1));
+    send_data(disp_drv, conf, sizeof conf);
+    send_pixels(disp_drv, color_p, OLED_COLUMNS * (1 + row2 - row1));
 
     lv_disp_flush_ready(disp_drv);
 }
@@ -183,7 +183,7 @@ void ssd1306_sleep_in()
         OLED_CMD_DISPLAY_OFF
     };
 
-    send_bytes(NULL, conf, sizeof conf);
+    send_data(NULL, conf, sizeof conf);
 }
 
 void ssd1306_sleep_out()
@@ -193,13 +193,13 @@ void ssd1306_sleep_out()
         OLED_CMD_DISPLAY_ON
     };
 
-    send_bytes(NULL, conf, sizeof conf);
+    send_data(NULL, conf, sizeof conf);
 }
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-static uint8_t send_bytes(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
+static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
 {
     (void) disp_drv;
 
@@ -221,7 +221,7 @@ static uint8_t send_bytes(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len
     return 0;
 }
 
-static uint8_t send_colors(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len)
+static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len)
 {
     (void) disp_drv;
 	
