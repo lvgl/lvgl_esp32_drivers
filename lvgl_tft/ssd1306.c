@@ -202,6 +202,7 @@ void ssd1306_sleep_out(void)
 static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
 {
     (void) disp_drv;
+    esp_err_t err;
 
     uint8_t *data = (uint8_t *) bytes;
 
@@ -215,15 +216,18 @@ static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
     }
 
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
+    
+    /* Send queued commands */
+    err = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
-    return 0;
+    return ESP_OK == err ? 0 : 1;
 }
 
 static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len)
 {
     (void) disp_drv;
+    esp_err_t err;
 	
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -232,8 +236,10 @@ static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t b
     i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_DATA_STREAM, true);
     i2c_master_write(cmd, (uint8_t *) color_buffer, buffer_len, true);
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
+    
+    /* Send queued commands */
+    err = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
-    return 0;
+    return ESP_OK == err ? 0 : 1;
 }
