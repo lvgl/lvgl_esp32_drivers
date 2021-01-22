@@ -14,6 +14,7 @@
  *      INCLUDES
  *********************/
 #include "driver/i2c.h"
+#include "assert.h"
 
 #include "lvgl_i2c_conf.h"
 
@@ -130,7 +131,8 @@ void ssd1306_init(void)
         OLED_CMD_DISPLAY_ON
     };
     
-    send_data(NULL, conf, sizeof(conf));
+    uint8_t err = send_data(NULL, conf, sizeof(conf));
+    assert(0 == err);
 }
 
 void ssd1306_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
@@ -164,8 +166,10 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
         row2,
     };
 
-    send_data(disp_drv, conf, sizeof(conf));
-    send_pixels(disp_drv, color_p, OLED_COLUMNS * (1 + row2 - row1));
+    uint8_t err = send_data(disp_drv, conf, sizeof(conf));
+    assert(0 == err);
+    err = send_pixels(disp_drv, color_p, OLED_COLUMNS * (1 + row2 - row1));
+    assert(0 == err);
 
     lv_disp_flush_ready(disp_drv);
 }
@@ -183,7 +187,8 @@ void ssd1306_sleep_in(void)
         OLED_CMD_DISPLAY_OFF
     };
 
-    send_data(NULL, conf, sizeof(conf));
+    uint8_t err = send_data(NULL, conf, sizeof(conf));
+    assert(0 == err);
 }
 
 void ssd1306_sleep_out(void)
@@ -193,7 +198,8 @@ void ssd1306_sleep_out(void)
         OLED_CMD_DISPLAY_ON
     };
 
-    send_data(NULL, conf, sizeof(conf));
+    uint8_t err = send_data(NULL, conf, sizeof(conf));
+    assert(0 == err);
 }
 
 /**********************
