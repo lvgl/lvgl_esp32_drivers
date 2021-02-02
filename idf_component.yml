@@ -1,0 +1,13 @@
+name: "LVGL ESP32 drivers"
+
+version: "0.0.1"
+
+description: Display and touchpad drivers for ESP32 using LVGL
+
+url: https://github.com/lvgl/lvgl_esp32_drivers
+
+dependencies:
+  idf:
+    version: ">=4.0"
+  lvgl:
+    version: ">=7.0.0"
