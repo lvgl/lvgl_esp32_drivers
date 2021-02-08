@@ -33,7 +33,9 @@ extern "C" {
  * color format being used, for RGB565 each pixel needs 2 bytes.
  * When using the mono theme, the display pixels can be represented in one bit,
  * so the buffer size can be divided by 8, e.g. see SSD1306 display size. */
-
+#if defined (CONFIG_CUSTOM_DISPLAY_BUFFER_SIZE)
+#define DISP_BUF_SIZE   CONFIG_CUSTOM_DISPLAY_BUFFER_BYTES
+#else
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7735S
@@ -69,6 +71,7 @@ extern "C" {
 #define DISP_BUF_SIZE ((LV_VER_RES_MAX * LV_VER_RES_MAX) / 8) // 2888 bytes
 #else
 #error "No display controller selected"
+#endif
 #endif
 
 /**********************
