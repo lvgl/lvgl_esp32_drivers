@@ -328,6 +328,18 @@ menu "LVGL TFT Display controller"
             select LV_TFT_DISPLAY_PROTOCOL_SPI
     endchoice
 
+    config CUSTOM_DISPLAY_BUFFER_SIZE
+        bool "Use custom display buffer size (bytes)"
+        help
+            Enable to use a custom display buffer size.
+
+    config CUSTOM_DISPLAY_BUFFER_BYTES
+        int "Custom buffer size (bytes)"
+        depends on CUSTOM_DISPLAY_BUFFER_SIZE
+        default 1024
+        help
+            See Display buffer on LVGL docs for more information.
+
     # Select one of the available FT81x configurations.
     choice
         prompt "Select a FT81x configuration." if LV_TFT_DISPLAY_USER_CONTROLLER_FT81X
