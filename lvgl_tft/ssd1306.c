@@ -176,10 +176,6 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
 
 void ssd1306_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
 {
-#if defined (CONFIG_LV_THEME_MONO)
-    area->x1 = area->x1 & ~(0x07);
-    area->x2 = area->x2 | 0x07;
-#else
     uint8_t hor_max = disp_drv->hor_res;
     uint8_t ver_max = disp_drv->ver_res;
 
@@ -187,7 +183,6 @@ void ssd1306_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
     area->y1 = 0;
     area->x2 = hor_max - 1;
     area->y2 = ver_max - 1;
-#endif
 }
 
 void ssd1306_sleep_in(void)
