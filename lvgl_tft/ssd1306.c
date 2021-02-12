@@ -3,10 +3,10 @@
  *
  * Code from https://github.com/yanbe/ssd1306-esp-idf-i2c.git is used as a starting point,
  * in addition to code from https://github.com/espressif/esp-iot-solution.
- * 
+ *
  * Definitions are borrowed from:
  * http://robotcantalk.blogspot.com/2015/03/interfacing-arduino-with-ssd1306-driven.html
- * 
+ *
  * For LVGL the forum has been used, in particular: https://blog.littlevgl.com/2019-05-06/oled
  */
 
@@ -113,7 +113,7 @@ void ssd1306_init(void)
 
     uint8_t display_mode = 0;
 
-#if defined CONFIG_LV_INVERT_DISPLAY
+#if defined CONFIG_LV_INVERT_COLORS
     display_mode = OLED_CMD_DISPLAY_INVERTED;
 #else
     display_mode = OLED_CMD_DISPLAY_NORMAL;
@@ -130,7 +130,7 @@ void ssd1306_init(void)
         0xFF,
         OLED_CMD_DISPLAY_ON
     };
-    
+
     uint8_t err = send_data(NULL, conf, sizeof(conf));
     assert(0 == err);
 }
@@ -213,7 +213,7 @@ static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
     uint8_t *data = (uint8_t *) bytes;
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    
+
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
 
@@ -222,7 +222,7 @@ static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
     }
 
     i2c_master_stop(cmd);
-    
+
     /* Send queued commands */
     err = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
@@ -234,7 +234,7 @@ static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t b
 {
     (void) disp_drv;
     esp_err_t err;
-	
+
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
@@ -242,7 +242,7 @@ static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t b
     i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_DATA_STREAM, true);
     i2c_master_write(cmd, (uint8_t *) color_buffer, buffer_len, true);
     i2c_master_stop(cmd);
-    
+
     /* Send queued commands */
     err = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
