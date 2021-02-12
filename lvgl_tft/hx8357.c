@@ -7,7 +7,7 @@
  * Adafruit 3.5" TFT 320x480 + Touchscreen Breakout
  *    http://www.adafruit.com/products/2050
  *
- * Adafruit TFT FeatherWing - 3.5" 480x320 Touchscreen for Feathers 
+ * Adafruit TFT FeatherWing - 3.5" 480x320 Touchscreen for Feathers
  *    https://www.adafruit.com/product/3651
  *
  */
@@ -177,7 +177,7 @@ void hx8357_init(void)
 	vTaskDelay(120 / portTICK_RATE_MS);
 
 	ESP_LOGI(TAG, "Initialization.");
-	
+
 	//Send all the commands
 	const uint8_t *addr = (displayType == HX8357B) ? initb : initd;
 	uint8_t        cmd, x, numArgs;
@@ -199,9 +199,11 @@ void hx8357_init(void)
 	}
 
 	hx8357_set_rotation(1);
-	
-#if HX8357_INVERT_DISPLAY
-	hx8357_send_cmd(HX8357_INVON);;
+
+#if HX8357_INVERT_COLORS
+	hx8357_send_cmd(HX8357_INVON);
+#else
+    hx8357_send_cmd(HX8357_INVOFF);
 #endif
 
 	hx8357_enable_backlight(true);
@@ -211,7 +213,7 @@ void hx8357_init(void)
 void hx8357_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
 	uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
-	
+
 	/* Column addresses  */
 	uint8_t xb[] = {
 	    (uint8_t) (area->x1 >> 8) & 0xFF,
@@ -219,7 +221,7 @@ void hx8357_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	    (uint8_t) (area->x2 >> 8) & 0xFF,
 	    (uint8_t) (area->x2) & 0xFF,
 	};
-	
+
 	/* Page addresses  */
 	uint8_t yb[] = {
 	    (uint8_t) (area->y1 >> 8) & 0xFF,
@@ -261,7 +263,7 @@ void hx8357_enable_backlight(bool backlight)
 void hx8357_set_rotation(uint8_t r)
 {
 	r = r & 3; // can't be higher than 3
-	
+
 	switch(r) {
 		case 0:
 			r = MADCTL_MX | MADCTL_MY | MADCTL_RGB;
@@ -276,7 +278,7 @@ void hx8357_set_rotation(uint8_t r)
 			r = MADCTL_MX | MADCTL_MV | MADCTL_RGB;
 		break;
 	}
-	
+
 	hx8357_send_cmd(HX8357_MADCTL);
 	hx8357_send_data(&r, 1);
 }

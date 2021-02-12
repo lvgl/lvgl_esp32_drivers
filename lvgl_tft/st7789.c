@@ -65,7 +65,13 @@ void st7789_init(void)
         {ST7789_CABCCTRL, {0xBE}, 1},
         {ST7789_MADCTL, {0x00}, 1}, // Set to 0x28 if your display is flipped
         {ST7789_COLMOD, {0x55}, 1},
-	{ST7789_INVON, {0}, 0},
+
+#if ST7789_INVERT_COLORS == 1
+		{ST7789_INVON, {0}, 0}, // set inverted mode
+#else
+ 		{ST7789_INVOFF, {0}, 0}, // set non-inverted mode
+#endif
+
         {ST7789_RGBCTRL, {0x00, 0x1B}, 2},
         {0xF2, {0x08}, 1},
         {ST7789_GAMSET, {0x01}, 1},
@@ -86,7 +92,7 @@ void st7789_init(void)
     gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
     gpio_pad_select_gpio(ST7789_RST);
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
-    
+
 #if ST7789_ENABLE_BACKLIGHT_CONTROL
     gpio_pad_select_gpio(ST7789_BCKL);
     gpio_set_direction(ST7789_BCKL, GPIO_MODE_OUTPUT);
@@ -219,7 +225,7 @@ static void st7789_set_orientation(uint8_t orientation)
 
     ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
 
-    uint8_t data[] = 
+    uint8_t data[] =
     {
 #if CONFIG_LV_PREDEFINED_DISPLAY_TTGO
 	0x60, 0xA0, 0x00, 0xC0
@@ -227,7 +233,7 @@ static void st7789_set_orientation(uint8_t orientation)
 	0xC0, 0x00, 0x60, 0xA0
 #endif
     };
-    
+
     ESP_LOGI(TAG, "0x36 command value: 0x%02X", data[orientation]);
 
     st7789_send_cmd(ST7789_MADCTL);
