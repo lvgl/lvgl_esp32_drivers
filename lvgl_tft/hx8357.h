@@ -7,7 +7,7 @@
  * Adafruit 3.5" TFT 320x480 + Touchscreen Breakout
  *    http://www.adafruit.com/products/2050
  *
- * Adafruit TFT FeatherWing - 3.5" 480x320 Touchscreen for Feathers 
+ * Adafruit TFT FeatherWing - 3.5" 480x320 Touchscreen for Feathers
  *    https://www.adafruit.com/product/3651
  *
  */
@@ -40,15 +40,13 @@ extern "C" {
 #define HX8357_BCKL CONFIG_LV_DISP_PIN_BCKL
 
 #define HX8357_ENABLE_BACKLIGHT_CONTROL CONFIG_LV_ENABLE_BACKLIGHT_CONTROL
+#define HX8357_INVERT_COLORS            CONFIG_LV_INVERT_COLORS
 
 #if CONFIG_LV_BACKLIGHT_ACTIVE_LVL
   #define HX8357_BCKL_ACTIVE_LVL 1
 #else
   #define HX8357_BCKL_ACTIVE_LVL 0
 #endif
-
-// if text/images are backwards, try setting this to 1
-#define HX8357_INVERT_DISPLAY CONFIG_LV_INVERT_DISPLAY
 
 
 /*******************

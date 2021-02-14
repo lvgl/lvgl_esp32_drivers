@@ -61,7 +61,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #include <stdarg.h>
 #endif
 
-#define TAG "FT81X"
+#define TAG_LOG "FT81X"
 
 /* data structure for SPI reading that has (optional) space for inserted dummy byte */
 typedef struct _spi_read_data {
@@ -274,7 +274,7 @@ void EVE_memWrite_buffer(uint32_t ftAddress, const uint8_t *data, uint32_t len, 
 	while(bytes_left > 0)
 	{
 		uint32_t block_len = (bytes_left > SPI_TRANSER_SIZE ? SPI_TRANSER_SIZE : bytes_left);
-		
+
 		// only send flush on last chunk
 		disp_spi_send_flag_t flush_flag = 0;
 		if(LvGL_Flush && bytes_left - block_len == 0)
@@ -282,7 +282,7 @@ void EVE_memWrite_buffer(uint32_t ftAddress, const uint8_t *data, uint32_t len, 
 			flush_flag = DISP_SPI_SIGNAL_FLUSH;
 		}
 
-		disp_spi_transaction(data, block_len, (disp_spi_send_flag_t)(DISP_SPI_SEND_QUEUED | DISP_SPI_ADDRESS_24 | SPIInherentSendFlags | flush_flag), NULL, (ftAddress | MEM_WRITE_24), 0);	
+		disp_spi_transaction(data, block_len, (disp_spi_send_flag_t)(DISP_SPI_SEND_QUEUED | DISP_SPI_ADDRESS_24 | SPIInherentSendFlags | flush_flag), NULL, (ftAddress | MEM_WRITE_24), 0);
 		data += block_len;
 		ftAddress += block_len;
 		bytes_left -= block_len;
@@ -409,7 +409,7 @@ void EVE_cmd_memzero(uint32_t ptr, uint32_t num)
 	EVE_begin_cmd(CMD_MEMZERO);
 	BUFFER_SPI_DWORD(ptr)
 	BUFFER_SPI_DWORD(num)
-	
+
 	EVE_inc_cmdoffset(8);
 
 	SEND_SPI_BUFFER()
@@ -438,11 +438,11 @@ void EVE_cmd_memwrite(uint32_t dest, uint32_t num, const uint8_t *data)
 	EVE_begin_cmd(CMD_MEMWRITE);
 	BUFFER_SPI_DWORD(dest)
 	BUFFER_SPI_DWORD(num)
-	
+
 	EVE_inc_cmdoffset(8);
-	
+
 	SEND_SPI_BUFFER()
-	
+
 	block_transfer(data, num);	// block_transfer is immediate - make sure CMD buffer is prepared!
 }
 
@@ -468,7 +468,7 @@ void EVE_cmd_memcpy(uint32_t dest, uint32_t src, uint32_t num)
 void eve_spi_CMD_write(uint64_t addr, const uint8_t *data, uint16_t len)
 {
 	// we can use a direct transaction because it is already chunked
-	disp_spi_transaction(data, len, (disp_spi_send_flag_t)(DISP_SPI_SEND_QUEUED | DISP_SPI_ADDRESS_24 | SPIInherentSendFlags), NULL, (addr | MEM_WRITE_24), 0);	
+	disp_spi_transaction(data, len, (disp_spi_send_flag_t)(DISP_SPI_SEND_QUEUED | DISP_SPI_ADDRESS_24 | SPIInherentSendFlags), NULL, (addr | MEM_WRITE_24), 0);
 
 	uint8_t padding = len & 0x03; /* 0, 1, 2 or 3 */
 	padding = 4 - padding; /* 4, 3, 2 or 1 */
@@ -478,9 +478,9 @@ void eve_spi_CMD_write(uint64_t addr, const uint8_t *data, uint16_t len)
 	if(padding)
 	{
 		addr += len;
-	
+
 		uint8_t padData[4] = {0};
-		disp_spi_transaction(padData, padding, (disp_spi_send_flag_t)(DISP_SPI_SEND_QUEUED | DISP_SPI_ADDRESS_24 | SPIInherentSendFlags), NULL, (addr | MEM_WRITE_24), 0);	
+		disp_spi_transaction(padData, padding, (disp_spi_send_flag_t)(DISP_SPI_SEND_QUEUED | DISP_SPI_ADDRESS_24 | SPIInherentSendFlags), NULL, (addr | MEM_WRITE_24), 0);
 
 		len += padding;
 	}
@@ -521,7 +521,7 @@ void EVE_cmd_inflate(uint32_t ptr, const uint8_t *data, uint16_t len)
 	EVE_inc_cmdoffset(4);
 
 	SEND_SPI_BUFFER()
-	
+
 	block_transfer(data, len);	// block_transfer is immediate - make sure CMD buffer is prepared!
 }
 
@@ -707,7 +707,7 @@ uint32_t EVE_cmd_memcrc(uint32_t ptr, uint32_t num)
 	EVE_inc_cmdoffset(4);
 
 	SEND_SPI_BUFFER()
-	
+
 	EVE_cmd_execute();
 
 	return (EVE_memRead32(EVE_RAM_CMD + offset));
@@ -722,11 +722,11 @@ uint32_t EVE_cmd_getptr(void)
 
 	uint16_t offset = cmdOffset;
 	EVE_inc_cmdoffset(4);
-	
+
 	SEND_SPI_BUFFER()
 
 	EVE_cmd_execute();
-	
+
 	return (EVE_memRead32(EVE_RAM_CMD + offset));
 }
 
@@ -743,7 +743,7 @@ uint32_t EVE_cmd_regread(uint32_t ptr)
 	BUFFER_SPI_DWORD(ptr)
 
 	EVE_inc_cmdoffset(4);
-	
+
 	offset = cmdOffset;
 	EVE_inc_cmdoffset(4);
 
@@ -873,16 +873,16 @@ uint8_t EVE_init(void)
 
 	/* The most reliable DIO/QIO switching point is after EVE start up but before reading the ChipID. */
 #if defined(DISP_SPI_TRANS_MODE_DIO)
-	ESP_LOGI(TAG, "Switching to DIO mode");
+	ESP_LOGI(TAG_LOG, "Switching to DIO mode");
 	DELAY_MS(20);	/* different boards may take a different delay but this generally seems to work */
 	EVE_memWrite16(REG_SPI_WIDTH, SPI_WIDTH_DIO);
-	SPIInherentSendFlags = DISP_SPI_MODE_DIO | DISP_SPI_MODE_DIOQIO_ADDR;	
+	SPIInherentSendFlags = DISP_SPI_MODE_DIO | DISP_SPI_MODE_DIOQIO_ADDR;
 	SPIDummyReadBits = 4;	/* Esp32 DMA SPI transaction dummy_bits works more like clock cycles, so in DIO 4 dummy_bits == 8 total bits */
 #elif defined(DISP_SPI_TRANS_MODE_QIO)
-	ESP_LOGI(TAG, "Switching to QIO mode");
+	ESP_LOGI(TAG_LOG, "Switching to QIO mode");
 	DELAY_MS(20);	/* different boards may take a different delay but this generally seems to work */
 	EVE_memWrite16(REG_SPI_WIDTH, SPI_WIDTH_QIO);
-	SPIInherentSendFlags = DISP_SPI_MODE_QIO | DISP_SPI_MODE_DIOQIO_ADDR;	
+	SPIInherentSendFlags = DISP_SPI_MODE_QIO | DISP_SPI_MODE_DIOQIO_ADDR;
 	SPIDummyReadBits = 2;	/* Esp32 DMA SPI transaction dummy_bits works more like clock cycles, so in QIO 2 dummy_bits == 8 total bits */
 #elif defined(DISP_SPI_HALF_DUPLEX)
 	SPIDummyReadBits = 8;	/* SIO half-duplex mode */
@@ -895,7 +895,7 @@ uint8_t EVE_init(void)
 		timeout++;
 		if(timeout > 400)
 		{
-			ESP_LOGI(TAG, "Failed to read ChipID...aborting initialization.");
+			ESP_LOGI(TAG_LOG, "Failed to read ChipID...aborting initialization.");
 			return 0;
 		}
 	}
@@ -907,7 +907,7 @@ uint8_t EVE_init(void)
 		timeout++;
 		if(timeout > 50) /* experimental, 10 was the lowest value to get the BT815 started with, the touch-controller was the last to get out of reset */
 		{
-			ESP_LOGI(TAG, "Failed to read CPU status...aborting initialization.");
+			ESP_LOGI(TAG_LOG, "Failed to read CPU status...aborting initialization.");
 			return 0;
 		}
 	}
@@ -1068,7 +1068,7 @@ void EVE_cmd_dl(uint32_t command)
 	if(cmd_burst)
 	{
 		BUFFER_SPI_DWORD(command)
-		
+
 		EVE_inc_cmdoffset(4); /* update the command-ram pointer */
 	}
 	else
@@ -1126,7 +1126,7 @@ void EVE_cmd_flashwrite(uint32_t ptr, uint32_t num, const uint8_t *data)
 	EVE_begin_cmd(CMD_FLASHWRITE);
 	BUFFER_SPI_DWORD(ptr)
 	BUFFER_SPI_DWORD(num)
-	
+
 	EVE_inc_cmdoffset(8);
 
 	SEND_SPI_BUFFER()
@@ -1147,11 +1147,11 @@ void EVE_cmd_flashread(uint32_t dest, uint32_t src, uint32_t num)
 	BUFFER_SPI_DWORD(dest)
 	BUFFER_SPI_DWORD(src)
 	BUFFER_SPI_DWORD(num)
-	
+
 	EVE_inc_cmdoffset(12);
 
 	SEND_SPI_BUFFER()
-	
+
 	EVE_cmd_execute();
 }
 
@@ -1167,11 +1167,11 @@ void EVE_cmd_flashupdate(uint32_t dest, uint32_t src, uint32_t num)
 	BUFFER_SPI_DWORD(dest)
 	BUFFER_SPI_DWORD(src)
 	BUFFER_SPI_DWORD(num)
-	
+
 	EVE_inc_cmdoffset(12);
 
 	SEND_SPI_BUFFER()
-	
+
 	EVE_cmd_execute();
 }
 
@@ -1181,7 +1181,7 @@ void EVE_cmd_flashupdate(uint32_t dest, uint32_t src, uint32_t num)
 void EVE_cmd_flasherase(void)
 {
 	EVE_begin_cmd(CMD_FLASHERASE);
-	
+
 	SEND_SPI_BUFFER()
 
 	EVE_cmd_execute();
@@ -1193,7 +1193,7 @@ void EVE_cmd_flasherase(void)
 void EVE_cmd_flashattach(void)
 {
 	EVE_begin_cmd(CMD_FLASHATTACH);
-	
+
 	SEND_SPI_BUFFER()
 
 	EVE_cmd_execute();
@@ -1205,7 +1205,7 @@ void EVE_cmd_flashattach(void)
 void EVE_cmd_flashdetach(void)
 {
 	EVE_begin_cmd(CMD_FLASHDETACH);
-	
+
 	SEND_SPI_BUFFER()
 
 	EVE_cmd_execute();
@@ -1217,7 +1217,7 @@ void EVE_cmd_flashdetach(void)
 void EVE_cmd_flashspidesel(void)
 {
 	EVE_begin_cmd(CMD_FLASHSPIDESEL);
-	
+
 	SEND_SPI_BUFFER()
 
 	EVE_cmd_execute();
@@ -1238,7 +1238,7 @@ uint32_t EVE_cmd_flashfast(void)
 	SEND_SPI_BUFFER()
 
 	EVE_cmd_execute();
-	
+
 	return EVE_memRead32(EVE_RAM_CMD + offset);
 }
 
@@ -1254,7 +1254,7 @@ void EVE_cmd_flashspitx(uint32_t num, const uint8_t *data)
 	EVE_inc_cmdoffset(4);
 
 	SEND_SPI_BUFFER()
-	
+
 	WAIT_SPI()
 	block_transfer(data, num);
 }
@@ -1401,7 +1401,7 @@ void EVE_cmd_text(int16_t x0, int16_t y0, int16_t font, uint16_t options, const 
 	EVE_inc_cmdoffset(8);
 
 	EVE_write_string(text);
-	
+
 	if(!cmd_burst)
 	{
 		SEND_SPI_BUFFER()
@@ -1440,7 +1440,7 @@ void EVE_cmd_button_var(int16_t x0, int16_t y0, int16_t w0, int16_t h0, int16_t 
 			EVE_inc_cmdoffset(4);
 		}
 	}
-	
+
 	if(!cmd_burst)
 	{
 		SEND_SPI_BUFFER()
@@ -1500,7 +1500,7 @@ void EVE_color_rgb(uint8_t red, uint8_t green, uint8_t blue)
 	BUFFER_SPI_BYTE(blue)
 	BUFFER_SPI_BYTE(red)
 	BUFFER_SPI_BYTE(0x04)	/* encoding for COLOR_RGB */
-	
+
 	EVE_inc_cmdoffset(4);
 
 	if(!cmd_burst)
@@ -1516,7 +1516,7 @@ void EVE_cmd_bgcolor(uint32_t color)
 	BUFFER_SPI_DWORD(color & 0x00ffffff)
 
 	EVE_inc_cmdoffset(4);
-	
+
 	if(!cmd_burst)
 	{
 		SEND_SPI_BUFFER()
@@ -1530,7 +1530,7 @@ void EVE_cmd_fgcolor(uint32_t color)
 	BUFFER_SPI_DWORD(color & 0x00ffffff)
 
 	EVE_inc_cmdoffset(4);
-	
+
 	if(!cmd_burst)
 	{
 		SEND_SPI_BUFFER()
@@ -1544,7 +1544,7 @@ void EVE_cmd_gradcolor(uint32_t color)
 	BUFFER_SPI_DWORD(color & 0x00ffffff)
 
 	EVE_inc_cmdoffset(4);
-	
+
 	if(!cmd_burst)
 	{
 		SEND_SPI_BUFFER()
@@ -1624,7 +1624,7 @@ void EVE_cmd_progress(int16_t x0, int16_t y0, int16_t w0, int16_t h0, uint16_t o
 	BUFFER_SPI_WORD(val)
 	BUFFER_SPI_WORD(range)
 	BUFFER_SPI_WORD(0)		/* dummy word for 4-byte alignment */
-	
+
 	EVE_inc_cmdoffset(16);
 
 	if(!cmd_burst)
@@ -1726,7 +1726,7 @@ void EVE_cmd_toggle_var(int16_t x0, int16_t y0, int16_t w0, int16_t font, uint16
 			EVE_inc_cmdoffset(4);
 		}
 	}
-	
+
 	if(!cmd_burst)
 	{
 		SEND_SPI_BUFFER()
@@ -1747,7 +1747,7 @@ void EVE_cmd_toggle(int16_t x0, int16_t y0, int16_t w0, int16_t font, uint16_t o
 	BUFFER_SPI_WORD(state)
 
 	EVE_inc_cmdoffset(12);
-	
+
 	EVE_write_string(text);
 
 	if(!cmd_burst)
@@ -1783,9 +1783,9 @@ void EVE_cmd_setbitmap(uint32_t addr, uint16_t fmt, uint16_t width, uint16_t hei
 	BUFFER_SPI_WORD(width)
 	BUFFER_SPI_WORD(height)
 	BUFFER_SPI_WORD(0)
-	
+
 	EVE_inc_cmdoffset(12);
-	
+
 	if(!cmd_burst)
 	{
 		SEND_SPI_BUFFER()
@@ -2139,13 +2139,13 @@ void EVE_cmd_appendf(uint32_t ptr, uint32_t num)
 void EVE_cmd_point(int16_t x0, int16_t y0, uint16_t size)
 {
 	EVE_start_cmd((DL_BEGIN | EVE_POINTS));
-	
+
 	uint32_t calc = POINT_SIZE(size*16);
 	BUFFER_SPI_DWORD(calc)
-	
+
 	calc = VERTEX2F(x0 * 16, y0 * 16);
 	BUFFER_SPI_DWORD(calc)
-	
+
 	BUFFER_SPI_DWORD(DL_END)
 
 	EVE_inc_cmdoffset(12);
@@ -2164,13 +2164,13 @@ void EVE_cmd_line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t width
 
 	uint32_t calc = LINE_WIDTH(width * 16);
 	BUFFER_SPI_DWORD(calc)
-	
+
 	calc = VERTEX2F(x0 * 16, y0 * 16);
 	BUFFER_SPI_DWORD(calc)
 
 	calc = VERTEX2F(x1 * 16, y1 * 16);
 	BUFFER_SPI_DWORD(calc)
-	
+
 	BUFFER_SPI_DWORD(DL_END)
 
 	EVE_inc_cmdoffset(16);
@@ -2189,13 +2189,13 @@ void EVE_cmd_rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t corne
 
 	uint32_t calc = LINE_WIDTH(corner * 16);
 	BUFFER_SPI_DWORD(calc)
-	
+
 	calc = VERTEX2F(x0 * 16, y0 * 16);
 	BUFFER_SPI_DWORD(calc)
 
 	calc = VERTEX2F(x1 * 16, y1 * 16);
 	BUFFER_SPI_DWORD(calc)
-	
+
 	BUFFER_SPI_DWORD(DL_END)
 
 	EVE_inc_cmdoffset(16);
