@@ -186,11 +186,12 @@ menu "LVGL TFT Display controller"
     # Used in display init function to send display orientation commands
     choice DISPLAY_ORIENTATION
         prompt "Display orientation"
-        default DISPLAY_ORIENTATION_PORTRAIT
+        default DISPLAY_ORIENTATION_PORTRAIT if !LV_TFT_DISPLAY_CONTROLLER_SSD1306
+        default DISPLAY_ORIENTATION_LANDSCAPE if LV_TFT_DISPLAY_CONTROLLER_SSD1306
         config DISPLAY_ORIENTATION_PORTRAIT
-            bool "Portrait"
+            bool "Portrait" if !LV_TFT_DISPLAY_CONTROLLER_SSD1306
         config DISPLAY_ORIENTATION_PORTRAIT_INVERTED
-            bool "Portrait inverted"
+            bool "Portrait inverted" if !LV_TFT_DISPLAY_CONTROLLER_SSD1306
         config DISPLAY_ORIENTATION_LANDSCAPE
             bool "Landscape"
         config DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
