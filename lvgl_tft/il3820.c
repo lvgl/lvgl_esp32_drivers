@@ -153,7 +153,7 @@ void il3820_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_m
  * the display buffer.
  * BIT_CLEAR(byte_index, bit_index) sets the bit_index pixel at the byte_index
  * of the display buffer. */ 		
-void il3820_set_px_cb(struct _disp_drv_t * disp_drv, uint8_t* buf,
+void il3820_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
     lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
     lv_color_t color, lv_opa_t opa)
 {
@@ -185,7 +185,7 @@ void il3820_set_px_cb(struct _disp_drv_t * disp_drv, uint8_t* buf,
 }
 
 /* Required by LVGL */
-void il3820_rounder(struct _disp_drv_t * disp_drv, lv_area_t *area) {
+void il3820_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area) {
     area->x1 = area->x1 & ~(0x7);
     area->x2 = area->x2 |  (0x7);
 }
