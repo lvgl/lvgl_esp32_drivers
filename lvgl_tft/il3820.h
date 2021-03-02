@@ -100,8 +100,8 @@ extern "C"
 void il3820_init(void);
 void il3820_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
 void il3820_fullflush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
-void il3820_rounder(struct _disp_drv_t * disp_drv, lv_area_t *area);
-void il3820_set_px_cb(struct _disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa);
+void il3820_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area);
+void il3820_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa);
 void il3820_sleep_in(void);
 
 #ifdef __cplusplus

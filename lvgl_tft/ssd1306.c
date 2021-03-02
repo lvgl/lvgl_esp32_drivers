@@ -101,10 +101,10 @@ void ssd1306_init(void)
     uint8_t orientation_1 = 0;
     uint8_t orientation_2 = 0;
 
-#if defined (CONFIG_DISPLAY_ORIENTATION_PORTRAIT)
+#if defined (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE)
     orientation_1 = OLED_CMD_SET_SEGMENT_REMAP;
     orientation_2 = OLED_CMD_SET_COM_SCAN_MODE_REMAP;
-#elif defined (CONFIG_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+#elif defined (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
     orientation_1 = 0xA0;
     orientation_2 = OLED_CMD_SET_COM_SCAN_MODE_NORMAL;
 #else
@@ -176,8 +176,13 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
 
 void ssd1306_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
 {
-    area->x1 = area->x1 & ~(0x07);
-    area->x2 = area->x2 | 0x07;
+    uint8_t hor_max = disp_drv->hor_res;
+    uint8_t ver_max = disp_drv->ver_res;
+
+    area->x1 = 0;
+    area->y1 = 0;
+    area->x2 = hor_max - 1;
+    area->y2 = ver_max - 1;
 }
 
 void ssd1306_sleep_in(void)
