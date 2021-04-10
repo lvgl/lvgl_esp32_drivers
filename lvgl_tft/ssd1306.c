@@ -126,8 +126,8 @@ void ssd1306_init(void)
         orientation_1,
         orientation_2,
         OLED_CMD_SET_CONTRAST,
-        display_mode,
         0xFF,
+        display_mode,
         OLED_CMD_DISPLAY_ON
     };
 
