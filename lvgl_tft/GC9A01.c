@@ -173,7 +173,7 @@ void GC9A01_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	uint8_t data[4];
 
 	/*Column addresses*/
-	GC9A01_send_cmd(0x2A);				//0x2A 
+	GC9A01_send_cmd(0x2A);				//0x2A
 	data[0] = (area->x1 >> 8) & 0xFF;
 	data[1] = area->x1 & 0xFF;
 	data[2] = (area->x2 >> 8) & 0xFF;
@@ -181,7 +181,7 @@ void GC9A01_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	GC9A01_send_data(data, 4);
 
 	/*Page addresses*/
-	GC9A01_send_cmd(0x2B);				//0x2B 
+	GC9A01_send_cmd(0x2B);				//0x2B
 	data[0] = (area->y1 >> 8) & 0xFF;
 	data[1] = area->y1 & 0xFF;
 	data[2] = (area->y2 >> 8) & 0xFF;
@@ -189,7 +189,7 @@ void GC9A01_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	GC9A01_send_data(data, 4);
 
 	/*Memory write*/
-	GC9A01_send_cmd(0x2C);				//0x2C 
+	GC9A01_send_cmd(0x2C);				//0x2C
 
 
 	uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
@@ -217,7 +217,7 @@ void GC9A01_sleep_in()
 {
 	uint8_t data[] = {0x08};
 	GC9A01_send_cmd(0x10);			//0x10 Enter Sleep Mode
-	GC9A01_send_data(&data, 1);		
+	GC9A01_send_data(&data, 1);
 }
 
 void GC9A01_sleep_out()

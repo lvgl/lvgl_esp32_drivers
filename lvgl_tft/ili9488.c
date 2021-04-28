@@ -50,7 +50,7 @@ static void ili9488_send_color(void * data, uint16_t length);
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-// From github.com/jeremyjh/ESP32_TFT_library 
+// From github.com/jeremyjh/ESP32_TFT_library
 // From github.com/mvturnho/ILI9488-lvgl-ESP32-WROVER-B
 void ili9488_init(void)
 {
@@ -102,7 +102,7 @@ void ili9488_init(void)
 	// Exit sleep
 	ili9488_send_cmd(0x01);	/* Software reset */
 	vTaskDelay(100 / portTICK_RATE_MS);
-	
+
 	//Send all the commands
 	uint16_t cmd = 0;
 	while (ili_init_cmds[cmd].databytes!=0xff) {
@@ -151,7 +151,7 @@ void ili9488_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 	    (uint8_t) (area->x2 >> 8) & 0xFF,
 	    (uint8_t) (area->x2) & 0xFF,
 	};
-	
+
 	/* Page addresses  */
 	uint8_t yb[] = {
 	    (uint8_t) (area->y1 >> 8) & 0xFF,
