@@ -44,11 +44,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 
 #include "FT81x.h"
 
-#define EVE_CLK		DISP_SPI_CLK				// orange
-#define EVE_MISO	DISP_SPI_MISO				// yellow
-#define EVE_MOSI	DISP_SPI_MOSI				// green
-#define EVE_CS 		DISP_SPI_CS					// blue
-#define EVE_PDN		CONFIG_LV_DISP_PIN_RST		// grey
+#define EVE_CLK		    DISP_SPI_CLK				    // orange
+#define EVE_MISO	    DISP_SPI_MISO				    // yellow
+#define EVE_MOSI	    DISP_SPI_MOSI				    // green
+#define EVE_CS 		    DISP_SPI_CS					    // blue
+#define EVE_PDN		    CONFIG_LV_DISP_PIN_RST	// grey
+#define EVE_USE_PDN		CONFIG_LV_DISP_USE_RST
 
 #define SPI_TRANSER_SIZE (DISP_BUF_SIZE * (LV_COLOR_DEPTH / 8))
 

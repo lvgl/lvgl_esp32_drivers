@@ -78,19 +78,24 @@ void ili9486_init(void)
 	//Initialize non-SPI GPIOs
         gpio_pad_select_gpio(ILI9486_DC);
 	gpio_set_direction(ILI9486_DC, GPIO_MODE_OUTPUT);
+
+#if ILI9486_USE_RST
         gpio_pad_select_gpio(ILI9486_RST);
 	gpio_set_direction(ILI9486_RST, GPIO_MODE_OUTPUT);
+#endif
 
 #if ILI9486_ENABLE_BACKLIGHT_CONTROL
     gpio_pad_select_gpio(ILI9486_BCKL);
     gpio_set_direction(ILI9486_BCKL, GPIO_MODE_OUTPUT);
 #endif
 
+#if ILI9486_USE_RST
 	//Reset the display
 	gpio_set_level(ILI9486_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(ILI9486_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 
 	ESP_LOGI(TAG, "ILI9486 Initialization.");
 

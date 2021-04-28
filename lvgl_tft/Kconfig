@@ -900,8 +900,21 @@ menu "LVGL TFT Display controller"
             help
                 Configure the display DC pin here.
 
+        config LV_DISP_USE_RST
+            bool "Use a GPIO for resetting the display" if LV_TFT_DISPLAY_PROTOCOL_SPI
+            default y
+            help
+                Enable display reset control. Set this if the reset pin of the
+                display is connected to the host. If this is not set, then it is
+                the user's responsibility to ensure that the display is reset
+                before initialisation.
+                You may want to disable this option because the reset pin is not
+                connected, or is connected to an external component such as the
+                power management IC.
+
         config LV_DISP_PIN_RST
             int "GPIO for Reset" if LV_TFT_DISPLAY_PROTOCOL_SPI && !LV_DISP_ST7789_SOFT_RESET
+            depends on LV_DISP_USE_RST
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
 

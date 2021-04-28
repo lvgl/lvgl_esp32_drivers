@@ -39,8 +39,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #define BLOCK_TRANSFER_SIZE 3840		// block transfer size when write data to CMD buffer
 
 void DELAY_MS(uint16_t ms);
+
+#if EVE_USE_PDN
 void EVE_pdn_set(void);
 void EVE_pdn_clear(void);
+#endif
+
 void spi_acquire();
 void spi_release();
 

@@ -91,7 +91,7 @@ void st7789_init(void)
     gpio_pad_select_gpio(ST7789_DC);
     gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
 
-#if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
+#if !defined(ST7789_SOFT_RST)
     gpio_pad_select_gpio(ST7789_RST);
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
@@ -102,7 +102,7 @@ void st7789_init(void)
 #endif
 
     //Reset the display
-#if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
+#if !defined(ST7789_SOFT_RST)
     gpio_set_level(ST7789_RST, 0);
     vTaskDelay(100 / portTICK_RATE_MS);
     gpio_set_level(ST7789_RST, 1);
