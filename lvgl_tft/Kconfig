@@ -165,6 +165,11 @@ menu "LVGL TFT Display controller"
         help
             ST7796S display controller.
 
+    config LV_TFT_DISPLAY_CONTROLLER_ILI9163C
+        bool
+        help
+            ILI9163C display controller.
+
     # Display controller communication protocol
     #
     # This symbols define the communication protocol used by the
@@ -326,6 +331,10 @@ menu "LVGL TFT Display controller"
         config LV_TFT_DISPLAY_USER_CONTROLLER_RA8875
             bool "RA8875"
             select LV_TFT_DISPLAY_CONTROLLER_RA8875
+            select LV_TFT_DISPLAY_PROTOCOL_SPI
+        config LV_TFT_DISPLAY_USER_CONTROLLER_ILI9163C
+            bool "ILI9163C"
+            select LV_TFT_DISPLAY_CONTROLLER_ILI9163C
             select LV_TFT_DISPLAY_PROTOCOL_SPI
     endchoice
 
@@ -586,7 +595,7 @@ menu "LVGL TFT Display controller"
             If text is backwards on your display, try enabling this.
 
     config LV_INVERT_COLORS
-        bool "Invert colors in display" if LV_TFT_DISPLAY_CONTROLLER_ILI9341 || LV_TFT_DISPLAY_CONTROLLER_ST7735S || LV_TFT_DISPLAY_CONTROLLER_ILI9481 || LV_TFT_DISPLAY_CONTROLLER_ST7789 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 || LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_HX8357
+        bool "Invert colors in display" if LV_TFT_DISPLAY_CONTROLLER_ILI9341 || LV_TFT_DISPLAY_CONTROLLER_ST7735S || LV_TFT_DISPLAY_CONTROLLER_ILI9481 || LV_TFT_DISPLAY_CONTROLLER_ST7789 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 || LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_HX8357 || LV_TFT_DISPLAY_CONTROLLER_ILI9163C
         default y if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICKC
         help
             If the colors look inverted on your display, try enabling this.
@@ -744,11 +753,11 @@ menu "LVGL TFT Display controller"
 
         config LV_DISP_ST7789_SOFT_RESET
             bool "Soft reset - use software reset instead of reset pin"
-            depends on LV_TFT_DISPLAY_CONTROLLER_ST7789            
+            depends on LV_TFT_DISPLAY_CONTROLLER_ST7789
             default n
             help
                 Use software reset and ignores configured reset pin (some hardware does not use a reset pin).
-    
+
     endmenu
 
     # menu will be visible only when LV_PREDEFINED_DISPLAY_NONE is y
