@@ -37,6 +37,13 @@ static void st7789_set_orientation(uint8_t orientation);
 
 static void st7789_send_color(void *data, size_t length);
 
+static void st7789_reset(void);
+/* The user should init all the hardware related to the display in this
+ * function, maybe it's better to do this outside the display code, e.g.
+ * in main before calling anything related to LVGL.
+ * Some platforms, like STM32CubeIDE init and configure all the hardware
+ * with auto generated code. */
+static void bsp_init_hardware(void);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -50,6 +57,8 @@ static void st7789_send_color(void *data, size_t length);
  **********************/
 void st7789_init(void)
 {
+    bsp_init_hardware();
+
     lcd_init_cmd_t st7789_init_cmds[] = {
         {0xCF, {0x00, 0x83, 0X30}, 3},
         {0xED, {0x64, 0x03, 0X12, 0X81}, 4},
@@ -85,24 +94,7 @@ void st7789_init(void)
         {0, {0}, 0xff},
     };
 
-    //Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(ST7789_DC);
-    gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
-
-#if !defined(ST7789_SOFT_RST)
-    gpio_pad_select_gpio(ST7789_RST);
-    gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
-#endif
-
-    //Reset the display
-#if !defined(ST7789_SOFT_RST)
-    gpio_set_level(ST7789_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
-    gpio_set_level(ST7789_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
-#else
-    st7789_send_cmd(ST7789_SWRESET);
-#endif
+    st7789_reset();
 
     printf("ST7789 initialization.\n");
 
@@ -179,22 +171,35 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 void st7789_send_cmd(uint8_t cmd)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(ST7789_DC, 0);
+    bsp_gpio_dc(0);
     disp_spi_send_data(&cmd, 1);
 }
 
 void st7789_send_data(void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(ST7789_DC, 1);
+    bsp_gpio_dc(1);
     disp_spi_send_data(data, length);
 }
 
 static void st7789_send_color(void * data, size_t length)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(ST7789_DC, 1);
+    bsp_gpio_dc(1);
     disp_spi_send_colors(data, length);
+}
+
+/* Reset the display, if we don't have a reset pin we use software reset */
+static void st7789_reset(void)
+{
+#if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
+    bsp_gpio_rst(0);
+    bsp_delay(100);
+    bsp_gpio_rst(1);
+    bsp_delay(100);
+#else
+    st7789_send_cmd(ST7789_SWRESET);
+#endif
 }
 
 static void st7789_set_orientation(uint8_t orientation)
@@ -220,4 +225,41 @@ static void st7789_set_orientation(uint8_t orientation)
 
     st7789_send_cmd(ST7789_MADCTL);
     st7789_send_data((void *) &data[orientation], 1);
+}
+
+static void bsp_delay(uint32_t delay_ms)
+{
+    vTaskDelay(delay_ms / portTICK_RATE_MS);
+}
+
+static void bsp_backlight(uint8_t state)
+{
+    gpio_set_level(ST7789_BCKL, state);
+}
+
+static void bsp_gpio_dc(uint8_t state)
+{
+    gpio_set_level(ST7789_DC, state);
+}
+
+static void bsp_gpio_rst(uint8_t state)
+{
+    gpio_set_level(ST7789_RST, state);
+}
+
+static void bsp_init_hardware(void)
+{
+    //Initialize non-SPI GPIOs
+    gpio_pad_select_gpio(ST7789_DC);
+    gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
+
+#if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
+    gpio_pad_select_gpio(ST7789_RST);
+    gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
+#endif
+
+#if ST7789_ENABLE_BACKLIGHT_CONTROL
+    gpio_pad_select_gpio(ST7789_BCKL);
+    gpio_set_direction(ST7789_BCKL, GPIO_MODE_OUTPUT);
+#endif
 }
