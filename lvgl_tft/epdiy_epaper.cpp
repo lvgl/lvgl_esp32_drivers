@@ -33,6 +33,7 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
 {
     ++flushcalls;
     printf("epdiy_flush %d\n", flushcalls);
+
     display.update();
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing */
@@ -52,11 +53,13 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
 
     // Color setting use: RGB232
     if ((int16_t)color.full<250) {
-        epd_color = (int16_t)color.full;
+        epd_color = (int16_t)color.full/3;
     }
     display.drawPixel((int16_t)x, (int16_t)y, epd_color);
 }
 
 /* Required by LVGL. Not used in this implementation - deprecated, will be removed */
 void epdiy_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area) {
+    area->x1 = area->x1 & ~(0x7);
+    area->x2 = area->x2 |  (0x7);
 }
