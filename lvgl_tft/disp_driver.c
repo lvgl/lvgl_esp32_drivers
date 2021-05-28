@@ -90,8 +90,6 @@ void disp_driver_rounder(lv_disp_drv_t * disp_drv, lv_area_t * area)
     // Does not apply so far to epdiy
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306
     ssd1306_rounder(disp_drv, area);
-#elif defined CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER
-    epdiy_rounder(disp_drv, area);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SH1107
     sh1107_rounder(disp_drv, area);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820

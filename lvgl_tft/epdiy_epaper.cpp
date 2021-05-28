@@ -25,7 +25,7 @@ void epdiy_init(void)
     printf("epdiy_init\n");
     display.init();
     display.setRotation(0);
-    //display.clearScreen();
+    display.clearScreen();
 }
 
 /* Required by LVGL */
@@ -56,10 +56,4 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
         epd_color = (int16_t)color.full/3;
     }
     display.drawPixel((int16_t)x, (int16_t)y, epd_color);
-}
-
-/* Required by LVGL. Not used in this implementation - deprecated, will be removed */
-void epdiy_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area) {
-    area->x1 = area->x1 & ~(0x7);
-    area->x2 = area->x2 |  (0x7);
 }
