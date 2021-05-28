@@ -4,11 +4,15 @@
 
 #include "disp_driver.h"
 #include "disp_spi.h"
+// This should be included with CMakeLists but is not
+#include "lvgl_tft/epdiy_epaper.h"
 
 void disp_driver_init(void)
 {
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
     ili9341_init();
+#elif defined CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER
+    epdiy_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481
     ili9481_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
@@ -46,6 +50,8 @@ void disp_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t *
 {
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
     ili9341_flush(drv, area, color_map);
+#elif defined CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER
+    epdiy_flush(drv, area, color_map);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481
     ili9481_flush(drv, area, color_map);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
@@ -81,8 +87,11 @@ void disp_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t *
 
 void disp_driver_rounder(lv_disp_drv_t * disp_drv, lv_area_t * area)
 {
+    // Does not apply so far to epdiy
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306
     ssd1306_rounder(disp_drv, area);
+#elif defined CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER
+    epdiy_rounder(disp_drv, area);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SH1107
     sh1107_rounder(disp_drv, area);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820
@@ -99,6 +108,8 @@ void disp_driver_set_px(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_
 {
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306
     ssd1306_set_px_cb(disp_drv, buf, buf_w, x, y, color, opa);
+#elif defined CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER
+    epdiy_set_px_cb(disp_drv, buf, buf_w, x, y, color, opa);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SH1107
     sh1107_set_px_cb(disp_drv, buf, buf_w, x, y, color, opa);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820

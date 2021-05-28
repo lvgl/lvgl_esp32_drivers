@@ -124,8 +124,13 @@ void lvgl_driver_init(void)
         DISP_I2C_SPEED_HZ);
     
     disp_driver_init();
+#elif defined (CONFIG_LV_EPAPER_DISPLAY_PROTOCOL_PARALLEL)
+    // Do not initialize SPI. Uses EPDiy
+    ESP_LOGI(TAG, "Initializing Parallel driver for display");
+    // Check how not to initialize SPI. disp_driver_init() call is needed:
+    disp_driver_init();
 #else
-#error "No protocol defined for display controller"
+    #error "No protocol defined for display controller"
 #endif
 
 /* Touch controller initialization */

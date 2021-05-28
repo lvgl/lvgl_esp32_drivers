@@ -10,6 +10,8 @@ list(APPEND SOURCES "lvgl_tft/disp_driver.c")
 # display controller.
 if(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341)
     list(APPEND SOURCES "lvgl_tft/ili9341.c")
+elseif(CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER)
+    list(APPEND SOURCES "lvgl_tft/epdiy_epaper.cpp")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481)
     list(APPEND SOURCES "lvgl_tft/ili9481.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9486)
