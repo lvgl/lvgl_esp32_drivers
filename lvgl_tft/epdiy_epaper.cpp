@@ -32,9 +32,16 @@ void epdiy_init(void)
 void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
     ++flushcalls;
-    printf("epdiy_flush %d\n", flushcalls);
+    printf("epdiy_flush %d x:%d y:%d w:%d h:%d\n", flushcalls,area->x1,area->y1,lv_area_get_width(area),lv_area_get_height(area));
 
-    display.update();
+    // Full update
+    if (lv_area_get_width(area)==display.width() && lv_area_get_height(area)==display.height()) {
+      display.update();
+    } else {
+      // Partial update: Looks nice but should find a way to clear that area first. Mode: MODE_EPDIY_WHITE_TO_GL16
+      display.updateWindow(area->x1,area->y1,lv_area_get_width(area),lv_area_get_height(area),MODE_GC16);
+    }
+    
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing */
     lv_disp_flush_ready(drv);
