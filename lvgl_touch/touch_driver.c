@@ -5,7 +5,8 @@
 #include "touch_driver.h"
 #include "tp_spi.h"
 #include "tp_i2c.h"
-
+// Is not being included in CMakeLists.txt (Research why)
+#include "l58.cpp"
 
 void touch_driver_init(void)
 {
@@ -13,6 +14,8 @@ void touch_driver_init(void)
     xpt2046_init();
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
     ft6x06_init(FT6236_I2C_SLAVE_ADDR);
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_L58)
+    // Do nothing for now
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
     stmpe610_init();
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
@@ -32,6 +35,9 @@ bool touch_driver_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
     res = xpt2046_read(drv, data);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
     res = ft6x36_read(drv, data);
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_L58)
+    res = l58_read(drv, data);
+
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
     res = stmpe610_read(drv, data);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
