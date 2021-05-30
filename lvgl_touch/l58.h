@@ -39,10 +39,9 @@ extern "C" {
 
 /**
   * @brief  Initialize for FT6x36 communication via I2C
-  * @param  dev_addr: Device address on communication Bus (I2C slave address of FT6X36).
   * @retval None
   */
-void l58_init(uint16_t dev_addr);
+void l58_init();
 
 /**
   * @brief  Get the touch screen X and Y positions values. Ignores multi touch

@@ -147,9 +147,7 @@ void lvgl_driver_init(void)
         
         touch_driver_init();
     #elif defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)
-        // Why initializing this when I said is only CONFIG_LV_TOUCH_DRIVER_DISPLAY
         ESP_LOGI(TAG, "Initializing I2C master for touch");
-        
         lvgl_i2c_driver_init(TOUCH_I2C_PORT,
             TOUCH_I2C_SDA, TOUCH_I2C_SCL,
             TOUCH_I2C_SPEED_HZ); 

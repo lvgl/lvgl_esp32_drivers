@@ -25,21 +25,22 @@
 #include <lvgl/lvgl.h>
 #endif
 #include "l58.h"
-#include "tp_i2c.h"
 #include "../lvgl_i2c_conf.h"
-
+// Cale touch implementation
+#include "L58Touch.h"
+L58Touch Touch(CONFIG_LV_TOUCH_INT);
 #define TAG "L58"
 
-
+TPoint point;
 
 /**
   * @brief  Initialize for FT6x36 communication via I2C
   * @param  dev_addr: Device address on communication Bus (I2C slave address of FT6X36).
   * @retval None
   */
-void l58_init(uint16_t dev_addr) {
-  ESP_LOGI(TAG, "l58_init()");
-
+void l58_init() {
+  ESP_LOGI(TAG, "l58_init() Touch initialized");
+  Touch.begin(960, 540);
 }
 
 /**
@@ -49,7 +50,13 @@ void l58_init(uint16_t dev_addr) {
   * @retval Always false
   */
 bool l58_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
-    //printf("Touch event %d\n", gpio_get_level(CONFIG_LV_TOUCH_INT)); // Working
-    
+    point = Touch.loop();
+    data->point.x = point.x;
+    data->point.y = point.y;
+    if (point.event == 3) {
+      data->state = LV_INDEV_STATE_PR;
+    } else {
+      data->state = LV_INDEV_STATE_REL;
+    }
     return false;
 }

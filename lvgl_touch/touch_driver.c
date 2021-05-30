@@ -6,7 +6,7 @@
 #include "tp_spi.h"
 #include "tp_i2c.h"
 // Is not being included in CMakeLists.txt (Research why)
-#include "l58.cpp"
+#include "l58.h"
 
 void touch_driver_init(void)
 {
@@ -15,7 +15,7 @@ void touch_driver_init(void)
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
     ft6x06_init(FT6236_I2C_SLAVE_ADDR);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_L58)
-    // Do nothing for now
+    l58_init();
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
     stmpe610_init();
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
