@@ -22,8 +22,9 @@ void epdiy_init(void)
     epd_init(EPD_OPTIONS_DEFAULT);
     hl = epd_hl_init(EPD_BUILTIN_WAVEFORM);
     framebuffer = epd_hl_get_framebuffer(&hl);    
-    epd_fullclear(&hl, temperature);
     epd_poweron();
+    //Clear all always in init?
+    //epd_fullclear(&hl, temperature);
 }
 
 uint16_t xo = 0;
@@ -45,14 +46,6 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
         .height = h,
     };
 
-    // Debug test: Draw box x:232 y:78 w:496 h:198. Flush coords are correct:
-    /* EpdRect rect_area = {
-        .x = 232,
-        .y = 78,
-        .width = 496,
-        .height = 198,
-    };
-    epd_draw_rect(rect_area, 0, framebuffer); */
     epd_hl_update_area(&hl, MODE_GC16, temperature, update_area); //update_area
 
     printf("epdiy_flush %d x:%d y:%d w:%d h:%d\n", flushcalls,xo,yo,w,h);
@@ -78,19 +71,19 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
 
     // Test using RGB232
     int16_t epd_color = 255;
-
-    // Color setting use: RGB232
     if ((int16_t)color.full<250) {
         epd_color = (int16_t)color.full/3;
     }
 
     int16_t x1 = (int16_t)x;
     int16_t y1 = (int16_t)y;
-    // Add offsets from last flush test. Why is drawing in wrong place?
-    // Bad idea: But is just writing in different area. And I don't understand why:
-    /* if (flushcalls>0) {
-        x1 = x1 + xo;
-        y1 = y1 + yo;
-    } */
-    epd_draw_pixel(x1, y1, epd_color, framebuffer);
+
+    //Instead of using epd_draw_pixel: Set pixel directly in buffer
+    //epd_draw_pixel(x1, y1, epd_color, framebuffer);
+    uint8_t *buf_ptr = &framebuffer[y1 * buf_w / 2 + x1 / 2];
+    if (x % 2) {
+        *buf_ptr = (*buf_ptr & 0x0F) | (epd_color & 0xF0);
+    } else {
+        *buf_ptr = (*buf_ptr & 0xF0) | (epd_color >> 4);
+    }
 }
