@@ -99,6 +99,8 @@ void st7735s_init(void)
 	//Initialize non-SPI GPIOs
         gpio_pad_select_gpio(ST7735S_DC);
 	gpio_set_direction(ST7735S_DC, GPIO_MODE_OUTPUT);
+
+#if ST7735S_USE_RST
         gpio_pad_select_gpio(ST7735S_RST);
 	gpio_set_direction(ST7735S_RST, GPIO_MODE_OUTPUT);
 
@@ -107,6 +109,7 @@ void st7735s_init(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(ST7735S_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 
 	ESP_LOGI(TAG, "ST7735S initialization.");
 

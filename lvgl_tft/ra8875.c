@@ -159,18 +159,24 @@ void ra8875_init(void)
 #endif
 
     // Initialize non-SPI GPIOs
+
+#if RA8875_USE_RST
     gpio_pad_select_gpio(RA8875_RST);
     gpio_set_direction(RA8875_RST, GPIO_MODE_OUTPUT);
+#endif
+
 #ifdef CONFIG_LV_DISP_PIN_BCKL
     gpio_pad_select_gpio(CONFIG_LV_DISP_PIN_BCKL);
     gpio_set_direction(CONFIG_LV_DISP_PIN_BCKL, GPIO_MODE_OUTPUT);
 #endif
 
+#if RA8875_USE_RST
     // Reset the RA8875
     gpio_set_level(RA8875_RST, 0);
     vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
     gpio_set_level(RA8875_RST, 1);
     vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
+#endif
 
     // Initalize RA8875 clocks (SPI must be decelerated before initializing clocks)
     disp_spi_change_device_speed(SPI_CLOCK_SPEED_SLOW_HZ);
