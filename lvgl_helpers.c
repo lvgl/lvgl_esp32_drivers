@@ -19,9 +19,17 @@
 #include "driver/i2c.h"
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
-#include "src/lv_core/lv_refr.h"
+#if (LVGL_VERSION_MAJOR < 8)
+    #include "src/lv_core/lv_refr.h"
 #else
-#include "lvgl/src/lv_core/lv_refr.h"
+    #include "src/core/lv_refr.h"
+#endif
+#else
+#if (LVGL_VERSION_MAJOR < 8)
+    #include "lvgl/src/lv_core/lv_refr.h"
+#else
+    #include "lvgl/src/core/lv_refr.h"
+#endif
 #endif
 
 /*********************
