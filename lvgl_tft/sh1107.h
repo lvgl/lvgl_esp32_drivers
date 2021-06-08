@@ -25,8 +25,9 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
-#define SH1107_DC   CONFIG_LV_DISP_PIN_DC
-#define SH1107_RST  CONFIG_LV_DISP_PIN_RST
+#define SH1107_DC       CONFIG_LV_DISP_PIN_DC
+#define SH1107_RST      CONFIG_LV_DISP_PIN_RST
+#define SH1107_USE_RST  CONFIG_LV_DISP_USE_RST
 
 /**********************
  *      TYPEDEFS

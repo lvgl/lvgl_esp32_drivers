@@ -52,6 +52,7 @@ and sets the gpio numbers for the interface.
 |---------------------------|-----------------------|-----------|-----------|-----------|
 | ESP Wrover Kit v4.1       | ILI9341               | SPI       | 240       | 320       |
 | M5Stack                   | ILI9341               | SPI       | 240       | 320       |
+| M5Core2                   | ILI9341               | SPI       | 240       | 320       |
 | M5Stick                   | SH1107                | SPI       | -         | -         |
 | M5StickC                  | ST7735S               | SPI       | 80        | 160       |
 | Adafruit 3.5 Featherwing  | HX8357                | SPI       | 480       | 320       |
