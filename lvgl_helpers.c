@@ -227,6 +227,13 @@ bool lvgl_spi_driver_init(int host,
     const char *spi_names[] = {
         "SPI_HOST", "", ""
     };
+#elif defined (CONFIG_IDF_TARGET_ESP32C3)
+    assert((SPI1_HOST <= host) && (SPI3_HOST >= host));
+    const char *spi_names[] = {
+        "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
+    };
+#else
+#error "Target chip not selected"
 #endif
 
     ESP_LOGI(TAG, "Configuring SPI host %s (%d)", spi_names[host], host);
