@@ -17,6 +17,7 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 | Display Controller                          | Type       | Interface              | Color depth (LV_COLOR_DEPTH) | Swap RGB565 color (LV_COLOR_16_SWAP)   |
 |---------------------------------------------|------------|------------------------|------------------------------|----------------------------------------|
 | ILI9341                                     | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
+| ILI9163C                                    | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
 | ILI9486                                     | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
 | ILI9488                                     | TFT        | SPI                    | 16: RGB565                   | No                                     |
 | HX8357B/HX8357D                             | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
