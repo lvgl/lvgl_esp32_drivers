@@ -35,8 +35,6 @@ typedef struct {
  **********************/
 static void st7789_set_orientation(uint8_t orientation);
 
-static void st7789_send_cmd(uint8_t cmd);
-static void st7789_send_data(void *data, uint16_t length);
 static void st7789_send_color(void *data, uint16_t length);
 
 /**********************
@@ -201,14 +199,14 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-static void st7789_send_cmd(uint8_t cmd)
+void st7789_send_cmd(uint8_t cmd)
 {
     disp_wait_for_pending_transactions();
     gpio_set_level(ST7789_DC, 0);
     disp_spi_send_data(&cmd, 1);
 }
 
-static void st7789_send_data(void * data, uint16_t length)
+void st7789_send_data(void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
     gpio_set_level(ST7789_DC, 1);
