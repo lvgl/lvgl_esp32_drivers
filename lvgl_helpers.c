@@ -53,7 +53,12 @@
 /* Interface and driver initialization */
 void lvgl_driver_init(void)
 {
+    /* Since LVGL v8 LV_HOR_RES_MAX and LV_VER_RES_MAX are not defined, so
+     * print it only if they are defined. */
+#if (LVGL_VERSION_MAJOR < 8)
     ESP_LOGI(TAG, "Display hor size: %d, ver size: %d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
+#endif
+
     ESP_LOGI(TAG, "Display buffer size: %d", DISP_BUF_SIZE);
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
