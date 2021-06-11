@@ -217,21 +217,29 @@ bool lvgl_spi_driver_init(int host,
     int dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
+    spi_dma_chan_t dma_chan = SPI_DMA_DISABLED;
+
 #if defined (CONFIG_IDF_TARGET_ESP32)
     assert((SPI_HOST <= host) && (VSPI_HOST >= host));
     const char *spi_names[] = {
         "SPI_HOST", "HSPI_HOST", "VSPI_HOST"
     };
+
+    dma_chan = dma_channel;
 #elif defined (CONFIG_IDF_TARGET_ESP32S2)
     assert((SPI_HOST <= host) && (HSPI_HOST >= host));
     const char *spi_names[] = {
         "SPI_HOST", "", ""
     };
+
+    dma_chan = dma_channel;
 #elif defined (CONFIG_IDF_TARGET_ESP32C3)
     assert((SPI1_HOST <= host) && (SPI3_HOST >= host));
     const char *spi_names[] = {
         "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
     };
+
+    dma_chan = SPI_DMA_CH_AUTO;
 #else
 #error "Target chip not selected"
 #endif
@@ -252,7 +260,7 @@ bool lvgl_spi_driver_init(int host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_chan);
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
