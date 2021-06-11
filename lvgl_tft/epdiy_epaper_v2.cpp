@@ -1,21 +1,13 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
 #include "epdiy_epaper.h"
-
 #include "epd_driver.h"
 #include "epd_highlevel.h"
-// Usable size
-#include <malloc.h>
-/*********************
- *      DEFINES
- *********************/
-#define TAG "EPDIY"
+
 EpdiyHighlevelState hl;
 uint16_t flushcalls = 0;
 uint8_t * framebuffer;
-
 uint8_t temperature = 25;
 
 /* Display initialization routine */
@@ -25,35 +17,29 @@ void epdiy_init(void)
     hl = epd_hl_init(EPD_BUILTIN_WAVEFORM);
     framebuffer = epd_hl_get_framebuffer(&hl);    
     epd_poweron();
-    //Clear all always in init?
+    //Clear all always in init:
     epd_fullclear(&hl, temperature);
 }
 
-uint16_t xo = 0;
-uint16_t yo = 0;
-uint16_t rx = 0;
-uint16_t ry = 0;
-uint16_t rw = 0;
-uint16_t rh = 0;
-
+/* A copy from epd_copy_to_framebuffer with temporary lenght prediction */
 void buf_copy_to_framebuffer(EpdRect image_area, const uint8_t *image_data) {
-
   assert(framebuffer != NULL);
 
   for (uint32_t i = 0; i < image_area.width * image_area.height; i++) {
-
     uint32_t value_index = i;
-    // for images of uneven width consume an additional nibble per row.
+    // For images of uneven width consume an additional nibble per row.
     if (image_area.width % 2) {
       value_index += i / image_area.width;
     }
-    // Get out if we get the end of the buffer  (image_data[value_index / 2]== '\0')  111684
+
+    // Get out if we get the end of the buffer. Question: How to detect the end without a lenght?
+    // Zero terminator check gets out before: (image_data[value_index / 2]== '\0')  
+    // 111684 seems to be the last element in image_data
     if (value_index / 2 > 111600) {
         printf("FOUND END incr:%d img[idx]:%d Aw:%d Ah:%d\n", i, 
         value_index / 2,image_area.width,image_area.height);
         break;
     } 
-    
     uint8_t val = (value_index % 2) ? (image_data[value_index / 2] & 0xF0) >> 4
                                     : image_data[value_index / 2] & 0x0F;
 
@@ -74,20 +60,18 @@ void buf_copy_to_framebuffer(EpdRect image_area, const uint8_t *image_data) {
   }
 }
 
-/* Required by LVGL */
+/* Required by LVGL. Sends the color_map to the screen with a partial update  */
 void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
     ++flushcalls;
-    xo = area->x1;
-    yo = area->y1;
     uint16_t w = lv_area_get_width(area);
     uint16_t h = lv_area_get_height(area);
 
     EpdRect update_area = {
-        .x = xo,
-        .y = yo,
+        .x = (uint16_t)area->x1,
+        .y = (uint16_t)area->y1,
         .width = w,
-        .height = h,
+        .height = h
     };
 
     uint8_t* buf = (uint8_t *) color_map;
@@ -97,15 +81,12 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
         printf("%x ", buf[index]);
     } */
 
-    // Does not work for full screen update yet (Should check large of bug)
-    if (flushcalls>0){
-      buf_copy_to_framebuffer(update_area, buf);
-    }
+    // Does not work for full screen update yet (Should check large of buf)
+    buf_copy_to_framebuffer(update_area, buf);
 
     epd_hl_update_area(&hl, MODE_GC16, temperature, update_area); //update_area
 
-    printf("epdiy_flush %d x:%d y:%d w:%d h:%d\n", flushcalls,xo,yo,w,h);
-    //printf("epdiy_flush Rounder() x:%d y:%d w:%d h:%d\n",rx,ry,rw,rh);
+    printf("epdiy_flush %d x:%d y:%d w:%d h:%d\n", flushcalls,(uint16_t)area->x1,(uint16_t)area->y1,w,h);
     /* Inform the graphics library that you are ready with the flushing */
     lv_disp_flush_ready(drv);
 }
@@ -141,13 +122,13 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
     } */
 }
 
+/* Not used at the moment */
 void epdiy_rounder_cb(lv_disp_drv_t *disp_drv, lv_area_t *area) {
     // Print coordinates to understand what rounder is
-    /* rx = (int16_t)area->x1;
-    ry = (int16_t)area->y1;
-    rw = (int16_t)lv_area_get_width(area);
-    rh = (int16_t)lv_area_get_height(area);
-    printf("R x:%d y:%d y1:%d w:%d h:%d\n",rx,ry,area->y1,rw,rh); */
+    /* 
+    uint16_t rw = (int16_t)lv_area_get_width(area);
+    uint16_t rh = (int16_t)lv_area_get_height(area);
+    printf("R x:%d y:%d w:%d h:%d\n",area->x1,area->y1,rw,rh); */
 
     // Force y to be 0: Make some things better, screws other things
     //area->y1 = 0;
