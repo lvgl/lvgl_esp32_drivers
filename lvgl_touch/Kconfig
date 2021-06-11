@@ -98,6 +98,7 @@ menu "LVGL Touch controller"
             prompt "GPIO for MISO (Master In Slave Out)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
             
             default 35 if LV_PREDEFINED_PINS_38V1
             default 19
@@ -109,6 +110,7 @@ menu "LVGL Touch controller"
             prompt "GPIO for MOSI (Master Out Slave In)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
 
             default 32 if LV_PREDEFINED_PINS_38V1
             default 23
@@ -119,6 +121,7 @@ menu "LVGL Touch controller"
             int "GPIO for CLK (SCK / Serial Clock)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
             
             default 26 if LV_PREDEFINED_PINS_38V1
             default 18
@@ -139,6 +142,7 @@ menu "LVGL Touch controller"
             int "GPIO for IRQ (Interrupt Request)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
 	    
             default 27 if LV_PREDEFINED_PINS_38V4
             default 25
@@ -211,6 +215,7 @@ menu "LVGL Touch controller"
             prompt "GPIO for SDA (I2C)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
 
             default 21
             help
@@ -220,6 +225,7 @@ menu "LVGL Touch controller"
             int "GPIO for clock signal SCL (I2C)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
             
             default 22
             help
@@ -254,6 +260,7 @@ menu "LVGL Touch controller"
             prompt "GPIO for MISO (Master In Slave Out)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
             
             default 35 if LV_PREDEFINED_PINS_38V1
             default 19 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
@@ -263,10 +270,12 @@ menu "LVGL Touch controller"
             Configure the touchpanel MISO pin here.
 
         config LV_TOUCH_SPI_MOSI
+            # TODO Fix default for ESP32C3
             int
             prompt "GPIO for MOSI (Master Out Slave In)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
 
             default 32 if LV_PREDEFINED_PINS_38V1
             default 18 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
@@ -279,6 +288,7 @@ menu "LVGL Touch controller"
             int "GPIO for CLK (SCK / Serial Clock)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
 
             default 26 if LV_PREDEFINED_PINS_38V1
             default 5 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
@@ -290,6 +300,7 @@ menu "LVGL Touch controller"
             int "GPIO for CS (Slave Select)"
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
+            range 0 21 if IDF_TARGET_ESP32C3
             
             default 33 if LV_PREDEFINED_PINS_38V1
             default 32 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
