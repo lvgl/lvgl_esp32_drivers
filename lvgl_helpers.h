@@ -44,7 +44,7 @@ extern "C" {
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
 // Here is the issue that it does not draw full epaper. Insufficient buffer:
 #elif defined (CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER)
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 90)
+#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 110)
 #elif defined (CONFIG_LV_EPAPER_CALEPD_DISPLAY_CONTROLLER)
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 90)
 
