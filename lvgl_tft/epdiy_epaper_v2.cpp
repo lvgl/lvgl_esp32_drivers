@@ -9,6 +9,8 @@ EpdiyHighlevelState hl;
 uint16_t flushcalls = 0;
 uint8_t * framebuffer;
 uint8_t temperature = 25;
+bool init = true;
+#define BUF_MAX 111600
 
 /* Display initialization routine */
 void epdiy_init(void)
@@ -26,23 +28,15 @@ void buf_copy_to_framebuffer(EpdRect image_area, const uint8_t *image_data) {
   assert(framebuffer != NULL);
 
   for (uint32_t i = 0; i < image_area.width * image_area.height; i++) {
-    uint32_t value_index = i;
-    // For images of uneven width consume an additional nibble per row.
-    if (image_area.width % 2) {
-      value_index += i / image_area.width;
-    }
-
     // Get out if we get the end of the buffer. Question: How to detect the end without a lenght?
     // Zero terminator check gets out before: (image_data[value_index / 2]== '\0')  
     // 111684 seems to be the last element in image_data
-    if (value_index / 2 > 111600) {
-        printf("FOUND END incr:%d img[idx]:%d Aw:%d Ah:%d\n", i, 
-        value_index / 2,image_area.width,image_area.height);
+    if (i / 2 > BUF_MAX) {
+        printf("FOUND END incr:%d Aw:%d Ah:%d\n", i, image_area.width, image_area.height);
         break;
     } 
-    uint8_t val = (value_index % 2) ? (image_data[value_index / 2] & 0xF0) >> 4
-                                    : image_data[value_index / 2] & 0x0F;
-
+    uint8_t val = (i % 2) ? (image_data[i / 2] & 0xF0) >> 4
+                                    : image_data[i / 2] & 0x0F;
     int xx = image_area.x + i % image_area.width;
     if (xx < 0 || xx >= EPD_WIDTH) {
       continue;
@@ -99,37 +93,26 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
     lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
     lv_color_t color, lv_opa_t opa)
 {
+    // Debug
+    if (init) {
+        printf("Initialize *buf with white\n\n");
+        for (int i=0; i<BUF_MAX; i++) {
+            buf[i] = 0xff;
+        }
+        init = false;
+    }
+
     // Test using RGB232
     int16_t epd_color = 255;
     if ((int16_t)color.full<250) {
         epd_color = (int16_t)color.full/3;
     }
 
-    //Instead of using epd_draw_pixel: Set pixel directly in buffer
+    //Instead of using epd_draw_pixel: Set pixel directly in *buf that comes afterwards in flush as *color_map
     uint16_t idx = (int16_t)y * buf_w / 2 + (int16_t)x / 2;
     if (x % 2) {
         buf[idx] = (buf[idx] & 0x0F) | (epd_color & 0xF0);
     } else {
         buf[idx] = (buf[idx] & 0xF0) | (epd_color >> 4);
     }
-
-    // Directly in framebuffer for epaper
-    /* uint8_t *buf_ptr = &framebuffer[(int16_t)y * buf_w / 2 + (int16_t)x / 2];
-    if (x % 2) {
-        *buf_ptr = (*buf_ptr & 0x0F) | (epd_color & 0xF0);
-    } else {
-        *buf_ptr = (*buf_ptr & 0xF0) | (epd_color >> 4);
-    } */
-}
-
-/* Not used at the moment */
-void epdiy_rounder_cb(lv_disp_drv_t *disp_drv, lv_area_t *area) {
-    // Print coordinates to understand what rounder is
-    /* 
-    uint16_t rw = (int16_t)lv_area_get_width(area);
-    uint16_t rh = (int16_t)lv_area_get_height(area);
-    printf("R x:%d y:%d w:%d h:%d\n",area->x1,area->y1,rw,rh); */
-
-    // Force y to be 0: Make some things better, screws other things
-    //area->y1 = 0;
 }
