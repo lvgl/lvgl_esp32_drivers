@@ -41,10 +41,10 @@ extern "C" {
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7735S
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7796S
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * LV_VER_RES_MAX/3)
 // Here is the issue that it does not draw full epaper. Insufficient buffer:
 #elif defined (CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER)
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 110)
+#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 38)
 #elif defined (CONFIG_LV_EPAPER_CALEPD_DISPLAY_CONTROLLER)
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 90)
 
