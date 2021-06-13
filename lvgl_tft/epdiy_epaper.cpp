@@ -10,6 +10,9 @@ uint16_t flushcalls = 0;
 uint8_t * framebuffer;
 uint8_t temperature = 25;
 bool init = true;
+// MODE_DU: Fast monochrome | MODE_GC16 slow with 16 grayscales
+enum EpdDrawMode updateMode = MODE_DU;
+
 #define BUF_MAX 111600
 
 /* Display initialization routine */
@@ -78,7 +81,7 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
     // Does not work for full screen update yet (Should check large of buf)
     buf_copy_to_framebuffer(update_area, buf);
 
-    epd_hl_update_area(&hl, MODE_GC16, temperature, update_area); //update_area
+    epd_hl_update_area(&hl, updateMode, temperature, update_area); //update_area
 
     printf("epdiy_flush %d x:%d y:%d w:%d h:%d\n", flushcalls,(uint16_t)area->x1,(uint16_t)area->y1,w,h);
     /* Inform the graphics library that you are ready with the flushing */
@@ -105,7 +108,7 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
     // Test using RGB232
     int16_t epd_color = 255;
     if ((int16_t)color.full<250) {
-        epd_color = (int16_t)color.full/3;
+        epd_color = (updateMode==MODE_DU) ? 0 : (int16_t)color.full/3;
     }
 
     //Instead of using epd_draw_pixel: Set pixel directly in *buf that comes afterwards in flush as *color_map
