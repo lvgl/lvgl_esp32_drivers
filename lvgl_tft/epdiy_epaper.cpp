@@ -12,8 +12,6 @@ uint8_t temperature = 25;
 bool init = true;
 // MODE_DU: Fast monochrome | MODE_GC16 slow with 16 grayscales
 enum EpdDrawMode updateMode = MODE_DU;
-// Ideally this BUF should be width/2*height = 259200. Now set to 111600
-#define BUF_MAX 110400
 
 /* Display initialization routine */
 void epdiy_init(void)
@@ -43,13 +41,6 @@ void buf_copy_to_framebuffer(EpdRect image_area, const uint8_t *image_data) {
   assert(framebuffer != NULL);
 
   for (uint32_t i = 0; i < image_area.width * image_area.height; i++) {
-    // Get out if we get the end of the buffer. Question: How to detect the end without a lenght?
-    // Zero terminator check gets out before: (image_data[value_index / 2]== '\0')  
-    // 111684 seems to be the last element in image_data
-    /* if (i / 2 > BUF_MAX) {
-        printf("FOUND END incr:%d Aw:%d Ah:%d\n", i, image_area.width, image_area.height);
-        break;
-    }  */
     uint8_t val = (i % 2) ? (image_data[i / 2] & 0xF0) >> 4
                                     : image_data[i / 2] & 0x0F;
     int xx = image_area.x + i % image_area.width;
@@ -90,10 +81,11 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
         printf("%x ", buf[index]);
     } */
 
-    // Does not work for full screen update yet (Should check large of buf)
+    // UNCOMMENT only one of this options
+    // SAFE Option with EPDiy copy of epd_copy_to_framebuffer
     buf_copy_to_framebuffer(update_area, buf);
 
-    //Faster mode suggested in LVGL forum (Leaves ghosting)
+    //Faster mode suggested in LVGL forum (Leaves ghosting&prints bad sections / experimental) NOTE: Do NOT use in production
     //buf_area_to_framebuffer(area, buf);
 
     epd_hl_update_area(&hl, updateMode, temperature, update_area); //update_area
@@ -110,15 +102,6 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
     lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
     lv_color_t color, lv_opa_t opa)
 {
-    // Debug
-    if (init) {
-        printf("Initialize *buf with white\n\n");
-        for (int i=0; i<BUF_MAX; i++) {
-            buf[i] = 0xff;
-        }
-        init = false;
-    }
-
     // Test using RGB232
     int16_t epd_color = 255;
     if ((int16_t)color.full<250) {
