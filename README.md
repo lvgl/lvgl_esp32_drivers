@@ -31,6 +31,10 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 | IL3820                                      | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | UC8151D/ GoodDisplay GDEW0154M10 DES        | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | FitiPower JD79653A/ GoodDisplay GDEW0154M09 | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
+| EPDiy supported epaper (needs PCB) | e-Paper    | Parallel               | 4: RGB232 16 grayscales      | No   
+
+Please note that EPDiy supported epapers include also the Lilygo EPD47 that comes with it's own PCB and ESP32 WROVER. Is possible also to build your own EPDiy PCB, please find the [project KiCad source files, schematics, and documentation here](https://github.com/vroland/epdiy/tree/master/hardware/epaper-breakout)
+To use an EPDiy supported epaper you need to add it [as a component](https://github.com/martinberlin/lv_port_esp32-epaper/tree/master/components) and also update the CMakeLists of lvgl component to [REQUIRE that library](https://github.com/martinberlin/lv_port_esp32-epaper/wiki).
 
 ## Supported indev controllers
 
