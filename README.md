@@ -17,6 +17,7 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 | Display Controller                          | Type       | Interface              | Color depth (LV_COLOR_DEPTH) | Swap RGB565 color (LV_COLOR_16_SWAP)   |
 |---------------------------------------------|------------|------------------------|------------------------------|----------------------------------------|
 | ILI9341                                     | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
+| ILI9163C                                    | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
 | ILI9486                                     | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
 | ILI9488                                     | TFT        | SPI                    | 16: RGB565                   | No                                     |
 | HX8357B/HX8357D                             | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
@@ -51,6 +52,7 @@ and sets the gpio numbers for the interface.
 |---------------------------|-----------------------|-----------|-----------|-----------|
 | ESP Wrover Kit v4.1       | ILI9341               | SPI       | 240       | 320       |
 | M5Stack                   | ILI9341               | SPI       | 240       | 320       |
+| M5Core2                   | ILI9341               | SPI       | 240       | 320       |
 | M5Stick                   | SH1107                | SPI       | -         | -         |
 | M5StickC                  | ST7735S               | SPI       | 80        | 160       |
 | Adafruit 3.5 Featherwing  | HX8357                | SPI       | 480       | 320       |

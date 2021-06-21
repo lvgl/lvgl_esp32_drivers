@@ -60,8 +60,8 @@ void ili9486_init(void)
 		{0xE0, {0x0F, 0x1F, 0x1C, 0x0C, 0x0F, 0x08, 0x48, 0x98, 0x37, 0x0A, 0x13, 0x04, 0x11, 0x0D, 0x00}, 15},
 		{0XE1, {0x0F, 0x32, 0x2E, 0x0B, 0x0D, 0x05, 0x47, 0x75, 0x37, 0x06, 0x10, 0x03, 0x24, 0x20, 0x00}, 15},
 		{0x20, {0}, 0},				/* display inversion OFF */
-		{0x36, {0x48}, 1},	
-		{0x29, {0}, 0x80},			/* display on */	
+		{0x36, {0x48}, 1},
+		{0x29, {0}, 0x80},			/* display on */
 		{0x00, {0}, 0xff},
 	};
 
@@ -78,19 +78,24 @@ void ili9486_init(void)
 	//Initialize non-SPI GPIOs
         gpio_pad_select_gpio(ILI9486_DC);
 	gpio_set_direction(ILI9486_DC, GPIO_MODE_OUTPUT);
+
+#if ILI9486_USE_RST
         gpio_pad_select_gpio(ILI9486_RST);
 	gpio_set_direction(ILI9486_RST, GPIO_MODE_OUTPUT);
+#endif
 
 #if ILI9486_ENABLE_BACKLIGHT_CONTROL
     gpio_pad_select_gpio(ILI9486_BCKL);
     gpio_set_direction(ILI9486_BCKL, GPIO_MODE_OUTPUT);
 #endif
 
+#if ILI9486_USE_RST
 	//Reset the display
 	gpio_set_level(ILI9486_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(ILI9486_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 
 	ESP_LOGI(TAG, "ILI9486 Initialization.");
 
@@ -135,7 +140,7 @@ void ili9486_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 	ili9486_send_cmd(0x2C);
 
 	size = lv_area_get_width(area) * lv_area_get_height(area);
-	
+
     ili9486_send_color((void*) color_map, size * 2);
 }
 

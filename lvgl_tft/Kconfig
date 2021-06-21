@@ -21,6 +21,10 @@ menu "LVGL TFT/Epaper Display controller"
             bool "M5Stack"
             select LV_TFT_DISPLAY_CONTROLLER_ILI9341
             select LV_TFT_DISPLAY_PROTOCOL_SPI
+        config LV_PREDEFINED_DISPLAY_M5CORE2
+        	bool "M5Core2"
+            select LV_TFT_DISPLAY_CONTROLLER_ILI9341
+            select LV_TFT_DISPLAY_PROTOCOL_SPI
         config LV_PREDEFINED_DISPLAY_M5STICK
             bool "M5Stick"
             select LV_TFT_DISPLAY_CONTROLLER_SH1107
@@ -172,6 +176,11 @@ menu "LVGL TFT/Epaper Display controller"
         bool
         help
             ST7796S display controller.
+
+    config LV_TFT_DISPLAY_CONTROLLER_ILI9163C
+        bool
+        help
+            ILI9163C display controller.
 
     # Display controller communication protocol
     #
@@ -348,6 +357,10 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_TFT_DISPLAY_USER_CONTROLLER_RA8875
             bool "RA8875"
             select LV_TFT_DISPLAY_CONTROLLER_RA8875
+            select LV_TFT_DISPLAY_PROTOCOL_SPI
+        config LV_TFT_DISPLAY_USER_CONTROLLER_ILI9163C
+            bool "ILI9163C"
+            select LV_TFT_DISPLAY_CONTROLLER_ILI9163C
             select LV_TFT_DISPLAY_PROTOCOL_SPI
     endchoice
 
@@ -608,7 +621,7 @@ menu "LVGL TFT/Epaper Display controller"
             If text is backwards on your display, try enabling this.
 
     config LV_INVERT_COLORS
-        bool "Invert colors in display" if LV_TFT_DISPLAY_CONTROLLER_ILI9341 || LV_TFT_DISPLAY_CONTROLLER_ST7735S || LV_TFT_DISPLAY_CONTROLLER_ILI9481 || LV_TFT_DISPLAY_CONTROLLER_ST7789 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 || LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_HX8357
+        bool "Invert colors in display" if LV_TFT_DISPLAY_CONTROLLER_ILI9341 || LV_TFT_DISPLAY_CONTROLLER_ST7735S || LV_TFT_DISPLAY_CONTROLLER_ILI9481 || LV_TFT_DISPLAY_CONTROLLER_ST7789 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 || LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_HX8357 || LV_TFT_DISPLAY_CONTROLLER_GC9A01 || LV_TFT_DISPLAY_CONTROLLER_ILI9163C
         default y if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICKC
         help
             If the colors look inverted on your display, try enabling this.
@@ -766,11 +779,11 @@ menu "LVGL TFT/Epaper Display controller"
 
         config LV_DISP_ST7789_SOFT_RESET
             bool "Soft reset - use software reset instead of reset pin"
-            depends on LV_TFT_DISPLAY_CONTROLLER_ST7789            
+            depends on LV_TFT_DISPLAY_CONTROLLER_ST7789
             default n
             help
                 Use software reset and ignores configured reset pin (some hardware does not use a reset pin).
-    
+
     endmenu
 
     # menu will be visible only when LV_PREDEFINED_DISPLAY_NONE is y
@@ -785,6 +798,7 @@ menu "LVGL TFT/Epaper Display controller"
             default 23 if LV_PREDEFINED_DISPLAY_WROVER4
             default 23 if LV_PREDEFINED_DISPLAY_ATAG
             default 23 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
+            default 23 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 15 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 18 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
             default 23 if LV_PREDEFINED_PINS_TKOALA
@@ -799,6 +813,7 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_DISPLAY_USE_SPI_MISO
             bool "GPIO for MISO (Master In Slave Out)" if LV_TFT_DISPLAY_PROTOCOL_SPI
             default y if LV_PREDEFINED_PINS_TKOALA
+            default y if LV_PREDEFINED_DISPLAY_M5CORE2
             help
                 Enable the MISO signal to control the display. You can disable
                 it when the display does not need MISO signal to be controlled.
@@ -810,6 +825,7 @@ menu "LVGL TFT/Epaper Display controller"
             range 0 43 if IDF_TARGET_ESP32S2
 
             default 19 if LV_PREDEFINED_PINS_TKOALA
+            default 38 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 0
 
             help
@@ -852,6 +868,7 @@ menu "LVGL TFT/Epaper Display controller"
             range 0 43 if IDF_TARGET_ESP32S2
 
             default 18 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
+            default 18 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 13 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 18 if LV_PREDEFINED_DISPLAY_ATAG
             default 19 if LV_PREDEFINED_DISPLAY_WROVER4
@@ -880,6 +897,7 @@ menu "LVGL TFT/Epaper Display controller"
 
             default 5 if LV_PREDEFINED_PINS_38V1
             default 14 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
+            default 5 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 5 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 22 if LV_PREDEFINED_DISPLAY_WROVER4
             default 15 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
@@ -909,6 +927,7 @@ menu "LVGL TFT/Epaper Display controller"
             default 19 if LV_PREDEFINED_PINS_38V1
             default 17 if LV_PREDEFINED_PINS_38V4
             default 27 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
+            default 15 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 23 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 21 if LV_PREDEFINED_DISPLAY_WROVER4
             default 21 if LV_PREDEFINED_DISPLAY_WT32_SC01
@@ -922,8 +941,22 @@ menu "LVGL TFT/Epaper Display controller"
             help
                 Configure the display DC pin here.
 
+        config LV_DISP_USE_RST
+            bool "Use a GPIO for resetting the display" if LV_TFT_DISPLAY_PROTOCOL_SPI
+            default n if LV_PREDEFINED_DISPLAY_M5CORE2
+            default y
+            help
+                Enable display reset control. Set this if the reset pin of the
+                display is connected to the host. If this is not set, then it is
+                the user's responsibility to ensure that the display is reset
+                before initialisation.
+                You may want to disable this option because the reset pin is not
+                connected, or is connected to an external component such as the
+                power management IC.
+
         config LV_DISP_PIN_RST
             int "GPIO for Reset" if LV_TFT_DISPLAY_PROTOCOL_SPI && !LV_DISP_ST7789_SOFT_RESET
+            depends on LV_DISP_USE_RST
             range 0 39 if IDF_TARGET_ESP32
             range 0 43 if IDF_TARGET_ESP32S2
 
@@ -959,6 +992,7 @@ menu "LVGL TFT/Epaper Display controller"
                 ( LV_PREDEFINED_DISPLAY_NONE && ! ( LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 ) ) \
                 || LV_PREDEFINED_DISPLAY_RPI_MPI3501
             default y if LV_PREDEFINED_DISPLAY_M5STACK
+            default n if LV_PREDEFINED_DISPLAY_M5CORE2
             default y if LV_PREDEFINED_DISPLAY_WROVER4
             default y if LV_PREDEFINED_DISPLAY_ERTFT0356
             default y if LV_PREDEFINED_DISPLAY_TTGO

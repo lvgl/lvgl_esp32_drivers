@@ -124,18 +124,24 @@ void GC9A01_init(void)
 	//Initialize non-SPI GPIOs
         gpio_pad_select_gpio(GC9A01_DC);
 	gpio_set_direction(GC9A01_DC, GPIO_MODE_OUTPUT);
+
+#if GC9A01_USE_RST
         gpio_pad_select_gpio(GC9A01_RST);
 	gpio_set_direction(GC9A01_RST, GPIO_MODE_OUTPUT);
+#endif
 
 #if GC9A01_ENABLE_BACKLIGHT_CONTROL
     gpio_pad_select_gpio(GC9A01_BCKL);
     gpio_set_direction(GC9A01_BCKL, GPIO_MODE_OUTPUT);
 #endif
+
+#if GC9A01_USE_RST
 	//Reset the display
 	gpio_set_level(GC9A01_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(GC9A01_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 
 	ESP_LOGI(TAG, "Initialization.");
 
@@ -167,7 +173,7 @@ void GC9A01_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	uint8_t data[4];
 
 	/*Column addresses*/
-	GC9A01_send_cmd(0x2A);				//0x2A 
+	GC9A01_send_cmd(0x2A);				//0x2A
 	data[0] = (area->x1 >> 8) & 0xFF;
 	data[1] = area->x1 & 0xFF;
 	data[2] = (area->x2 >> 8) & 0xFF;
@@ -175,7 +181,7 @@ void GC9A01_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	GC9A01_send_data(data, 4);
 
 	/*Page addresses*/
-	GC9A01_send_cmd(0x2B);				//0x2B 
+	GC9A01_send_cmd(0x2B);				//0x2B
 	data[0] = (area->y1 >> 8) & 0xFF;
 	data[1] = area->y1 & 0xFF;
 	data[2] = (area->y2 >> 8) & 0xFF;
@@ -183,7 +189,7 @@ void GC9A01_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	GC9A01_send_data(data, 4);
 
 	/*Memory write*/
-	GC9A01_send_cmd(0x2C);				//0x2C 
+	GC9A01_send_cmd(0x2C);				//0x2C
 
 
 	uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
@@ -211,7 +217,7 @@ void GC9A01_sleep_in()
 {
 	uint8_t data[] = {0x08};
 	GC9A01_send_cmd(0x10);			//0x10 Enter Sleep Mode
-	GC9A01_send_data(&data, 1);		
+	GC9A01_send_data(&data, 1);
 }
 
 void GC9A01_sleep_out()

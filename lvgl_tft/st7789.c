@@ -35,8 +35,6 @@ typedef struct {
  **********************/
 static void st7789_set_orientation(uint8_t orientation);
 
-static void st7789_send_cmd(uint8_t cmd);
-static void st7789_send_data(void *data, uint16_t length);
 static void st7789_send_color(void *data, uint16_t length);
 
 /**********************
@@ -91,7 +89,7 @@ void st7789_init(void)
     gpio_pad_select_gpio(ST7789_DC);
     gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
 
-#if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
+#if !defined(ST7789_SOFT_RST)
     gpio_pad_select_gpio(ST7789_RST);
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
@@ -102,7 +100,7 @@ void st7789_init(void)
 #endif
 
     //Reset the display
-#if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
+#if !defined(ST7789_SOFT_RST)
     gpio_set_level(ST7789_RST, 0);
     vTaskDelay(100 / portTICK_RATE_MS);
     gpio_set_level(ST7789_RST, 1);
@@ -201,14 +199,14 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-static void st7789_send_cmd(uint8_t cmd)
+void st7789_send_cmd(uint8_t cmd)
 {
     disp_wait_for_pending_transactions();
     gpio_set_level(ST7789_DC, 0);
     disp_spi_send_data(&cmd, 1);
 }
 
-static void st7789_send_data(void * data, uint16_t length)
+void st7789_send_data(void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
     gpio_set_level(ST7789_DC, 1);
