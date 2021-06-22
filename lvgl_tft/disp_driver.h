@@ -22,8 +22,6 @@ extern "C" {
 #include "ili9341.h"
 #elif defined CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER
 #include "lvgl_tft/epdiy_epaper.h"
-#elif defined CONFIG_LV_EPAPER_CALEPD_DISPLAY_CONTROLLER
-#include "lvgl_tft/calepd_epaper.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481
 #include "ili9481.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488

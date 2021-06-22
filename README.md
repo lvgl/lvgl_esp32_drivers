@@ -33,8 +33,10 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 | FitiPower JD79653A/ GoodDisplay GDEW0154M09 | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | EPDiy supported epaper (needs PCB) | e-Paper    | Parallel               | 4: RGB232 16 grayscales      | No   
 
-Please note that EPDiy supported epapers include also the Lilygo EPD47 that comes with it's own PCB and ESP32 WROVER. Is possible also to build your own EPDiy PCB, please find the [project KiCad source files, schematics, and documentation here](https://github.com/vroland/epdiy/tree/master/hardware/epaper-breakout)
-To use an EPDiy supported epaper you need to add it [as a component](https://github.com/martinberlin/lv_port_esp32-epaper/tree/master/components) and also update the CMakeLists of lvgl component to [REQUIRE that library](https://github.com/martinberlin/lv_port_esp32-epaper/wiki).
+Please note that EPDiy supported epapers include also the Lilygo EPD47 that comes with it's own PCB and ESP32 WROVER. Is possible also to build your own EPDiy PCB, please find the [project KiCad source files, schematics, and documentation here](https://github.com/vroland/epdiy/tree/master/hardware/epaper-breakout). 
+To use an EPDiy supported epaper you need to add it [as a component using git submodules](https://github.com/martinberlin/lv_port_esp32-epaper/tree/master/components) and also update the CMakeLists of lvgl component to [REQUIRE that library](https://github.com/martinberlin/lv_port_esp32-epaper/wiki).
+
+    git submodule add https://github.com/martinberlin/epdiy-rotation.git components/epd_driver
 
 ## Supported indev controllers
 
@@ -43,6 +45,7 @@ To use an EPDiy supported epaper you need to add it [as a component](https://git
 - other FT6X36 or the FT6206 controllers should work as well (not tested)
 - STMPE610
 - FT81x (Single, Dual, and Quad SPI)
+- L58 touch component hook (Used in Lilygo EPD47 parallel with EPDiy driver)
 
 If your display or input device (touch) controller is not supported consider contributing to this repo by
 adding support to it! [Contribute controller support](CONTRIBUTE_CONTROLLER_SUPPORT.md)
