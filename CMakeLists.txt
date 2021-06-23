@@ -1,7 +1,7 @@
 if(ESP_PLATFORM)
 
 file(GLOB SOURCES *.c)
-set(LVGL_INCLUDE_DIRS . lvgl_tft)
+set(LVGL_INCLUDE_DIRS . lvgl_tft lvgl_touch/L58/include)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
 
 #@todo add SimleInclude macro here
