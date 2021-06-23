@@ -19,9 +19,9 @@
 #include "driver/i2c.h"
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
-#include "src/lv_core/lv_refr.h"
+#include "lvgl.h"
 #else
-#include "lvgl/src/lv_core/lv_refr.h"
+#include "lvgl/lvgl.h"
 #endif
 
 /*********************
@@ -53,7 +53,12 @@
 /* Interface and driver initialization */
 void lvgl_driver_init(void)
 {
+    /* Since LVGL v8 LV_HOR_RES_MAX and LV_VER_RES_MAX are not defined, so
+     * print it only if they are defined. */
+#if (LVGL_VERSION_MAJOR < 8)
     ESP_LOGI(TAG, "Display hor size: %d, ver size: %d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
+#endif
+
     ESP_LOGI(TAG, "Display buffer size: %d", DISP_BUF_SIZE);
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
@@ -202,23 +207,45 @@ bool lvgl_i2c_driver_init(int port, int sda_pin, int scl_pin, int speed_hz)
     return ESP_OK != err;
 }
 
-/* Initialize spi bus master */
+/* Initialize spi bus master
+ *
+ * NOTE: dma_chan type and value changed to int instead of spi_dma_chan_t
+ * for backwards compatibility with ESP-IDF versions prior v4.3.
+ *
+ * We could use the ESP_IDF_VERSION_VAL macro available in the "esp_idf_version.h"
+ * header available since ESP-IDF v4.
+ */
 bool lvgl_spi_driver_init(int host,
     int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz,
     int dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
+    int dma_chan = 0 /* SPI_DMA_DISABLED */;
+
 #if defined (CONFIG_IDF_TARGET_ESP32)
     assert((SPI_HOST <= host) && (VSPI_HOST >= host));
     const char *spi_names[] = {
         "SPI_HOST", "HSPI_HOST", "VSPI_HOST"
     };
+
+    dma_chan = dma_channel;
 #elif defined (CONFIG_IDF_TARGET_ESP32S2)
     assert((SPI_HOST <= host) && (HSPI_HOST >= host));
     const char *spi_names[] = {
         "SPI_HOST", "", ""
     };
+
+    dma_chan = dma_channel;
+#elif defined (CONFIG_IDF_TARGET_ESP32C3)
+    assert((SPI1_HOST <= host) && (SPI3_HOST >= host));
+    const char *spi_names[] = {
+        "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
+    };
+
+    dma_chan = 3 /* SPI_DMA_CH_AUTO */;
+#else
+#error "Target chip not selected"
 #endif
 
     ESP_LOGI(TAG, "Configuring SPI host %s (%d)", spi_names[host], host);
@@ -237,7 +264,7 @@ bool lvgl_spi_driver_init(int host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_chan);
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
