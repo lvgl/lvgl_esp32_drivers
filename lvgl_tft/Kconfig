@@ -413,7 +413,7 @@ menu "LVGL TFT Display controller"
         config LV_FT81X_CONFIG_EVE_EVE2_50G
             bool "EVE_EVE2_50G"
         config LV_FT81X_CONFIG_EVE_EVE2_70
-            bool "EVE_EVE2_70"/
+            bool "EVE_EVE2_70"
         config LV_FT81X_CONFIG_EVE_EVE2_70G
             bool "EVE_EVE2_70G"
         config LV_FT81X_CONFIG_EVE_EVE3_35
