@@ -19,8 +19,9 @@
 /*********************
  *      DEFINES
  *********************/
+#if CONFIG_LV_ENABLE_BACKLIGHT_CONTROL
 #define DISP_PIN_BCKL   CONFIG_LV_DISP_PIN_BCKL
-
+#endif
 
 /**********************
  * GLOBAL PROTOTYPES
