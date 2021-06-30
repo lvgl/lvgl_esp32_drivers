@@ -97,8 +97,10 @@ void st7735s_init(void)
     };
 
 	//Initialize non-SPI GPIOs
+#if defined (CONFIG_LV_DISPLAY_USE_DC)
         gpio_pad_select_gpio(ST7735S_DC);
 	gpio_set_direction(ST7735S_DC, GPIO_MODE_OUTPUT);
+#endif
 
 #if ST7735S_USE_RST
         gpio_pad_select_gpio(ST7735S_RST);
@@ -179,21 +181,33 @@ void st7735s_sleep_out()
 static void st7735s_send_cmd(uint8_t cmd)
 {
 	disp_wait_for_pending_transactions();
+
+#if defined (CONFIG_LV_DISPLAY_USE_DC)
 	gpio_set_level(ST7735S_DC, 0);	 /*Command mode*/
+#endif
+
 	disp_spi_send_data(&cmd, 1);
 }
 
 static void st7735s_send_data(void * data, uint16_t length)
 {
 	disp_wait_for_pending_transactions();
+
+#if defined (CONFIG_LV_DISPLAY_USE_DC)
 	gpio_set_level(ST7735S_DC, 1);	 /*Data mode*/
+#endif
+
 	disp_spi_send_data(data, length);
 }
 
 static void st7735s_send_color(void * data, uint16_t length)
 {
 	disp_wait_for_pending_transactions();
+
+#if defined (CONFIG_LV_DISPLAY_USE_DC)
 	gpio_set_level(ST7735S_DC, 1);   /*Data mode*/
+#endif
+
 	disp_spi_send_colors(data, length);
 }
 
