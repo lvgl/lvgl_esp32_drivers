@@ -43,6 +43,7 @@ static void axp192_write_byte(uint8_t addr, uint8_t data);
 static void axp192_init();
 static void axp192_sleep_in();
 static void axp192_sleep_out();
+static void st7735s_set_cmd(uint8_t state);
 
 /**********************
  *  STATIC VARIABLES
@@ -181,33 +182,24 @@ void st7735s_sleep_out()
 static void st7735s_send_cmd(uint8_t cmd)
 {
 	disp_wait_for_pending_transactions();
-
-#if defined (CONFIG_LV_DISPLAY_USE_DC)
-	gpio_set_level(ST7735S_DC, 0);	 /*Command mode*/
-#endif
-
+        /* Command mode */
+        st7735s_set_cmd(0);
 	disp_spi_send_data(&cmd, 1);
 }
 
 static void st7735s_send_data(void * data, uint16_t length)
 {
 	disp_wait_for_pending_transactions();
-
-#if defined (CONFIG_LV_DISPLAY_USE_DC)
-	gpio_set_level(ST7735S_DC, 1);	 /*Data mode*/
-#endif
-
+        /* Data mode */
+        st7735s_set_cmd(1);
 	disp_spi_send_data(data, length);
 }
 
 static void st7735s_send_color(void * data, uint16_t length)
 {
 	disp_wait_for_pending_transactions();
-
-#if defined (CONFIG_LV_DISPLAY_USE_DC)
-	gpio_set_level(ST7735S_DC, 1);   /*Data mode*/
-#endif
-
+        /* Data mode */
+        st7735s_set_cmd(1);
 	disp_spi_send_colors(data, length);
 }
 
@@ -283,4 +275,13 @@ static void axp192_sleep_in()
 static void axp192_sleep_out()
 {
 	axp192_write_byte(0x12, 0x4d);
+}
+
+static void st7735s_set_cmd(uint32_t mode)
+{
+#if !defined (CONFIG_LV_DISPLAY_USE_DC)
+    (void) mode;
+#else
+    gpio_set_level(ST7735S_DC, mode);
+#endif
 }
