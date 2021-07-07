@@ -239,20 +239,20 @@ menu "LVGL Touch controller"
     menu "Touchpanel Configuration (FT6X06)"
         depends on LV_TOUCH_CONTROLLER_FT6X06
 
-	config LV_FT6X36_SWAPXY
-	    bool
-	    prompt "Swap X with Y coordinate."
-	    default y
+        config LV_FT6X36_SWAPXY
+            bool
+            prompt "Swap X with Y coordinate."
+            default n
 
         config LV_FT6X36_INVERT_X
             bool
             prompt "Invert X coordinate value."
             default n
 
-        config LV_FT6X36_INVERT_Y
-            bool
-            prompt "Invert Y coordinate value."
-            default y
+            config LV_FT6X36_INVERT_Y
+                bool
+                prompt "Invert Y coordinate value."
+                default n
 
     endmenu
     
