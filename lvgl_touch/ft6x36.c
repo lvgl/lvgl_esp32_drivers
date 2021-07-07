@@ -182,20 +182,20 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     last_x = ((data_xy[0] & FT6X36_MSB_MASK) << 8) | (data_xy[1] & FT6X36_LSB_MASK);
     last_y = ((data_xy[2] & FT6X36_MSB_MASK) << 8) | (data_xy[3] & FT6X36_LSB_MASK);
 
-#if CONFIG_LV_FT6X36_SWAPXY
-    int16_t swap_buf = last_x;
-    last_x = last_y;
-    last_y = swap_buf;
-#endif
 #if CONFIG_LV_FT6X36_INVERT_X
     last_x =  LV_HOR_RES - last_x;
 #endif
 #if CONFIG_LV_FT6X36_INVERT_Y
     last_y = LV_VER_RES - last_y;
 #endif
+#if CONFIG_LV_FT6X36_SWAPXY
+    int16_t swap_buf = last_x;
+    last_x = last_y;
+    last_y = swap_buf;
+#endif
     data->point.x = last_x;
     data->point.y = last_y;
     data->state = LV_INDEV_STATE_PR;
-    ESP_LOGV(TAG, "X=%u Y=%u", data->point.x, data->point.y);
+    ESP_LOGD(TAG, "X=%u Y=%u", data->point.x, data->point.y);
     return false;
 }
