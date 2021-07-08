@@ -19,15 +19,14 @@
 */
 
 #include <esp_log.h>
-#include <driver/i2c.h>
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include <lvgl.h>
 #else
 #include <lvgl/lvgl.h>
 #endif
 #include "gt911.h"
-#include "tp_i2c.h"
-#include "../lvgl_i2c_conf.h"
+
+#include "i2c_manager/i2c_manager.h"
 
 #define TAG "GT911"
 
@@ -35,35 +34,12 @@ gt911_status_t gt911_status;
 
 //TODO: handle multibyte read and refactor to just one read transaction
 esp_err_t gt911_i2c_read(uint8_t slave_addr, uint16_t register_addr, uint8_t *data_buf, uint8_t len) {
-    i2c_cmd_handle_t i2c_cmd = i2c_cmd_link_create();
-
-    i2c_master_start(i2c_cmd);
-    i2c_master_write_byte(i2c_cmd, (slave_addr << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(i2c_cmd, (register_addr >> 8), I2C_MASTER_ACK);
-    i2c_master_write_byte(i2c_cmd, (register_addr & 0xFF), I2C_MASTER_ACK);
-
-    i2c_master_start(i2c_cmd);
-    i2c_master_write_byte(i2c_cmd, (slave_addr << 1) | I2C_MASTER_READ, true);
-
-    i2c_master_read_byte(i2c_cmd, data_buf, I2C_MASTER_NACK);
-    i2c_master_stop(i2c_cmd);
-    esp_err_t ret = i2c_master_cmd_begin(TOUCH_I2C_PORT, i2c_cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(i2c_cmd);
-    return ret;
+    return lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr | I2C_REG_16, data_buf, len);
 }
 
 esp_err_t gt911_i2c_write8(uint8_t slave_addr, uint16_t register_addr, uint8_t data) {
-    i2c_cmd_handle_t i2c_cmd = i2c_cmd_link_create();
-
-    i2c_master_start(i2c_cmd);
-    i2c_master_write_byte(i2c_cmd, (slave_addr << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(i2c_cmd, (register_addr >> 8), I2C_MASTER_ACK);
-    i2c_master_write_byte(i2c_cmd, (register_addr & 0xFF), I2C_MASTER_ACK);
-    i2c_master_write_byte(i2c_cmd, data, I2C_MASTER_ACK);
-    i2c_master_stop(i2c_cmd);
-    esp_err_t ret = i2c_master_cmd_begin(TOUCH_I2C_PORT, i2c_cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(i2c_cmd);
-    return ret;
+    uint8_t buffer = data;
+    return lvgl_i2c_write(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr | I2C_REG_16, &buffer, 1);
 }
 
 /**

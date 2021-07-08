@@ -1,2 +1,9 @@
-rsource "lvgl_tft/Kconfig"
-rsource "lvgl_touch/Kconfig"
+menu "LVGL ESP Drivers"
+
+    rsource "lvgl_tft/Kconfig"
+
+    rsource "lvgl_touch/Kconfig"
+
+    rsource "i2c_manager/Kconfig"
+
+endmenu

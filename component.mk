@@ -44,4 +44,3 @@ $(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_CON
 $(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_CONTROLLER_RA8875)), lvgl_touch/ra8875_touch.o)
 
 $(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)), lvgl_touch/tp_spi.o)
-$(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)), lvgl_touch/tp_i2c.o)
