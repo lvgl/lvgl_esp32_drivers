@@ -1,7 +1,7 @@
 if(ESP_PLATFORM)
 
 file(GLOB SOURCES *.c)
-set(LVGL_INCLUDE_DIRS . lvgl_tft)
+set(LVGL_INCLUDE_DIRS . lvgl_tft lvgl_touch/L58/include)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
 
 #@todo add SimleInclude macro here
@@ -10,6 +10,8 @@ list(APPEND SOURCES "lvgl_tft/disp_driver.c")
 # display controller.
 if(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341)
     list(APPEND SOURCES "lvgl_tft/ili9341.c")
+elseif(CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER)
+    list(APPEND SOURCES "lvgl_tft/epdiy_epaper.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481)
     list(APPEND SOURCES "lvgl_tft/ili9481.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9486)
@@ -62,6 +64,9 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
         list(APPEND SOURCES "lvgl_touch/xpt2046.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
         list(APPEND SOURCES "lvgl_touch/ft6x36.c")
+    elseif(CONFIG_LV_TOUCH_CONTROLLER_L58)
+        list(APPEND SOURCES "lvgl_touch/L58/L58Touch.cpp")
+        list(APPEND SOURCES "lvgl_touch/l58.cpp")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
         list(APPEND SOURCES "lvgl_touch/stmpe610.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)

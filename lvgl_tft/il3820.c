@@ -160,7 +160,7 @@ void il3820_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
     uint16_t byte_index = 0;
     uint8_t  bit_index = 0;
 
-#if defined (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
+#if defined (CONFIG_DISPLAY_ORIENTATION_PORTRAIT)
     byte_index = x + ((y >> 3) * EPD_PANEL_HEIGHT);
     bit_index  = y & 0x7;
 
@@ -170,7 +170,7 @@ void il3820_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
         uint16_t mirrored_idx = (EPD_PANEL_HEIGHT - x) + ((y >> 3) * EPD_PANEL_HEIGHT);
         BIT_CLEAR(buf[mirrored_idx], 7 - bit_index);
     }
-#elif defined (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE)
+#elif defined (CONFIG_DISPLAY_ORIENTATION_LANDSCAPE)
     byte_index = y + ((x >> 3) * EPD_PANEL_HEIGHT);
     bit_index  = x & 0x7;
 
