@@ -81,6 +81,11 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
     endif()
 endif()
 
+# Add backlight control to compilation only if it is selected in menuconfig
+if(CONFIG_LV_ENABLE_BACKLIGHT_CONTROL)
+    list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
+endif()
+
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
                        REQUIRES lvgl)
