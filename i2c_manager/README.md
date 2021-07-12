@@ -43,26 +43,38 @@ I2C support in the LVGL ESP drivers is provided exclusively by the files in this
 
 ### Using I2C in an LVGL driver, a multi-step guide
 
-Step 1
+<dl>
 
-: The Kconfig entries for your driver only need to specify that you will be using I2C. This is done by adding `select LV_I2C_DISPLAY` or `select LV_I2C_TOUCH`.
+<dt>Step 1</dt>
 
-Step 2
+<dd>
+The Kconfig entries for your driver only need to specify that you will be using I2C. This is done by adding `select LV_I2C_DISPLAY` or `select LV_I2C_TOUCH`.
+</dd>
 
-: To use the I2C port in your code you would do something like:
 
-    ```c
-    #include "i2c_manager/i2c_manager.h"
+<dt>Step 2</dt>
 
-    uint8_t data[2];
-    lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, 0x23, 0x42, &data, 2);
-    ```
+<dd>
+To use the I2C port in your code you would do something like:
 
-    This causes a touch driver to read two bytes at register `0x42` from the IC at address `0x23`. Replace `CONFIG_LV_I2C_TOUCH_PORT` by `CONFIG_LV_I2C_DISPLAY_PORT` when this is a display instead of a touch driver. `lvgl_i2c_write` works much the same way, except it writes the bytes from the buffer instead of reading them. _(It's ignored above but these functions return `esp_err_t` so you can check if the I2C communication worked.)_
+    
+```c
+#include "i2c_manager/i2c_manager.h"
 
-Step 3
+uint8_t data[2];
+lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, 0x23, 0x42, &data, 2);
+```
 
-: There is no step 3, you are already done.
+This causes a touch driver to read two bytes at register `0x42` from the IC at address `0x23`. Replace `CONFIG_LV_I2C_TOUCH_PORT` by `CONFIG_LV_I2C_DISPLAY_PORT` when this is a display instead of a touch driver. `lvgl_i2c_write` works much the same way, except it writes the bytes from the buffer instead of reading them. _(It's ignored above but these functions return `esp_err_t` so you can check if the I2C communication worked.)_
+</dd>
+
+<dt>Step 3</dt>
+
+<dd>
+There is no step 3, you are already done.
+</dd>
+
+</dl>
 
 
 ### Meanwhile, behind the scenes ...
