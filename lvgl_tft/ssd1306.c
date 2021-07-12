@@ -211,36 +211,15 @@ void ssd1306_sleep_out(void)
 static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
 {
     (void) disp_drv;
-    esp_err_t err;
 
     uint8_t *data = (uint8_t *) bytes;
 
-    err = lvgl_i2c_write(OLED_I2C_PORT, OLED_I2C_ADDRESS, data[0], data + 1, bytes_len - 1 );
-
-//     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-//
-//     i2c_master_start(cmd);
-//     i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-//
-//     for (size_t idx = 0; idx < bytes_len; idx++) {
-//         i2c_master_write_byte(cmd, data[idx], true);
-//     }
-//
-//     i2c_master_stop(cmd);
-//
-//     /* Send queued commands */
-//     err = i2c_master_cmd_begin(DISP_I2C_PORT, cmd, 10 / portTICK_PERIOD_MS);
-//     i2c_cmd_link_delete(cmd);
-
-    return ESP_OK == err ? 0 : 1;
+    return lvgl_i2c_write(OLED_I2C_PORT, OLED_I2C_ADDRESS, data[0], data + 1, bytes_len - 1 );
 }
 
 static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len)
 {
     (void) disp_drv;
-    esp_err_t err;
 
-    err = lvgl_i2c_write(OLED_I2C_PORT, OLED_I2C_ADDRESS, OLED_CONTROL_BYTE_DATA_STREAM, color_buffer, buffer_len);
-
-    return ESP_OK == err ? 0 : 1;
+    return lvgl_i2c_write(OLED_I2C_PORT, OLED_I2C_ADDRESS, OLED_CONTROL_BYTE_DATA_STREAM, color_buffer, buffer_len);
 }
