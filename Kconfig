@@ -4,6 +4,11 @@ menu "LVGL ESP Drivers"
 
     rsource "lvgl_touch/Kconfig"
 
-    rsource "i2c_manager/Kconfig"
+    menu "I2C Port Settings"
+        depends on LV_I2C && !HAVE_I2C_MANAGER
+
+        rsource "i2c_manager/Kconfig"
+    
+    endmenu
 
 endmenu
