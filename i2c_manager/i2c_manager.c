@@ -191,12 +191,12 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
 		if (port == I2C_NUM_0) {
-			timeout = (CONFIG_I2C_MANAGER_0_TIMEOUT) / portTICK_RATE_MS;
+			timeout = I2C_MANAGER_0_TIMEOUT;
 		}
 	#endif
 	#if defined (I2C_ONE)
 		if (port == I2C_NUM_1) {
-			timeout = (CONFIG_I2C_MANAGER_1_TIMEOUT) / portTICK_RATE_MS;
+			timeout = I2C_MANAGER_1_TIMEOUT;
 		}
 	#endif
 
