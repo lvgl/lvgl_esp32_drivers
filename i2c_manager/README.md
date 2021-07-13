@@ -8,7 +8,7 @@
 
 ### I2C Manager support
 
-`lvgl_esp32_drivers` comes with built-in I2C support by integrating I2C Manager, which is used in case you select a touch sensor or screen that uses the I2C bus. If you're just using LVGL you don't need to do anyting special.
+`lvgl_esp32_drivers` comes with built-in I2C support by integrating I2C Manager, which is used in case you select a touch sensor or screen that uses the I2C bus. If you're just using LVGL you don't need to do anything special.
 
 I2C Manager can help if you are in a situation where you want to avoid "bus conflicts" on the I2C bus. Suppose you use LVGL with a touch sensor that uses I2C, and your device also has another I2C device that needs to be read frequently, such as a 3D-accelerometer. ESP-IDF is not inherently "thread-safe". So if you read that from another task than the one LVGL uses to read the touch data, you need some kind of mechanism to keep these communications from interfering. 
 
