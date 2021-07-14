@@ -80,7 +80,7 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
 endif()
 
 if(CONFIG_LV_I2C)
-    list(APPEND SOURCES "i2c_manager/i2c_manager.c")
+    list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
 endif()
 
 idf_component_register(SRCS ${SOURCES}

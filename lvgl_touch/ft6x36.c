@@ -26,7 +26,7 @@
 #endif
 #include "ft6x36.h"
 
-#include "i2c_manager/i2c_manager.h"
+#include "lvgl_i2c/i2c_manager.h"
 
 #define TAG "FT6X36"
 

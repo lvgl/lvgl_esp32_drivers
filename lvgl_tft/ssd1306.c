@@ -15,7 +15,7 @@
  *********************/
 #include "assert.h"
 
-#include "i2c_manager/i2c_manager.h"
+#include "lvgl_i2c/i2c_manager.h"
 
 #include "ssd1306.h"
 

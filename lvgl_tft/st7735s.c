@@ -14,7 +14,7 @@
 #include "freertos/task.h"
 
 #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
-    #include "i2c_manager/i2c_manager.h"
+    #include "lvgl_i2c/i2c_manager.h"
 #endif
 
 /*********************

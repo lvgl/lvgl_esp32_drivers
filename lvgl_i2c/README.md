@@ -59,7 +59,7 @@ To use the I2C port in your code you would do something like:
 
     
 ```c
-#include "i2c_manager/i2c_manager.h"
+#include "lvgl_i2c/i2c_manager.h"
 
 uint8_t data[2];
 lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, 0x23, 0x42, &data, 2);
