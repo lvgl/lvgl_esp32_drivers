@@ -1006,10 +1006,16 @@ menu "LVGL TFT Display controller"
         config LV_I2C_DISPLAY_PORT_0
             bool
             prompt "I2C port 0"
+            help 
+                I2C is shared peripheral managed by I2C Manager. In order to configure I2C Manager (pinout, etc.) see menu
+                Component config->I2C Port Settings.
 
         config LV_I2C_DISPLAY_PORT_1
             bool
             prompt "I2C port 1"
+            help 
+                I2C is shared peripheral managed by I2C Manager. In order to configure I2C Manager (pinout, etc.) see menu
+                Component config->I2C Port Settings.
 
     endchoice
 

@@ -8,7 +8,7 @@
 
 ### I2C Manager support
 
-`lvgl_esp32_drivers` comes with built-in I2C support by integrating I2C Manager, which is used in case you select a touch sensor or screen that uses the I2C bus. If you're just using LVGL you don't need to do anything special.
+`lvgl_esp32_drivers` integrates [I2C Manager](https://github.com/ropg/i2c_manager), which is used in case you select a touch sensor or screen that uses the I2C bus. If you're just using LVGL you don't need to do anything special.
 
 I2C Manager can help if you are in a situation where you want to avoid "bus conflicts" on the I2C bus. Suppose you use LVGL with a touch sensor that uses I2C, and your device also has another I2C device that needs to be read frequently, such as a 3D-accelerometer. ESP-IDF is not inherently "thread-safe". So if you read that from another task than the one LVGL uses to read the touch data, you need some kind of mechanism to keep these communications from interfering. 
 
@@ -27,15 +27,13 @@ lvgl_driver_init();
 
 The `lvgl_i2c_locking` part will cause the LVGL I2C driver to play nice with anything else that uses the I2C port(s) through I2C Manager.
 
-Refer to the [I2C Manager GitHub repository](https://github.com/ropg/i2c_manager) for much more information. 
-
 
 &nbsp;
 
 
 ## Information for LVGL driver developers
 
-I2C support in the LVGL ESP drivers is provided exclusively by the files in this directory. Code from all over the project that was talking to the I2C hardware directly has been replaced by code that communicates through the functions provided in `i2c_manager.h`. I2C is handled by the I2C Manager that was built into `lvlg_esp32_drivers`, but the code would be the same if it was routed through I2C Manager as a separate component. If you are providing a driver, you need not worry about any of this.
+I2C support in the LVGL ESP drivers is provided exclusively by the files in this directory. Driver code that uses I2C communicates through the functions provided in `i2c_manager.h`. 
 
 
 &nbsp;
