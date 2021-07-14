@@ -20,7 +20,8 @@ extern "C" {
 #else
 #include "lvgl/lvgl.h"
 #endif
-#include "../lvgl_helpers.h"
+
+#include "sdkconfig.h"
 
 /*********************
  *      DEFINES
