@@ -70,12 +70,12 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
         list(APPEND SOURCES "lvgl_touch/FT81x.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_RA8875)
         list(APPEND SOURCES "lvgl_touch/ra8875_touch.c")
+    elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
+        list(APPEND SOURCES "lvgl_touch/gt911.c")
     endif()
 
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         list(APPEND SOURCES "lvgl_touch/tp_spi.c")
-    elseif(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)
-        list(APPEND SOURCES "lvgl_touch/tp_i2c.c")
     endif()
 endif()
 
@@ -84,10 +84,14 @@ if(CONFIG_LV_ENABLE_BACKLIGHT_CONTROL)
     list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
 endif()
 
+if(CONFIG_LV_I2C)
+    list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
+endif()
+
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
                        REQUIRES lvgl)
-                       
+
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")
 
 else()

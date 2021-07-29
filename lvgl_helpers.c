@@ -14,14 +14,13 @@
 #include "lvgl_touch/tp_spi.h"
 
 #include "lvgl_spi_conf.h"
-#include "lvgl_i2c_conf.h"
 
-#include "driver/i2c.h"
+#include "lvgl_i2c/i2c_manager.h"
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
-#include "src/lv_core/lv_refr.h"
+#include "lvgl.h"
 #else
-#include "lvgl/src/lv_core/lv_refr.h"
+#include "lvgl/lvgl.h"
 #endif
 
 /*********************
@@ -53,7 +52,12 @@
 /* Interface and driver initialization */
 void lvgl_driver_init(void)
 {
+    /* Since LVGL v8 LV_HOR_RES_MAX and LV_VER_RES_MAX are not defined, so
+     * print it only if they are defined. */
+#if (LVGL_VERSION_MAJOR < 8)
     ESP_LOGI(TAG, "Display hor size: %d, ver size: %d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
+#endif
+
     ESP_LOGI(TAG, "Display buffer size: %d", DISP_BUF_SIZE);
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
@@ -63,7 +67,7 @@ void lvgl_driver_init(void)
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
         SPI_BUS_MAX_TRANSFER_SZ, 1,
         DISP_SPI_IO2, DISP_SPI_IO3);
-    
+
     disp_spi_add_device(TFT_SPI_HOST);
     disp_driver_init();
 
@@ -81,48 +85,29 @@ void lvgl_driver_init(void)
         TP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
         SPI_BUS_MAX_TRANSFER_SZ, 1,
         -1, -1);
-    
+
     disp_spi_add_device(TFT_SPI_HOST);
     tp_spi_add_device(TOUCH_SPI_HOST);
-    
+
     disp_driver_init();
     touch_driver_init();
 
-    return;
-#endif
-
-#if defined (SHARED_I2C_BUS)
-    ESP_LOGI(TAG, "Initializing shared I2C master");
-    
-    lvgl_i2c_driver_init(DISP_I2C_PORT,
-        DISP_I2C_SDA, DISP_I2C_SCL,
-        DISP_I2C_SPEED_HZ);
-    
-    disp_driver_init();
-    touch_driver_init();
-    
     return;
 #endif
 
 /* Display controller initialization */
 #if defined CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI
     ESP_LOGI(TAG, "Initializing SPI master for display");
-    
+
     lvgl_spi_driver_init(TFT_SPI_HOST,
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
         SPI_BUS_MAX_TRANSFER_SZ, 1,
         DISP_SPI_IO2, DISP_SPI_IO3);
-    
+
     disp_spi_add_device(TFT_SPI_HOST);
-    
+
     disp_driver_init();
-#elif defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_I2C)
-    ESP_LOGI(TAG, "Initializing I2C master for display");
-    /* Init the i2c master on the display driver code */
-    lvgl_i2c_driver_init(DISP_I2C_PORT,
-        DISP_I2C_SDA, DISP_I2C_SCL,
-        DISP_I2C_SPEED_HZ);
-    
+#elif defined (CONFIG_LV_I2C_DISPLAY)
     disp_driver_init();
 #else
 #error "No protocol defined for display controller"
@@ -132,22 +117,16 @@ void lvgl_driver_init(void)
 #if CONFIG_LV_TOUCH_CONTROLLER != TOUCH_CONTROLLER_NONE
     #if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         ESP_LOGI(TAG, "Initializing SPI master for touch");
-        
+
         lvgl_spi_driver_init(TOUCH_SPI_HOST,
             TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
             0 /* Defaults to 4094 */, 2,
             -1, -1);
-        
+
         tp_spi_add_device(TOUCH_SPI_HOST);
-        
+
         touch_driver_init();
-    #elif defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)
-        ESP_LOGI(TAG, "Initializing I2C master for touch");
-        
-        lvgl_i2c_driver_init(TOUCH_I2C_PORT,
-            TOUCH_I2C_SDA, TOUCH_I2C_SCL,
-            TOUCH_I2C_SPEED_HZ);
-        
+    #elif defined (CONFIG_LV_I2C_TOUCH)
         touch_driver_init();
     #elif defined (CONFIG_LV_TOUCH_DRIVER_ADC)
         touch_driver_init();
@@ -160,60 +139,46 @@ void lvgl_driver_init(void)
 #endif
 }
 
-/* Config the i2c master
+
+/* Initialize spi bus master
  *
- * This should init the i2c master to be used on display and touch controllers.
- * So we should be able to know if the display and touch controllers shares the
- * same i2c master.
+ * NOTE: dma_chan type and value changed to int instead of spi_dma_chan_t
+ * for backwards compatibility with ESP-IDF versions prior v4.3.
+ *
+ * We could use the ESP_IDF_VERSION_VAL macro available in the "esp_idf_version.h"
+ * header available since ESP-IDF v4.
  */
-bool lvgl_i2c_driver_init(int port, int sda_pin, int scl_pin, int speed_hz)
-{
-    esp_err_t err;
-    
-    ESP_LOGI(TAG, "Initializing I2C master port %d...", port);
-    ESP_LOGI(TAG, "SDA pin: %d, SCL pin: %d, Speed: %d (Hz)",
-        sda_pin, scl_pin, speed_hz);
-    
-    i2c_config_t conf = {
-        .mode               = I2C_MODE_MASTER,
-        .sda_io_num         = sda_pin,
-        .sda_pullup_en      = GPIO_PULLUP_ENABLE,
-        .scl_io_num         = scl_pin,
-        .scl_pullup_en      = GPIO_PULLUP_ENABLE,
-        .master.clk_speed   = speed_hz,
-    };
-
-    ESP_LOGI(TAG, "Setting I2C master configuration...");
-    err = i2c_param_config(port, &conf);
-    assert(ESP_OK == err);
-
-    ESP_LOGI(TAG, "Installing I2C master driver...");
-    err = i2c_driver_install(port,
-        I2C_MODE_MASTER,
-        0, 0 /*I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE */,
-        0 /* intr_alloc_flags */);
-    assert(ESP_OK == err);
-
-    return ESP_OK != err;
-}
-
-/* Initialize spi bus master */
 bool lvgl_spi_driver_init(int host,
     int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz,
     int dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
+    int dma_chan = 0 /* SPI_DMA_DISABLED */;
+
 #if defined (CONFIG_IDF_TARGET_ESP32)
     assert((SPI_HOST <= host) && (VSPI_HOST >= host));
     const char *spi_names[] = {
         "SPI_HOST", "HSPI_HOST", "VSPI_HOST"
     };
+
+    dma_chan = dma_channel;
 #elif defined (CONFIG_IDF_TARGET_ESP32S2)
     assert((SPI_HOST <= host) && (HSPI_HOST >= host));
     const char *spi_names[] = {
         "SPI_HOST", "", ""
     };
+
+    dma_chan = dma_channel;
+#elif defined (CONFIG_IDF_TARGET_ESP32C3)
+    assert((SPI1_HOST <= host) && (SPI3_HOST >= host));
+    const char *spi_names[] = {
+        "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
+    };
+
+    dma_chan = 3 /* SPI_DMA_CH_AUTO */;
+#else
+#error "Target chip not selected"
 #endif
 
     ESP_LOGI(TAG, "Configuring SPI host %s (%d)", spi_names[host], host);
@@ -232,7 +197,7 @@ bool lvgl_spi_driver_init(int host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_chan);
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
