@@ -200,7 +200,7 @@ static void ili9486_send_color(void * data, uint16_t length)
 
 static void ili9486_set_orientation(uint8_t orientation)
 {
-    // ESP_ASSERT(orientation < 4);
+    assert(orientation < 4);
 
     const char *orientation_str[] = {
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
@@ -208,11 +208,9 @@ static void ili9486_set_orientation(uint8_t orientation)
 
     ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
 
-#if defined (CONFIG_LV_PREDEFINED_DISPLAY_NONE)
-    uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
-#endif
+    const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 
-    ESP_LOGI(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
 
     ili9486_send_cmd(0x36);
     ili9486_send_data((void *) &data[orientation], 1);

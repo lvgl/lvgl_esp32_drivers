@@ -208,6 +208,8 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #define EVE_SUNFLOWER
 #elif defined(CONFIG_LV_FT81X_CONFIG_EVE_CONNECTEVE)
 #define EVE_CONNECTEVE
+#else
+#define EVE_EVE2_35 // Define something if there is no Kconfig option selected
 #endif
 
 /* display timing parameters below */
