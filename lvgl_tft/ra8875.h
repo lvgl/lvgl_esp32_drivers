@@ -97,7 +97,6 @@ extern "C" {
  **********************/
 
 void ra8875_init(void);
-void ra8875_enable_backlight(bool backlight);
 void ra8875_enable_display(bool enable);
 void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);
 

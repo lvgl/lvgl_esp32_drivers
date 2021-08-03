@@ -143,10 +143,6 @@ void ili9163c_init(void)
 	gpio_pad_select_gpio(ILI9163C_RST);
 	gpio_set_direction(ILI9163C_RST, GPIO_MODE_OUTPUT);
 
-#if ILI9163C_ENABLE_BACKLIGHT_CONTROL
-	gpio_pad_select_gpio(ILI9163C_BCKL);
-	gpio_set_direction(ILI9163C_BCKL, GPIO_MODE_OUTPUT);
-#endif
 	//Reset the display
 	gpio_set_level(ILI9163C_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
@@ -165,8 +161,6 @@ void ili9163c_init(void)
 		}
 		cmd++;
 	}
-
-	ili9163c_enable_backlight(true);
 
 	ili9163c_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
 }
@@ -197,22 +191,6 @@ void ili9163c_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color
 	uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
 
 	ili9163c_send_color((void *)color_map, size * 2);
-}
-
-void ili9163c_enable_backlight(bool backlight)
-{
-#if ILI9163C_ENABLE_BACKLIGHT_CONTROL
-	ESP_LOGD(TAG, "%s backlight.", backlight ? "Enabling" : "Disabling");
-	uint32_t tmp = 0;
-
-#if (ILI9163C_BCKL_ACTIVE_LVL == 1)
-	tmp = backlight ? 1 : 0;
-#else
-	tmp = backlight ? 0 : 1;
-#endif
-
-	gpio_set_level(ILI9163C_BCKL, tmp);
-#endif
 }
 
 void ili9163c_sleep_in()

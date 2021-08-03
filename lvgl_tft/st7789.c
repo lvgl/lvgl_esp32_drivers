@@ -94,11 +94,6 @@ void st7789_init(void)
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
 
-#if ST7789_ENABLE_BACKLIGHT_CONTROL
-    gpio_pad_select_gpio(ST7789_BCKL);
-    gpio_set_direction(ST7789_BCKL, GPIO_MODE_OUTPUT);
-#endif
-
     //Reset the display
 #if !defined(ST7789_SOFT_RST)
     gpio_set_level(ST7789_RST, 0);
@@ -122,25 +117,7 @@ void st7789_init(void)
         cmd++;
     }
 
-    st7789_enable_backlight(true);
-
     st7789_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
-}
-
-void st7789_enable_backlight(bool backlight)
-{
-#if ST7789_ENABLE_BACKLIGHT_CONTROL
-    printf("%s backlight.\n", backlight ? "Enabling" : "Disabling");
-    uint32_t tmp = 0;
-
-#if (ST7789_BCKL_ACTIVE_LVL==1)
-    tmp = backlight ? 1 : 0;
-#else
-    tmp = backlight ? 0 : 1;
-#endif
-
-    gpio_set_level(ST7789_BCKL, tmp);
-#endif
 }
 
 /* The ST7789 display controller can drive 320*240 displays, when using a 240*240
