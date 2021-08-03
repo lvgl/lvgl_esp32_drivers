@@ -9,26 +9,55 @@
  *      INCLUDES
  *********************/
 #include <stdbool.h>
-#ifdef LV_LVGL_H_INCLUDE_SIMPLE
-#include "lvgl.h"
-#else
-#include "lvgl/lvgl.h"
-#endif
 
-
-/*********************
- *      DEFINES
- *********************/
-#if CONFIG_LV_ENABLE_BACKLIGHT_CONTROL
-#define DISP_PIN_BCKL   CONFIG_LV_DISP_PIN_BCKL
+#ifdef __cplusplus
+extern "C" { /* extern "C" */
 #endif
 
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
-void disp_brightness_control_enable(void);
-void disp_set_brightness(uint16_t brightness);
 
+/**
+ * @brief Display backlight controller handle
+ *
+ */
+typedef void * disp_backlight_h;
+
+/**
+ * @brief Configuration structure of backlight controller
+ *
+ */
+typedef struct {
+    bool pwm_control;
+    bool output_invert;
+    int gpio_num; // see gpio_num_t
+
+    // Relevant only for PWM controlled backlight
+    // Ignored for switch (ON/OFF) backlight control
+    int timer_idx; // ledc_timer_t
+    int channel_idx; // ledc_channel_t
+} disp_backlight_config_t;
+
+/**
+ * @brief Create new backlight controller
+ *
+ * @param[in] config Configuration structure of backlight controller
+ * @return           Display backlight controller handle
+ */
+disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config);
+
+/**
+ * @brief Set backlight
+ *
+ * Brightness parameter can be 0-100 for PWM controlled backlight.
+ * GPIO controlled backlight (ON/OFF) is turned off witch value 0 and turned on with any positive value.
+ *
+ * @param bckl                   Backlight controller handle
+ * @param[in] brightness_percent Brightness in [%]
+ */
+void disp_backlight_set(disp_backlight_h bckl, int brightness_percent);
+void disp_backlight_delete(disp_backlight_h bckl);
 
 #ifdef __cplusplus
 } /* extern "C" */
