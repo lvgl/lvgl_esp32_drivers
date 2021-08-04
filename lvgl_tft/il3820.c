@@ -182,8 +182,7 @@ void il3820_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
 #else
     (void)byte_index;
     (void)bit_index;
-    assert(false); // Crash if we get here, but allow compilation for CI
-#warning "Unsupported orientation used"
+    assert(false); // Unsupported orientation configured. Crash if we get here, but allow compilation for CI
 #endif
 }
 

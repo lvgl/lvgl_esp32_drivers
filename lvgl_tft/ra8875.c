@@ -59,7 +59,6 @@
     #define CONFIG_LV_DISP_RA8875_PLLDIVN (0x00)
     #define CONFIG_LV_DISP_RA8875_PLLDIVK (0x00)
 
-    #warning "No RA8875 settings defined"
 #else
 #if ( CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED || CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED )
     #if CONFIG_LV_INVERT_DISPLAY
@@ -138,6 +137,9 @@ static void ra8875_send_buffer(uint8_t * data, size_t length, bool signal_flush)
 
 void ra8875_init(void)
 {
+#ifndef CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875
+    assert(false); // This driver is not properly configured
+#endif
     unsigned int i = 0;
 
     struct {
