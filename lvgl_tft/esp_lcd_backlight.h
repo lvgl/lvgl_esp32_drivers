@@ -27,6 +27,7 @@ typedef void * disp_backlight_h;
 /**
  * @brief Configuration structure of backlight controller
  *
+ * Must be passed to disp_backlight_new() for correct configuration
  */
 typedef struct {
     bool pwm_control;
@@ -35,7 +36,7 @@ typedef struct {
 
     // Relevant only for PWM controlled backlight
     // Ignored for switch (ON/OFF) backlight control
-    int timer_idx; // ledc_timer_t
+    int timer_idx;   // ledc_timer_t
     int channel_idx; // ledc_channel_t
 } disp_backlight_config_t;
 
