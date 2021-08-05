@@ -3,8 +3,7 @@ if(ESP_PLATFORM)
 file(GLOB SOURCES *.c)
 set(LVGL_INCLUDE_DIRS . lvgl_tft)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
-
-#@todo add SimleInclude macro here
+list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
 
 # Include only the source file of the selected
 # display controller.
@@ -77,11 +76,6 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         list(APPEND SOURCES "lvgl_touch/tp_spi.c")
     endif()
-endif()
-
-# Add backlight control to compilation only if it is selected in menuconfig
-if(CONFIG_LV_ENABLE_BACKLIGHT_CONTROL)
-    list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
 endif()
 
 if(CONFIG_LV_I2C)
