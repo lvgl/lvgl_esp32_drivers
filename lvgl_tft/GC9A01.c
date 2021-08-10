@@ -220,7 +220,7 @@ static void GC9A01_send_color(void * data, uint16_t length)
 
 static void GC9A01_set_orientation(uint8_t orientation)
 {
-    // ESP_ASSERT(orientation < 4);
+    assert(orientation < 4);
 
     const char *orientation_str[] = {
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
@@ -229,14 +229,14 @@ static void GC9A01_set_orientation(uint8_t orientation)
     ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
 
 #if defined CONFIG_LV_PREDEFINED_DISPLAY_M5STACK
-    uint8_t data[] = {0x68, 0x68, 0x08, 0x08};  ///
+    const uint8_t data[] = {0x68, 0x68, 0x08, 0x08};
 #elif defined (CONFIG_LV_PREDEFINED_DISPLAY_WROVER4)
-    uint8_t data[] = {0x4C, 0x88, 0x28, 0xE8}; ///
-#elif defined (CONFIG_LV_PREDEFINED_DISPLAY_NONE)
-    uint8_t data[] = {0x08, 0xC8, 0x68, 0xA8}; ///ggggg
+    const uint8_t data[] = {0x4C, 0x88, 0x28, 0xE8};
+#else
+    const uint8_t data[] = {0x08, 0xC8, 0x68, 0xA8};
 #endif
 
-    ESP_LOGI(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
 
     GC9A01_send_cmd(0x36);
     GC9A01_send_data((void *) &data[orientation], 1);

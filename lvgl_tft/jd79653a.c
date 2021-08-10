@@ -123,10 +123,9 @@ static const uint8_t lut_bb1[] = {
 static const jd79653a_seq_t init_seq[] = {
 #if defined (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
         {0x00, {0xd3, 0x0e},       2},                 // Panel settings
-#elif defined(CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
-        {0x00, {0xdf, 0x0e}, 2},                 // Panel settings
+//#elif defined(CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
 #else
-#error "Unsupported orientation - only portrait modes are supported for now"
+        {0x00, {0xdf, 0x0e}, 2},                 // Panel settings
 #endif
         {0x4d, {0x55}, 1},                             // Undocumented secret from demo code
         {0xaa, {0x0f}, 1},                             // Undocumented secret from demo code
@@ -249,7 +248,8 @@ static void jd79653a_partial_in()
 #elif defined(CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
     uint8_t pst_use_reg_lut[] = { 0xff, 0x0e };
 #else
-#error "Unsupported orientation - only portrait modes are supported for now"
+    assert(false); // Unsupported orientation configured. Crash if we get here, but allow compilation for CI
+    uint8_t pst_use_reg_lut[] = { 0,0 };
 #endif
     jd79653a_spi_send_cmd(0x00);
     jd79653a_spi_send_data(pst_use_reg_lut, sizeof(pst_use_reg_lut));
@@ -276,7 +276,8 @@ static void jd79653a_partial_out()
 #elif defined(CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
     uint8_t pst_use_otp_lut[] = { 0xdf, 0x0e };
 #else
-#error "Unsupported orientation - only portrait modes are supported for now"
+    assert(false); // Unsupported orientation configured. Crash if we get here, but allow compilation for CI
+    uint8_t pst_use_otp_lut[] = { 0,0 };
 #endif
     jd79653a_spi_send_cmd(0x00);
     jd79653a_spi_send_data(pst_use_otp_lut, sizeof(pst_use_otp_lut));

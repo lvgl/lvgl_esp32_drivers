@@ -16,7 +16,6 @@
 /*********************
  *      DEFINES
  *********************/
-#define DEBUG false
 #define TAG "RA8875"
 
 #define DIV_ROUND_UP(n, d) (((n)+(d)-1)/(d))
@@ -43,6 +42,24 @@
 #define VDIR_MASK (1 << 2)
 #define HDIR_MASK (1 << 3)
 
+#ifndef CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875
+    // Use this settings if there is no Kconfig settings defined
+    #define DPCR_VAL (0x00)
+    #define PCSR_VAL (0x00)
+    #define HNDR_VAL (0x00)
+    #define HNDFTR_VAL (0x00)
+    #define HSTR_VAL (0x00)
+    #define HPW (0x00)
+    #define HPWR_VAL (0x00)
+    #define VNDR_VAL (0x00)
+    #define VSTR_VAL (0x00)
+    #define VPW      (0x00)
+    #define VPWR_VAL (0x00)
+    #define CONFIG_LV_DISP_RA8875_PLLDIVM (0x00)
+    #define CONFIG_LV_DISP_RA8875_PLLDIVN (0x00)
+    #define CONFIG_LV_DISP_RA8875_PLLDIVK (0x00)
+
+#else
 #if ( CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED || CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED )
     #if CONFIG_LV_INVERT_DISPLAY
         #define DPCR_VAL (VDIR_MASK)
@@ -92,6 +109,7 @@
 #else
     #define VPWR_VAL (VPW)
 #endif
+#endif // CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875
 
 /**********************
  *      TYPEDEFS
@@ -119,6 +137,9 @@ static void ra8875_send_buffer(uint8_t * data, size_t length, bool signal_flush)
 
 void ra8875_init(void)
 {
+#ifndef CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875
+    assert(false); // This driver is not properly configured
+#endif
     unsigned int i = 0;
 
     struct {
@@ -205,18 +226,14 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     size_t linelen = (area->x2 - area->x1 + 1);
     uint8_t * buffer = (uint8_t*)color_map;
 
-#if DEBUG
-    ESP_LOGI(TAG, "flush: %d,%d at %d,%d", area->x1, area->x2, area->y1, area->y2 );
-#endif
+    ESP_LOGD(TAG, "flush: %d,%d at %d,%d", area->x1, area->x2, area->y1, area->y2 );
 
     // Get lock
     disp_spi_acquire();
 
     // Set window if needed
     if ((x1 != area->x1) || (x2 != area->x2)) {
-#if DEBUG
-        ESP_LOGI(TAG, "flush: set window (x1,x2): %d,%d -> %d,%d", x1, x2, area->x1, area->x2);
-#endif
+        ESP_LOGD(TAG, "flush: set window (x1,x2): %d,%d -> %d,%d", x1, x2, area->x1, area->x2);
         ra8875_set_window(area->x1, area->x2, 0, LV_VER_RES_MAX-1);
         x1 = area->x1;
         x2 = area->x2;
@@ -224,9 +241,7 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 
     // Set cursor if needed
     if ((x != area->x1) || (y != area->y1)) {
-#if DEBUG
-        ESP_LOGI(TAG, "flush: set cursor (x,y): %d,%d -> %d,%d", x, y, area->x1, area->y1);
-#endif
+        ESP_LOGD(TAG, "flush: set cursor (x,y): %d,%d -> %d,%d", x, y, area->x1, area->y1);
         ra8875_set_memory_write_cursor(area->x1, area->y1);
         x = area->x1;
     }

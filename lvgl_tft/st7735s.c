@@ -41,10 +41,13 @@ static void st7735s_send_cmd(uint8_t cmd);
 static void st7735s_send_data(void * data, uint16_t length);
 static void st7735s_send_color(void * data, uint16_t length);
 static void st7735s_set_orientation(uint8_t orientation);
+
+#ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
 static void axp192_write_byte(uint8_t addr, uint8_t data);
 static void axp192_init();
 static void axp192_sleep_in();
 static void axp192_sleep_out();
+#endif
 
 /**********************
  *  STATIC VARIABLES
@@ -225,33 +228,33 @@ static void st7735s_set_orientation(uint8_t orientation)
 
 #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
 
-    static void axp192_write_byte(uint8_t addr, uint8_t data)
-    {
-        err = lvgl_i2c_write(CONFIG_LV_I2C_DISPLAY_PORT, AXP192_I2C_ADDRESS, addr, &data, 1);
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "AXP192 send failed. code: 0x%.2X", ret);
-        }
+static void axp192_write_byte(uint8_t addr, uint8_t data)
+{
+    err = lvgl_i2c_write(CONFIG_LV_I2C_DISPLAY_PORT, AXP192_I2C_ADDRESS, addr, &data, 1);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "AXP192 send failed. code: 0x%.2X", ret);
     }
+}
 
-    static void axp192_init()
-    {
-        // information on how to init and use AXP192 ifor M5StickC taken from
-        // 	https://forum.m5stack.com/topic/1025/m5stickc-turn-off-screen-completely
+static void axp192_init()
+{
+    // information on how to init and use AXP192 ifor M5StickC taken from
+    // 	https://forum.m5stack.com/topic/1025/m5stickc-turn-off-screen-completely
 
-        axp192_write_byte(0x10, 0xFF);			// OLED_VPP Enable
-        axp192_write_byte(0x28, 0xCC);			// Enable LDO2&LDO3, LED&TFT 3.0V
-        axp192_sleep_out();
-        ESP_LOGI(TAG, "AXP192 initialized, power enabled for LDO2 and LDO3");
-    }
+    axp192_write_byte(0x10, 0xFF);			// OLED_VPP Enable
+    axp192_write_byte(0x28, 0xCC);			// Enable LDO2&LDO3, LED&TFT 3.0V
+    axp192_sleep_out();
+    ESP_LOGI(TAG, "AXP192 initialized, power enabled for LDO2 and LDO3");
+}
 
-    static void axp192_sleep_in()
-    {
-        axp192_write_byte(0x12, 0x4b);
-    }
+static void axp192_sleep_in()
+{
+    axp192_write_byte(0x12, 0x4b);
+}
 
-    static void axp192_sleep_out()
-    {
-        axp192_write_byte(0x12, 0x4d);
-    }
+static void axp192_sleep_out()
+{
+    axp192_write_byte(0x12, 0x4d);
+}
 
 #endif

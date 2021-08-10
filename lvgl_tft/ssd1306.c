@@ -106,7 +106,7 @@ void ssd1306_init(void)
     orientation_1 = 0xA0;
     orientation_2 = OLED_CMD_SET_COM_SCAN_MODE_NORMAL;
 #else
-    #error "Unsupported orientation"
+    assert(false); // Invalid configuration of SSD1306 driver
 #endif
 
     uint8_t display_mode = 0;
