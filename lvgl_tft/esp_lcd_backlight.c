@@ -22,11 +22,16 @@ static const char *TAG = "disp_backlight";
 
 disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config)
 {
+    // Check input parameters
     if (config == NULL)
         return NULL;
+    if (!GPIO_IS_VALID_OUTPUT_GPIO(config->gpio_num)) {
+        ESP_LOGW(TAG, "Invalid GPIO number");
+        return NULL;
+    }
     disp_backlight_t *bckl_dev = calloc(1, sizeof(disp_backlight_t));
     if (bckl_dev == NULL){
-        ESP_LOGW(TAG, "Could not create new LCD backlight instance");
+        ESP_LOGW(TAG, "Not enough memory");
         return NULL;
     }
 
