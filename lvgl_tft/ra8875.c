@@ -27,13 +27,6 @@
 #define RA8875_MODE_CMD_WRITE   (0x80)
 #define RA8875_MODE_STATUS_READ (0xC0)
 
-#if (LV_COLOR_DEPTH == 8)
-    #define SYSR_VAL (0x00)
-#elif (LV_COLOR_DEPTH == 16)
-    #define SYSR_VAL (0x08)
-#else
-    #error "Unsupported color depth (LV_COLOR_DEPTH)"
-#endif
 #define BYTES_PER_PIXEL (LV_COLOR_DEPTH / 8)
 
 #define HDWR_VAL (LV_HOR_RES_MAX/8 - 1)
@@ -44,6 +37,7 @@
 
 #ifndef CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875
     // Use this settings if there is no Kconfig settings defined
+    #define SYSR_VAL (0x00)
     #define DPCR_VAL (0x00)
     #define PCSR_VAL (0x00)
     #define HNDR_VAL (0x00)
@@ -60,6 +54,15 @@
     #define CONFIG_LV_DISP_RA8875_PLLDIVK (0x00)
 
 #else
+
+#if (LV_COLOR_DEPTH == 8)
+    #define SYSR_VAL (0x00)
+#elif (LV_COLOR_DEPTH == 16)
+    #define SYSR_VAL (0x08)
+#else
+    #error "Unsupported color depth (LV_COLOR_DEPTH)"
+#endif
+
 #if ( CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED || CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED )
     #if CONFIG_LV_INVERT_DISPLAY
         #define DPCR_VAL (VDIR_MASK)
