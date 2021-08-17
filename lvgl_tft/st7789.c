@@ -35,7 +35,7 @@ typedef struct {
  **********************/
 static void st7789_set_orientation(uint8_t orientation);
 
-static void st7789_send_color(void *data, uint16_t length);
+static void st7789_send_color(void *data, size_t length);
 
 /**********************
  *  STATIC VARIABLES
@@ -167,7 +167,7 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     /*Memory write*/
     st7789_send_cmd(ST7789_RAMWR);
 
-    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
+    size_t size = (size_t)lv_area_get_width(area) * (size_t)lv_area_get_height(area);
 
     st7789_send_color((void*)color_map, size * 2);
 
@@ -190,7 +190,7 @@ void st7789_send_data(void * data, uint16_t length)
     disp_spi_send_data(data, length);
 }
 
-static void st7789_send_color(void * data, uint16_t length)
+static void st7789_send_color(void * data, size_t length)
 {
     disp_wait_for_pending_transactions();
     gpio_set_level(ST7789_DC, 1);
