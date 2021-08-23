@@ -47,7 +47,7 @@ void *disp_driver_init(void)
 
     // We still use menuconfig for these settings
     // It will be set up during runtime in the future
-#ifndef CONFIG_LV_DISP_BACKLIGHT_OFF
+#if (defined(CONFIG_LV_DISP_BACKLIGHT_SWITCH) || defined(CONFIG_LV_DISP_BACKLIGHT_PWM))
     const disp_backlight_config_t bckl_config = {
         .gpio_num = CONFIG_LV_DISP_PIN_BCKL,
 #if defined CONFIG_LV_DISP_BACKLIGHT_PWM
@@ -63,15 +63,12 @@ void *disp_driver_init(void)
         .timer_idx = 0,
         .channel_idx = 0 // @todo this prevents us from having two PWM controlled displays
     };
-    const disp_backlight_config_t *bckl_config_p = &bckl_config;
-#else
-    const disp_backlight_config_t *bckl_config_p = NULL;
-#endif
-
-    disp_backlight_h bckl_handle = disp_backlight_new(bckl_config_p);
+    disp_backlight_h bckl_handle = disp_backlight_new(&bckl_config);
     disp_backlight_set(bckl_handle, 100);
-
     return bckl_handle;
+#else
+    return NULL;
+#endif
 }
 
 void disp_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
