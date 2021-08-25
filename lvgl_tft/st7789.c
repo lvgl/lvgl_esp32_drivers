@@ -49,8 +49,6 @@ static void st7789_reset(void);
  **********************/
 void st7789_init(void)
 {
-    display_hal_init_io();
-
     lcd_init_cmd_t st7789_init_cmds[] = {
         {0xCF, {0x00, 0x83, 0X30}, 3},
         {0xED, {0x64, 0x03, 0X12, 0X81}, 4},
