@@ -7,7 +7,7 @@
 #include "esp_lcd_backlight.h"
 #include "sdkconfig.h"
 
-void *disp_driver_init(void)
+void disp_driver_init(lv_disp_drv_t *drv)
 {
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
     ili9341_init();
@@ -16,7 +16,7 @@ void *disp_driver_init(void)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
     ili9488_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789
-    st7789_init();
+    st7789_init(drv);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7796S
     st7796s_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7735S
