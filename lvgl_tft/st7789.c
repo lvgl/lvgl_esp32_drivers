@@ -33,9 +33,11 @@ typedef struct {
  **********************/
 static void st7789_set_orientation(uint8_t orientation);
 
-static void st7789_send_color(void *data, size_t length);
+static void st7789_send_cmd(lv_disp_drv_t * drv, uint8_t cmd);
+static void st7789_send_data(lv_disp_drv_t * drv, void *data, uint16_t length);
+static void st7789_send_color(lv_disp_drv_t * drv, void *data, uint16_t length);
 
-static void st7789_reset(void);
+static void st7789_reset(lv_disp_drv_t * drv);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -47,7 +49,7 @@ static void st7789_reset(void);
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-void st7789_init(void)
+void st7789_init(lv_disp_drv_t *drv)
 {
     lcd_init_cmd_t st7789_init_cmds[] = {
         {0xCF, {0x00, 0x83, 0X30}, 3},
@@ -84,25 +86,27 @@ void st7789_init(void)
         {0, {0}, 0xff},
     };
 
-    st7789_reset();
+    st7789_reset(drv);
 
     ESP_LOGI(TAG, "Initialization.\n");
 
     //Send all the commands
     uint16_t cmd = 0;
     while (st7789_init_cmds[cmd].databytes!=0xff) {
-        st7789_send_cmd(st7789_init_cmds[cmd].cmd);
-        st7789_send_data(st7789_init_cmds[cmd].data, st7789_init_cmds[cmd].databytes&0x1F);
+        st7789_send_cmd(drv, st7789_init_cmds[cmd].cmd);
+        st7789_send_data(drv, st7789_init_cmds[cmd].data, st7789_init_cmds[cmd].databytes&0x1F);
         if (st7789_init_cmds[cmd].databytes & 0x80) {
-            display_hal_delay(100);
+            display_hal_delay(drv, 100);
         }
         cmd++;
     }
 
-    st7789_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
+    st7789_enable_backlight(drv, true);
+
+    st7789_set_orientation(drv, CONFIG_LV_DISPLAY_ORIENTATION);
 }
 
-void st7789_enable_backlight(bool backlight)
+void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight)
 {
 #if ST7789_ENABLE_BACKLIGHT_CONTROL
     ESP_LOGI(TAG, "%s backlight.\n", backlight ? "Enabling" : "Disabling");
@@ -114,7 +118,7 @@ void st7789_enable_backlight(bool backlight)
     tmp = backlight ? 0 : 1;
 #endif
 
-    display_hal_backlight(tmp);
+    display_hal_backlight(drv, tmp);
 #endif
 }
 
@@ -129,6 +133,7 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     uint16_t offsetx2 = area->x2;
     uint16_t offsety1 = area->y1;
     uint16_t offsety2 = area->y2;
+    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
 
 #if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
     offsetx1 += CONFIG_LV_TFT_DISPLAY_X_OFFSET;
@@ -147,68 +152,64 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 #endif
 
     /*Column addresses*/
-    st7789_send_cmd(ST7789_CASET);
+    st7789_send_cmd(drv, ST7789_CASET);
     data[0] = (offsetx1 >> 8) & 0xFF;
     data[1] = offsetx1 & 0xFF;
     data[2] = (offsetx2 >> 8) & 0xFF;
     data[3] = offsetx2 & 0xFF;
-    st7789_send_data(data, 4);
+    st7789_send_data(drv, data, 4);
 
     /*Page addresses*/
-    st7789_send_cmd(ST7789_RASET);
+    st7789_send_cmd(drv, ST7789_RASET);
     data[0] = (offsety1 >> 8) & 0xFF;
     data[1] = offsety1 & 0xFF;
     data[2] = (offsety2 >> 8) & 0xFF;
     data[3] = offsety2 & 0xFF;
-    st7789_send_data(data, 4);
+    st7789_send_data(drv, data, 4);
 
     /*Memory write*/
-    st7789_send_cmd(ST7789_RAMWR);
-
-    size_t size = (size_t)lv_area_get_width(area) * (size_t)lv_area_get_height(area);
-
-    st7789_send_color((void*)color_map, size * 2);
-
+    st7789_send_cmd(drv, ST7789_RAMWR);
+    st7789_send_color(drv, (void*) color_map, size * 2);
 }
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-void st7789_send_cmd(uint8_t cmd)
+static void st7789_send_cmd(lv_disp_drv_t *drv, uint8_t cmd)
 {
     disp_wait_for_pending_transactions();
-    display_hal_gpio_dc(0);
-    disp_spi_send_data(&cmd, 1);
+    display_hal_gpio_dc(drv, 0);
+    disp_spi_send_data(drv, &cmd, 1);
 }
 
-void st7789_send_data(void * data, uint16_t length)
+static void st7789_send_data(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    display_hal_gpio_dc(1);
-    disp_spi_send_data(data, length);
+    display_hal_gpio_dc(drv, 1);
+    disp_spi_send_data(drv, data, length);
 }
 
-static void st7789_send_color(void * data, size_t length)
+static void st7789_send_color(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    display_hal_gpio_dc(1);
-    disp_spi_send_colors(data, length);
+    display_hal_gpio_dc(drv, 1);
+    disp_spi_send_colors(drv, data, length);
 }
 
 /* Reset the display, if we don't have a reset pin we use software reset */
-static void st7789_reset(void)
+static void st7789_reset(lv_disp_drv_t *drv)
 {
 #if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
-    display_hal_gpio_rst(0);
-    display_hal_delay(100);
-    display_hal_gpio_rst(1);
-    display_hal_delay(100);
+    display_hal_gpio_rst(drv, 0);
+    display_hal_delay(drv, 100);
+    display_hal_gpio_rst(drv, 1);
+    display_hal_delay(drv, 100);
 #else
-    st7789_send_cmd(ST7789_SWRESET);
+    st7789_send_cmd(drv, ST7789_SWRESET);
 #endif
 }
 
-static void st7789_set_orientation(uint8_t orientation)
+static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
 {
     const char *orientation_str[] = {
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
@@ -227,7 +228,7 @@ static void st7789_set_orientation(uint8_t orientation)
 
     ESP_LOGI(TAG, "0x36 command value: 0x%02X", data[orientation]);
 
-    st7789_send_cmd(ST7789_MADCTL);
-    st7789_send_data((void *) &data[orientation], 1);
+    st7789_send_cmd(drv, ST7789_MADCTL);
+    st7789_send_data(drv, (void *) &data[orientation], 1);
 }
 

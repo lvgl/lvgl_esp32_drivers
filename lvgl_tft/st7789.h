@@ -110,11 +110,9 @@ extern "C"
 #define ST7789_NVMSET       0xFC    // NVM setting
 #define ST7789_PROMACT      0xFE    // Program action
 
-void st7789_init(void);
+void st7789_init(lv_disp_drv_t *drv);
 void st7789_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
-
-void st7789_send_cmd(uint8_t cmd);
-void st7789_send_data(void *data, uint16_t length);
+void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight);
 
 #ifdef __cplusplus
 } /* extern "C" */
