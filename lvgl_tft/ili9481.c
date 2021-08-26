@@ -111,28 +111,6 @@ void ili9481_init(void)
 // Flush function based on mvturnho repo
 void ili9481_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
-    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
-
-    lv_color16_t *buffer_16bit = (lv_color16_t *) color_map;
-    uint8_t *mybuf;
-    do {
-        mybuf = (uint8_t *) heap_caps_malloc(3 * size * sizeof(uint8_t), MALLOC_CAP_DMA);
-        if (mybuf == NULL)  ESP_LOGW(TAG, "Could not allocate enough DMA memory!");
-    } while (mybuf == NULL);
-
-    uint32_t LD = 0;
-    uint32_t j = 0;
-
-    for (uint32_t i = 0; i < size; i++) {
-        LD = buffer_16bit[i].full;
-        mybuf[j] = (uint8_t) (((LD & 0xF800) >> 8) | ((LD & 0x8000) >> 13));
-        j++;
-        mybuf[j] = (uint8_t) ((LD & 0x07E0) >> 3);
-        j++;
-        mybuf[j] = (uint8_t) (((LD & 0x001F) << 3) | ((LD & 0x0010) >> 2));
-        j++;
-    }
-
     /* Column addresses  */
     uint8_t xb[] = {
         (uint8_t) (area->x1 >> 8) & 0xFF,
@@ -160,8 +138,17 @@ void ili9481_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
     /*Memory write*/
     ili9481_send_cmd(ILI9481_CMD_MEMORY_WRITE);
 
-    ili9481_send_color((void *) mybuf, size * 3);
-    heap_caps_free(mybuf);
+    // ILI9488/9481 doesn't support 16bit color data in SPI mode, only 18bit color data
+    // So here we have to transform every pixel from RGB565 to 6bits for every color, aligned to the left
+    const uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
+    lv_color16_t *color_565 = (lv_color16_t *) color_map;
+    for (uint32_t i = 0; i < size; i++, color_565++) {
+        uint8_t spi_buf[3];
+        spi_buf[0] = color_565->ch.blue << 3;  // Blue is 5bits wide, align to 8 bits
+        spi_buf[1] = color_565->ch.green << 2; // Green is 6bits wide, align to 8 bits
+        spi_buf[2] = color_565->ch.red << 3;   // Red is 5bits wide, align to 8 bits
+        ili9481_send_color((void *) spi_buf, sizeof(spi_buf));
+    }
 }
 
 /**********************
