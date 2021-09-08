@@ -21,9 +21,6 @@ extern "C"
 
 #include "sdkconfig.h"
 
-#define ST7789_DC       CONFIG_LV_DISP_PIN_DC
-#define ST7789_RST      CONFIG_LV_DISP_PIN_RST
-
 #if CONFIG_LV_DISP_USE_RST
   #if CONFIG_LV_DISP_ST7789_SOFT_RESET
     #define ST7789_SOFT_RST
