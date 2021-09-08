@@ -4,7 +4,11 @@ file(GLOB SOURCES *.c)
 set(LVGL_INCLUDE_DIRS . lvgl_tft)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
 list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
-list(APPEND SOURCES "lvgl_tft/display_espressif_hal.c")
+
+# This are the source files used for mcu abstraction
+set(LV_PORT_PATH "lv_port")
+
+list(APPEND SOURCES "${LV_PORT_PATH}/display_espressif_hal.c")
 
 #@todo add SimleInclude macro here
 
