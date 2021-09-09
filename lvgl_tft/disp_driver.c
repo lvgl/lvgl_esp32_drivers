@@ -7,7 +7,7 @@
 #include "esp_lcd_backlight.h"
 #include "sdkconfig.h"
 
-void disp_driver_init(lv_disp_drv_t *drv)
+void *disp_driver_init(lv_disp_drv_t *drv)
 {
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
     ili9341_init();
