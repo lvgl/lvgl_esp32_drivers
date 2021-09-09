@@ -107,9 +107,36 @@ extern "C"
 #define ST7789_NVMSET       0xFC    // NVM setting
 #define ST7789_PROMACT      0xFE    // Program action
 
+/**
+ * Initialize the ST7789 display controller with default configuration
+ *
+ * @param drv Pointer to lv_disp_drv_t being used
+ */
 void st7789_init(lv_disp_drv_t *drv);
+
+/**
+ * Send buffer content to display  
+ *
+ * @param drv Pointer to lv_disp_drv_t being used
+ * @param area Pointer to area to be sent
+ * @param color_map Pointer to color map
+ */
 void st7789_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
+
+/**
+ * Control display backlight
+ *
+ * @param drv Pointer to lv_disp_drv_t being used
+ * @param backlight Backlight control
+ */
 void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight);
+
+/**
+ * Display updated callback
+ *
+ * @param drv Pointer to lv_disp_drv_t being used
+ */
+void st7789_update_cb(lv_disp_drv_t *drv)
 
 #ifdef __cplusplus
 } /* extern "C" */
