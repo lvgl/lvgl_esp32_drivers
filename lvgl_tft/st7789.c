@@ -4,9 +4,6 @@
  * Mostly taken from lbthomsen/esp-idf-littlevgl github.
  */
 
-#include "sdkconfig.h"
-#include "esp_log.h"
-
 #include "st7789.h"
 
 #include "disp_spi.h"
@@ -88,8 +85,6 @@ void st7789_init(lv_disp_drv_t *drv)
 
     st7789_reset(drv);
 
-    ESP_LOGI(TAG, "Initialization.\n");
-
     //Send all the commands
     uint16_t cmd = 0;
     while (st7789_init_cmds[cmd].databytes!=0xff) {
@@ -103,13 +98,13 @@ void st7789_init(lv_disp_drv_t *drv)
 
     st7789_enable_backlight(drv, true);
 
-    st7789_set_orientation(drv, CONFIG_LV_DISPLAY_ORIENTATION);
+    /* FIXME We're setting up the initial orientation in the cmd array */
+    st7789_set_orientation(drv, ST7789_INITIAL_ORIENTATION);
 }
 
 void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight)
 {
 #if ST7789_ENABLE_BACKLIGHT_CONTROL
-    ESP_LOGI(TAG, "%s backlight.\n", backlight ? "Enabling" : "Disabling");
     uint32_t tmp = 0;
 
 #if (ST7789_BCKL_ACTIVE_LVL==1)
@@ -211,12 +206,6 @@ static void st7789_reset(lv_disp_drv_t *drv)
 
 static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
 {
-    const char *orientation_str[] = {
-        "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
-    };
-
-    ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
-
     uint8_t data[] =
     {
 #if CONFIG_LV_PREDEFINED_DISPLAY_TTGO
@@ -225,8 +214,6 @@ static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
 	0xC0, 0x00, 0x60, 0xA0
 #endif
     };
-
-    ESP_LOGI(TAG, "0x36 command value: 0x%02X", data[orientation]);
 
     st7789_send_cmd(drv, ST7789_MADCTL);
     st7789_send_data(drv, (void *) &data[orientation], 1);
