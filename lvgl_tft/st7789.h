@@ -17,19 +17,11 @@ extern "C"
 #else
 #include "lvgl/lvgl.h"
 #endif
-#include "../lvgl_helpers.h"
 
-#include "sdkconfig.h"
-
-#if CONFIG_LV_DISP_USE_RST
-  #if CONFIG_LV_DISP_ST7789_SOFT_RESET
-    #define ST7789_SOFT_RST
-  #endif
-#else
-  #define ST7789_SOFT_RST
-#endif
-
-#define ST7789_INVERT_COLORS            CONFIG_LV_INVERT_COLORS
+/* For SPI transfers */
+#include "lvgl_helpers.h"
+/* For ST7789 particular configurations */
+#include "display_config.h"
 
 /* ST7789 commands */
 #define ST7789_NOP      0x00
