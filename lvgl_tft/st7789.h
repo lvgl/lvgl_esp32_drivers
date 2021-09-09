@@ -128,7 +128,7 @@ void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight);
  *
  * @param drv Pointer to lv_disp_drv_t being used
  */
-void st7789_update_cb(lv_disp_drv_t *drv)
+void st7789_update_cb(lv_disp_drv_t *drv);
 
 #ifdef __cplusplus
 } /* extern "C" */
