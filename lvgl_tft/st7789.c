@@ -194,7 +194,7 @@ static void st7789_send_color(lv_disp_drv_t *drv, void * data, uint16_t length)
 /* Reset the display, if we don't have a reset pin we use software reset */
 static void st7789_reset(lv_disp_drv_t *drv)
 {
-#if !defined(CONFIG_LV_DISP_ST7789_SOFT_RESET)
+#if !defined(ST7789_SOFT_RST)
     display_hal_gpio_rst(drv, 0);
     display_hal_delay(drv, 100);
     display_hal_gpio_rst(drv, 1);
