@@ -219,7 +219,8 @@ static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
     st7789_send_data(drv, (void *) &data[orientation], 1);
 }
 
-/* Display update callback, we could update the orientation in here */
+/* Display update callback, we could update the orientation in here
+ * NOTE Available only for LVGL v8 */
 void st7789_update_cb(lv_disp_drv_t *drv)
 {
     (void) drv;
