@@ -122,6 +122,22 @@ void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight)
  * account that gap, this is not necessary in all orientations. */
 void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
+    static lv_disp_rot_t prev_rotation = LV_DISP_ROT_NONE;
+
+    lv_disp_t *display = (lv_disp_t *) drv;
+    lv_disp_rot_t rotation = lv_disp_get_rotation(display);
+
+    if (rotation != prev_rotation) {
+        /* Update rotation */
+
+        /* TODO Handle all other rotations */
+        if (LV_DISP_ROT_180 == rotation) {
+            st7789_set_orientation(drv, 1);
+        }
+
+        prev_rotation = rotation;
+    }
+
     uint8_t data[4] = {0};
 
     uint16_t offsetx1 = area->x1;
@@ -138,8 +154,13 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 
 #elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
 #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
-    offsetx1 += 80;
-    offsetx2 += 80;
+    if (LV_DISP_ROT_NONE == rotation) {
+        offsetx1 += 80;
+        offsetx2 += 80;
+    }
+    else {
+
+    }
 #elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
     offsety1 += 80;
     offsety2 += 80;
