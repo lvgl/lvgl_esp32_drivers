@@ -7,7 +7,7 @@
 #include "st7789.h"
 
 #include "disp_spi.h"
-#include "display_hal.h"
+#include "display_port.h"
 
 /*********************
  *      DEFINES
@@ -91,7 +91,7 @@ void st7789_init(lv_disp_drv_t *drv)
         st7789_send_cmd(drv, st7789_init_cmds[cmd].cmd);
         st7789_send_data(drv, st7789_init_cmds[cmd].data, st7789_init_cmds[cmd].databytes&0x1F);
         if (st7789_init_cmds[cmd].databytes & 0x80) {
-            display_hal_delay(drv, 100);
+            display_port_delay(drv, 100);
         }
         cmd++;
     }
@@ -113,7 +113,7 @@ void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight)
     tmp = backlight ? 0 : 1;
 #endif
 
-    display_hal_backlight(drv, tmp);
+    display_port_backlight(drv, tmp);
 #endif
 }
 
@@ -173,21 +173,21 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 static void st7789_send_cmd(lv_disp_drv_t *drv, uint8_t cmd)
 {
     disp_wait_for_pending_transactions();
-    display_hal_gpio_dc(drv, 0);
+    display_port_gpio_dc(drv, 0);
     disp_spi_send_data(&cmd, 1);
 }
 
 static void st7789_send_data(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    display_hal_gpio_dc(drv, 1);
+    display_port_gpio_dc(drv, 1);
     disp_spi_send_data(data, length);
 }
 
 static void st7789_send_color(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    display_hal_gpio_dc(drv, 1);
+    display_port_gpio_dc(drv, 1);
     disp_spi_send_colors(data, length);
 }
 
@@ -195,13 +195,13 @@ static void st7789_send_color(lv_disp_drv_t *drv, void * data, uint16_t length)
 static void st7789_reset(lv_disp_drv_t *drv)
 {
 #if !defined(ST7789_SOFT_RST)
-    display_hal_gpio_rst(drv, 0);
-    display_hal_delay(drv, 100);
-    display_hal_gpio_rst(drv, 1);
-    display_hal_delay(drv, 100);
+    display_port_gpio_rst(drv, 0);
+    display_port_delay(drv, 100);
+    display_port_gpio_rst(drv, 1);
+    display_port_delay(drv, 100);
 #else
     st7789_send_cmd(drv, ST7789_SWRESET);
-    display_hal_delay(drv, 5);
+    display_port_delay(drv, 5);
 #endif
 }
 

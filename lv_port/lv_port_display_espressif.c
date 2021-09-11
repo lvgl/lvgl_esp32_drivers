@@ -1,19 +1,19 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "display_hal.h"
+#include "display_port.h"
 
 #include "sdkconfig.h"
 #include "driver/gpio.h"
 
-void display_hal_delay(lv_disp_drv_t *drv, uint32_t delay_ms)
+void display_port_delay(lv_disp_drv_t *drv, uint32_t delay_ms)
 {
     (void) drv;
 
     vTaskDelay(pdMS_TO_TICKS(delay_ms));
 }
 
-void display_hal_backlight(lv_disp_drv_t *drv, uint8_t state)
+void display_port_backlight(lv_disp_drv_t *drv, uint8_t state)
 {
     (void) drv;
 
@@ -22,7 +22,7 @@ void display_hal_backlight(lv_disp_drv_t *drv, uint8_t state)
 #endif
 }
 
-void display_hal_gpio_dc(lv_disp_drv_t *drv, uint8_t state)
+void display_port_gpio_dc(lv_disp_drv_t *drv, uint8_t state)
 {
     (void) drv;
 
@@ -31,7 +31,7 @@ void display_hal_gpio_dc(lv_disp_drv_t *drv, uint8_t state)
 #endif
 }
 
-void display_hal_gpio_rst(lv_disp_drv_t *drv, uint8_t state)
+void display_port_gpio_rst(lv_disp_drv_t *drv, uint8_t state)
 {
     (void) drv;
 
