@@ -96,25 +96,8 @@ void st7789_init(lv_disp_drv_t *drv)
         cmd++;
     }
 
-    st7789_enable_backlight(drv, true);
-
     /* FIXME We're setting up the initial orientation in the cmd array */
     st7789_set_orientation(drv, ST7789_INITIAL_ORIENTATION);
-}
-
-void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight)
-{
-#if ST7789_ENABLE_BACKLIGHT_CONTROL
-    uint32_t tmp = 0;
-
-#if (ST7789_BCKL_ACTIVE_LVL==1)
-    tmp = backlight ? 1 : 0;
-#else
-    tmp = backlight ? 0 : 1;
-#endif
-
-    display_port_backlight(drv, tmp);
-#endif
 }
 
 /* The ST7789 display controller can drive 320*240 displays, when using a 240*240

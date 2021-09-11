@@ -116,14 +116,6 @@ void st7789_init(lv_disp_drv_t *drv);
 void st7789_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
 
 /**
- * Control display backlight
- *
- * @param drv Pointer to lv_disp_drv_t being used
- * @param backlight Backlight control
- */
-void st7789_enable_backlight(lv_disp_drv_t *drv, bool backlight);
-
-/**
  * Display updated callback
  *
  * @param drv Pointer to lv_disp_drv_t being used
