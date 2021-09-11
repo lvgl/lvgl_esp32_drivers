@@ -201,6 +201,7 @@ static void st7789_reset(lv_disp_drv_t *drv)
     display_hal_delay(drv, 100);
 #else
     st7789_send_cmd(drv, ST7789_SWRESET);
+    display_hal_delay(drv, 5);
 #endif
 }
 
