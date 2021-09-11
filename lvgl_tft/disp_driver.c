@@ -45,6 +45,11 @@ void *disp_driver_init(lv_disp_drv_t *drv)
     ili9163c_init();
 #endif
 
+    return disp_backlight_init();
+}
+
+void *disp_backlight_init(void)
+{
     // We still use menuconfig for these settings
     // It will be set up during runtime in the future
 #if (defined(CONFIG_LV_DISP_BACKLIGHT_SWITCH) || defined(CONFIG_LV_DISP_BACKLIGHT_PWM))
