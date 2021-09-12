@@ -76,6 +76,8 @@ extern "C" {
 #define DISP_BUF_SIZE ((LV_VER_RES_MAX * LV_VER_RES_MAX) / 8) // 2888 bytes
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C
 #define DISP_BUF_SIZE (LV_HOR_RES_MAX * 40)
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1351
+#define DISP_BUF_SIZE (LV_HOR_RES_MAX * 40)
 #else
 #error "No display controller selected"
 #endif
