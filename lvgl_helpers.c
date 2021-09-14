@@ -69,7 +69,6 @@ void lvgl_driver_init(void)
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
-    disp_driver_init();
 
 #if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
     touch_driver_init();
@@ -89,7 +88,6 @@ void lvgl_driver_init(void)
     disp_spi_add_device(TFT_SPI_HOST);
     tp_spi_add_device(TOUCH_SPI_HOST);
 
-    disp_driver_init();
     touch_driver_init();
 
     return;
@@ -106,7 +104,6 @@ void lvgl_driver_init(void)
 
     disp_spi_add_device(TFT_SPI_HOST);
 #elif defined (CONFIG_LV_I2C_DISPLAY)
-    disp_driver_init();
 #else
 #error "No protocol defined for display controller"
 #endif
