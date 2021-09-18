@@ -4,21 +4,16 @@
  * Mostly taken from lbthomsen/esp-idf-littlevgl github.
  */
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "sdkconfig.h"
-
-#include "esp_log.h"
-
 #include "st7789.h"
 
 #include "disp_spi.h"
-#include "driver/gpio.h"
+#include "display_port.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define TAG "st7789"
+#define TAG "ST7789"
+
 /**********************
  *      TYPEDEFS
  **********************/
@@ -33,10 +28,13 @@ typedef struct {
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void st7789_set_orientation(uint8_t orientation);
+static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation);
 
-static void st7789_send_color(void *data, uint16_t length);
+static void st7789_send_cmd(lv_disp_drv_t * drv, uint8_t cmd);
+static void st7789_send_data(lv_disp_drv_t * drv, void *data, uint16_t length);
+static void st7789_send_color(lv_disp_drv_t * drv, void *data, uint16_t length);
 
+static void st7789_reset(lv_disp_drv_t * drv);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -48,7 +46,7 @@ static void st7789_send_color(void *data, uint16_t length);
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-void st7789_init(void)
+void st7789_init(lv_disp_drv_t *drv)
 {
     lcd_init_cmd_t st7789_init_cmds[] = {
         {0xCF, {0x00, 0x83, 0X30}, 3},
@@ -85,39 +83,21 @@ void st7789_init(void)
         {0, {0}, 0xff},
     };
 
-    //Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(ST7789_DC);
-    gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
-
-#if !defined(ST7789_SOFT_RST)
-    gpio_pad_select_gpio(ST7789_RST);
-    gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
-#endif
-
-    //Reset the display
-#if !defined(ST7789_SOFT_RST)
-    gpio_set_level(ST7789_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
-    gpio_set_level(ST7789_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
-#else
-    st7789_send_cmd(ST7789_SWRESET);
-#endif
-
-    printf("ST7789 initialization.\n");
+    st7789_reset(drv);
 
     //Send all the commands
     uint16_t cmd = 0;
     while (st7789_init_cmds[cmd].databytes!=0xff) {
-        st7789_send_cmd(st7789_init_cmds[cmd].cmd);
-        st7789_send_data(st7789_init_cmds[cmd].data, st7789_init_cmds[cmd].databytes&0x1F);
+        st7789_send_cmd(drv, st7789_init_cmds[cmd].cmd);
+        st7789_send_data(drv, st7789_init_cmds[cmd].data, st7789_init_cmds[cmd].databytes&0x1F);
         if (st7789_init_cmds[cmd].databytes & 0x80) {
-                vTaskDelay(100 / portTICK_RATE_MS);
+            display_port_delay(drv, 100);
         }
         cmd++;
     }
 
-    st7789_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
+    /* FIXME We're setting up the initial orientation in the cmd array */
+    st7789_set_orientation(drv, ST7789_INITIAL_ORIENTATION);
 }
 
 /* The ST7789 display controller can drive 320*240 displays, when using a 240*240
@@ -131,6 +111,7 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     uint16_t offsetx2 = area->x2;
     uint16_t offsety1 = area->y1;
     uint16_t offsety2 = area->y2;
+    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
 
 #if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
     offsetx1 += CONFIG_LV_TFT_DISPLAY_X_OFFSET;
@@ -149,64 +130,66 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 #endif
 
     /*Column addresses*/
-    st7789_send_cmd(ST7789_CASET);
+    st7789_send_cmd(drv, ST7789_CASET);
     data[0] = (offsetx1 >> 8) & 0xFF;
     data[1] = offsetx1 & 0xFF;
     data[2] = (offsetx2 >> 8) & 0xFF;
     data[3] = offsetx2 & 0xFF;
-    st7789_send_data(data, 4);
+    st7789_send_data(drv, data, 4);
 
     /*Page addresses*/
-    st7789_send_cmd(ST7789_RASET);
+    st7789_send_cmd(drv, ST7789_RASET);
     data[0] = (offsety1 >> 8) & 0xFF;
     data[1] = offsety1 & 0xFF;
     data[2] = (offsety2 >> 8) & 0xFF;
     data[3] = offsety2 & 0xFF;
-    st7789_send_data(data, 4);
+    st7789_send_data(drv, data, 4);
 
     /*Memory write*/
-    st7789_send_cmd(ST7789_RAMWR);
-
-    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
-
-    st7789_send_color((void*)color_map, size * 2);
-
+    st7789_send_cmd(drv, ST7789_RAMWR);
+    st7789_send_color(drv, (void*) color_map, size * 2);
 }
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-void st7789_send_cmd(uint8_t cmd)
+static void st7789_send_cmd(lv_disp_drv_t *drv, uint8_t cmd)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(ST7789_DC, 0);
+    display_port_gpio_dc(drv, 0);
     disp_spi_send_data(&cmd, 1);
 }
 
-void st7789_send_data(void * data, uint16_t length)
+static void st7789_send_data(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(ST7789_DC, 1);
+    display_port_gpio_dc(drv, 1);
     disp_spi_send_data(data, length);
 }
 
-static void st7789_send_color(void * data, uint16_t length)
+static void st7789_send_color(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(ST7789_DC, 1);
+    display_port_gpio_dc(drv, 1);
     disp_spi_send_colors(data, length);
 }
 
-static void st7789_set_orientation(uint8_t orientation)
+/* Reset the display, if we don't have a reset pin we use software reset */
+static void st7789_reset(lv_disp_drv_t *drv)
 {
-    // ESP_ASSERT(orientation < 4);
+#if !defined(ST7789_SOFT_RST)
+    display_port_gpio_rst(drv, 0);
+    display_port_delay(drv, 100);
+    display_port_gpio_rst(drv, 1);
+    display_port_delay(drv, 100);
+#else
+    st7789_send_cmd(drv, ST7789_SWRESET);
+    display_port_delay(drv, 5);
+#endif
+}
 
-    const char *orientation_str[] = {
-        "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
-    };
-
-    ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
-
+static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
+{
     uint8_t data[] =
     {
 #if CONFIG_LV_PREDEFINED_DISPLAY_TTGO
@@ -216,8 +199,13 @@ static void st7789_set_orientation(uint8_t orientation)
 #endif
     };
 
-    ESP_LOGI(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    st7789_send_cmd(drv, ST7789_MADCTL);
+    st7789_send_data(drv, (void *) &data[orientation], 1);
+}
 
-    st7789_send_cmd(ST7789_MADCTL);
-    st7789_send_data((void *) &data[orientation], 1);
+/* Display update callback, we could update the orientation in here
+ * NOTE Available only for LVGL v8 */
+void st7789_update_cb(lv_disp_drv_t *drv)
+{
+    (void) drv;
 }
