@@ -39,3 +39,19 @@ void display_port_gpio_rst(lv_disp_drv_t *drv, uint8_t state)
     gpio_set_level(CONFIG_LV_DISP_PIN_RST, state);
 #endif
 }
+
+display_port_busy_t display_port_gpio_is_busy(lv_disp_drv_t *drv)
+{
+    (void) drv;
+
+    display_port_busy_t device_busy = DISPLAY_PORT_DEVICE_NOT_BUSY;
+
+#ifdef CONFIG_LV_DISP_PIN_BUSY
+    /* FIXME Assuming the busy signal in logic 1 means the device is busy */
+    if (gpio_get_level(CONFIG_LV_DISP_PIN_BUSY) == 1) {
+        device_busy = DISPLAY_PORT_DEVICE_IS_BUSY;
+    }
+#endif
+
+    return device_busy;
+}
