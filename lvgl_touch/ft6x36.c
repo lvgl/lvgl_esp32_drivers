@@ -118,16 +118,16 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     last_x = ((data_buf[1] & FT6X36_MSB_MASK) << 8) | (data_buf[2] & FT6X36_LSB_MASK);
     last_y = ((data_buf[3] & FT6X36_MSB_MASK) << 8) | (data_buf[4] & FT6X36_LSB_MASK);
 
+#if CONFIG_LV_FT6X36_SWAPXY
+    int16_t swap_buf = last_x;
+    last_x = last_y;
+    last_y = swap_buf;
+#endif
 #if CONFIG_LV_FT6X36_INVERT_X
     last_x =  LV_HOR_RES - last_x;
 #endif
 #if CONFIG_LV_FT6X36_INVERT_Y
     last_y = LV_VER_RES - last_y;
-#endif
-#if CONFIG_LV_FT6X36_SWAPXY
-    int16_t swap_buf = last_x;
-    last_x = last_y;
-    last_y = swap_buf;
 #endif
     data->point.x = last_x;
     data->point.y = last_y;
