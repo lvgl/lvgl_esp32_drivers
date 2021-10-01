@@ -12,6 +12,9 @@ extern "C"
 #include "lvgl/lvgl.h"
 #endif
 
+#include <stdint.h>
+#include <stdbool.h>
+
 /**
  * Busy wait delay port
  *
@@ -43,6 +46,15 @@ void display_port_gpio_dc(lv_disp_drv_t *drv, uint8_t state);
  * @param state State of the reset signal, 1 for logic high, 0 for logic low
  */
 void display_port_gpio_rst(lv_disp_drv_t *drv, uint8_t state);
+
+/**
+ * Display is busy port
+ *
+ * @param drv Pointer to driver See @ref lv_disp_drv_t
+ *
+ * @retval Returns false when display is not busy, true otherwise.
+ */
+bool display_port_gpio_is_busy(lv_disp_drv_t *drv);
 
 #ifdef __cplusplus
 } /* extern "C" */
