@@ -12,13 +12,8 @@ extern "C"
 #include "lvgl/lvgl.h"
 #endif
 
-/** Display is busy port
- * Useful for eink displays that need to poll their BUSY signal */
-typedef enum {
-    DISPLAY_PORT_DEVICE_NOT_BUSY,
-    DISPLAY_PORT_DEVICE_IS_BUSY,
-    /* NOTE Operation should not be interrupted when the device is busy */
-} display_port_busy_t;
+#include <stdint.h>
+#include <stdbool.h>
 
 /**
  * Busy wait delay port
@@ -57,10 +52,9 @@ void display_port_gpio_rst(lv_disp_drv_t *drv, uint8_t state);
  *
  * @param drv Pointer to driver See @ref lv_disp_drv_t
  *
- * @retval Returns DISPLAY_PORT_DEVICE_NOT_BUSY when display is not busy,
- * DISPLAY_PORT_DEVICE_IS_BUSY otherwise.
+ * @retval Returns false when display is not busy, true otherwise.
  */
-display_port_busy_t display_port_gpio_is_busy(lv_disp_drv_t *drv);
+bool display_port_gpio_is_busy(lv_disp_drv_t *drv);
 
 #ifdef __cplusplus
 } /* extern "C" */
