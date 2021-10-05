@@ -38,8 +38,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 
 #define PIN_DC              CONFIG_LV_DISP_PIN_DC
 #define PIN_DC_BIT          ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_DC)))
+
+#if defined CONFIG_LV_DISP_PIN_RST
 #define PIN_RST             CONFIG_LV_DISP_PIN_RST
 #define PIN_RST_BIT         ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_RST)))
+#endif
+
 #define PIN_BUSY            CONFIG_LV_DISP_PIN_BUSY
 #define PIN_BUSY_BIT        ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_BUSY)))
 #define EVT_BUSY            (1UL << 0UL)
@@ -324,6 +328,8 @@ static void jd79653a_update_partial(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t 
     jd79653a_power_off();
 }
 
+static void jd79653a_reset(void);
+
 void jd79653a_fb_set_full_color(uint8_t color)
 {
     jd79653a_power_on();
@@ -444,16 +450,6 @@ void jd79653a_init()
         return;
     }
 
-    // Setup output pins, output (PP)
-    gpio_config_t out_io_conf = {
-            .intr_type = GPIO_INTR_DISABLE,
-            .mode = GPIO_MODE_OUTPUT,
-            .pin_bit_mask = PIN_DC_BIT | PIN_RST_BIT,
-            .pull_down_en = 0,
-            .pull_up_en = 0,
-    };
-    ESP_ERROR_CHECK(gpio_config(&out_io_conf));
-
     // Setup input pin, pull-up, input
     gpio_config_t in_io_conf = {
             .intr_type = GPIO_INTR_POSEDGE,
@@ -466,11 +462,7 @@ void jd79653a_init()
     gpio_install_isr_service(0);
     gpio_isr_handler_add(PIN_BUSY, jd79653a_busy_intr, (void *) PIN_BUSY);
 
-    // Hardware reset
-    gpio_set_level(PIN_RST, 0);
-    vTaskDelay(pdMS_TO_TICKS(15)); // At least 10ms, leave 15ms for now just in case...
-    gpio_set_level(PIN_RST, 1);
-    vTaskDelay(pdMS_TO_TICKS(120));
+    jd79653a_reset();
 
     // Dump in initialise sequence
     jd79653a_spi_send_seq(init_seq, EPD_SEQ_LEN(init_seq));
@@ -480,4 +472,15 @@ void jd79653a_init()
     jd79653a_wait_busy(0);
 
     ESP_LOGI(TAG, "Panel is up!");
+}
+
+static void jd79653a_reset(void)
+{
+#if defined CONFIG_LV_DISP_PIN_RST
+    gpio_set_level(PIN_RST, 0);
+    // At least 10ms, leave 15ms for now just in case...
+    vTaskDelay(pdMS_TO_TICKS(15));
+    gpio_set_level(PIN_RST, 1);
+    vTaskDelay(pdMS_TO_TICKS(120));
+#endif
 }
