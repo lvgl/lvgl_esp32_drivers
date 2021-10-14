@@ -9,7 +9,6 @@
 #include "ili9163c.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "assert.h"
@@ -17,7 +16,7 @@
 /*********************
  *      DEFINES
  *********************/
-#define TAG "ILI9163C"
+#define TAG "ILI9163C: "
 
 // ILI9163C specific commands used in init
 #define ILI9163C_NOP 0x00
@@ -109,7 +108,7 @@ static void ili9163c_reset(void);
 
 void ili9163c_init(void)
 {
-	ESP_LOGD(TAG, "Init");
+	LV_LOG_INFO(TAG, "Init");
 
 	lcd_init_cmd_t ili_init_cmds[] = {
 		{ILI9163C_SWRESET, {0}, 0x80},		 // Software reset, 0 args, w/delay 120ms
@@ -229,7 +228,7 @@ static void ili9163c_set_orientation(uint8_t orientation)
 	const char *orientation_str[] = {
 		"PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"};
 
-	ESP_LOGD(TAG, "Display orientation: %s", orientation_str[orientation]);
+	LV_LOG_INFO(TAG, "Display orientation: %s", orientation_str[orientation]);
 
 	uint8_t data[] = {0x48, 0x88, 0xA8, 0x68};
 
