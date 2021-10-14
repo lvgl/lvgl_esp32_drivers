@@ -38,7 +38,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 /*********************
  *      DEFINES
  *********************/
- #define TAG "IL3820"
+#define TAG "IL3820: "
 
 /**
  * SSD1673, SSD1608 compatible EPD controller driver.

@@ -41,6 +41,11 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 
 
 #include <stdio.h>
+#include <string.h>
+
+#if defined (BT81X_ENABLE)
+#include <stdarg.h>
+#endif
 
 #include "EVE.h"
 #include "EVE_commands.h"
@@ -50,18 +55,9 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "soc/soc_memory_layout.h"
-
-#include "esp_log.h"
-
 #include "disp_spi.h"
 
-#include <string.h>
-
-#if defined (BT81X_ENABLE)
-#include <stdarg.h>
-#endif
-
-#define TAG_LOG "FT81X"
+#define TAG_LOG "FT81X: "
 
 /* data structure for SPI reading that has (optional) space for inserted dummy byte */
 typedef struct _spi_read_data {
@@ -875,13 +871,13 @@ uint8_t EVE_init(void)
 
 	/* The most reliable DIO/QIO switching point is after EVE start up but before reading the ChipID. */
 #if defined(DISP_SPI_TRANS_MODE_DIO)
-	ESP_LOGI(TAG_LOG, "Switching to DIO mode");
+	LV_LOG_INFO(TAG_LOG, "Switching to DIO mode");
 	DELAY_MS(20);	/* different boards may take a different delay but this generally seems to work */
 	EVE_memWrite16(REG_SPI_WIDTH, SPI_WIDTH_DIO);
 	SPIInherentSendFlags = DISP_SPI_MODE_DIO | DISP_SPI_MODE_DIOQIO_ADDR;
 	SPIDummyReadBits = 4;	/* Esp32 DMA SPI transaction dummy_bits works more like clock cycles, so in DIO 4 dummy_bits == 8 total bits */
 #elif defined(DISP_SPI_TRANS_MODE_QIO)
-	ESP_LOGI(TAG_LOG, "Switching to QIO mode");
+	LV_LOG_INFO(TAG_LOG, "Switching to QIO mode");
 	DELAY_MS(20);	/* different boards may take a different delay but this generally seems to work */
 	EVE_memWrite16(REG_SPI_WIDTH, SPI_WIDTH_QIO);
 	SPIInherentSendFlags = DISP_SPI_MODE_QIO | DISP_SPI_MODE_DIOQIO_ADDR;
@@ -897,7 +893,7 @@ uint8_t EVE_init(void)
 		timeout++;
 		if(timeout > 400)
 		{
-			ESP_LOGI(TAG_LOG, "Failed to read ChipID...aborting initialization.");
+			LV_LOG_WARN(TAG_LOG, "Failed to read ChipID...aborting initialization.");
 			return 0;
 		}
 	}
@@ -909,7 +905,7 @@ uint8_t EVE_init(void)
 		timeout++;
 		if(timeout > 50) /* experimental, 10 was the lowest value to get the BT815 started with, the touch-controller was the last to get out of reset */
 		{
-			ESP_LOGI(TAG_LOG, "Failed to read CPU status...aborting initialization.");
+			LV_LOG_WARN(TAG_LOG, "Failed to read CPU status...aborting initialization.");
 			return 0;
 		}
 	}
