@@ -29,13 +29,12 @@
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
 #include <driver/gpio.h>
-#include <esp_log.h>
-
+:x
 #include "disp_spi.h"
 #include "disp_driver.h"
 #include "uc8151d.h"
 
-#define TAG "lv_uc8151d"
+#define TAG "lv_uc8151d: "
 
 #define PIN_DC              CONFIG_LV_DISP_PIN_DC
 #define PIN_DC_BIT          ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_DC)))
@@ -106,7 +105,7 @@ static void uc8151d_spi_send_fb(uint8_t *data, size_t len)
 
 static void uc8151d_spi_send_seq(const uc8151d_seq_t *seq, size_t len)
 {
-    ESP_LOGD(TAG, "Writing cmd/data sequence, count %u", len);
+    LV_LOG_INFO(TAG, "Writing cmd/data sequence, count %u", len);
 
     if (!seq || len < 1) return;
     for (size_t cmd_idx = 0; cmd_idx < len; cmd_idx++) {
@@ -201,14 +200,14 @@ void uc8151d_lv_fb_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *
 {
     size_t len = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)) / 8;
 
-    ESP_LOGD(TAG, "x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", area->x1, area->x2, area->y1, area->y2);
-    ESP_LOGD(TAG, "Writing LVGL fb with len: %u", len);
+    LV_LOG_INFO(TAG, "x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", area->x1, area->x2, area->y1, area->y2);
+    LV_LOG_INFO(TAG, "Writing LVGL fb with len: %u", len);
 
     uint8_t *buf = (uint8_t *) color_map;
     uc8151d_full_update(buf);
 
     lv_disp_flush_ready(drv);
-    ESP_LOGD(TAG, "Ready");
+    LV_LOG_INFO(TAG, "Ready");
 }
 
 void uc8151d_lv_set_fb_cb(struct _disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
@@ -220,7 +219,7 @@ void uc8151d_lv_set_fb_cb(struct _disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t
     if (color.full) {
         BIT_SET(buf[byte_index], 7 - bit_index);
     } else {
-        ESP_LOGD(TAG, "Clear at x: %u, y: %u", x, y);
+        LV_LOG_INFO(TAG, "Clear at x: %u, y: %u", x, y);
         BIT_CLEAR(buf[byte_index], 7 - bit_index);
     }
 }
@@ -239,7 +238,7 @@ void uc8151d_init()
     // Initialise event group
     uc8151d_evts = xEventGroupCreate();
     if (!uc8151d_evts) {
-        ESP_LOGE(TAG, "Failed when initialising event group!");
+        LV_LOG_ERROR(TAG, "Failed when initialising event group!");
         return;
     }
 
@@ -255,9 +254,9 @@ void uc8151d_init()
     gpio_install_isr_service(0);
     gpio_isr_handler_add(PIN_BUSY, uc8151d_busy_intr, (void *) PIN_BUSY);
 
-    ESP_LOGI(TAG, "IO init finished");
+    LV_LOG_INFO(TAG, "IO init finished");
     uc8151d_panel_init();
-    ESP_LOGI(TAG, "Panel initialised");
+    LV_LOG_INFO(TAG, "Panel initialised");
 }
 
 static void uc8151d_reset(void)
