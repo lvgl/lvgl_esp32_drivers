@@ -8,9 +8,7 @@
 #include "ili9481.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "esp_heap_caps.h"
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -88,7 +86,7 @@ void ili9481_init(void)
     vTaskDelay(100 / portTICK_RATE_MS);
 #endif
 
-    ESP_LOGI(TAG, "ILI9481 initialization.");
+    LV_LOG_INFO("TAG" ": Initialization.");
 
     // Exit sleep
     ili9481_send_cmd(0x01);	/* Software reset */
@@ -196,7 +194,7 @@ static void ili9481_set_orientation(uint8_t orientation)
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
-    ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
+    LV_LOG_INFO("TAG" ": Display orientation: %s", orientation_str[orientation]);
 
     uint8_t data[] = {0x48, 0x4B, 0x28, 0x2B};
     ili9481_send_cmd(ILI9481_CMD_MEMORY_ACCESS_CONTROL);
