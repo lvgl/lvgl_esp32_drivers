@@ -7,7 +7,6 @@
  *********************/
 #include "stmpe610.h"
 #include "esp_system.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
@@ -17,7 +16,7 @@
 /*********************
  *      DEFINES
  *********************/
-#define TAG        "STMPE610"
+#define TAG        "STMPE610: "
 
 
 /**********************
@@ -55,11 +54,11 @@ void stmpe610_init(void)
 	uint8_t u8;
 	uint16_t u16;
 	
-	ESP_LOGI(TAG, "Initialization.");
+	LV_LOG_INFO(TAG, "Initialization.");
 
 	// Get the initial SPI configuration
 	//u8 = read_8bit_reg(STMPE_SPI_CFG);
-	//ESP_LOGI(TAG, "SPI_CFG = 0x%x", u8);
+	//LV_LOG_INFO(TAG, "SPI_CFG = 0x%x", u8);
 	
     // Attempt a software reset
 	write_8bit_reg(STMPE_SYS_CTRL1, STMPE_SYS_CTRL1_RESET);
@@ -69,12 +68,12 @@ void stmpe610_init(void)
 	u8 = read_8bit_reg(STMPE_SPI_CFG);
 	write_8bit_reg(STMPE_SPI_CFG, u8 | STMPE_SPI_CFG_AA);
 	u8 = read_8bit_reg(STMPE_SPI_CFG);
-	ESP_LOGI(TAG, "SPI_CFG = 0x%x", u8);
+	LV_LOG_INFO(TAG, "SPI_CFG = 0x%x", u8);
 	
 	// Verify SPI communication
 	u16 = read_16bit_reg(STMPE_CHIP_ID);
 	if (u16 != 0x811) {
-		ESP_LOGE(TAG, "Incorrect version: 0x%x", u16);
+		LV_LOG_ERROR(TAG, "Incorrect version: 0x%x", u16);
 	}
 
 	write_8bit_reg(STMPE_SYS_CTRL2, 0x00); // Disable clocks
@@ -130,12 +129,12 @@ bool stmpe610_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 		}
 		
 		if (c > 0) {
-			//ESP_LOGI(TAG, "%d: %d %d %d", c, x, y, z);
+			//LV_LOG_INFO(TAG, "%d: %d %d %d", c, x, y, z);
 		
 			adjust_data(&x, &y);
     		last_x = x;
     		last_y = y;
-    		//ESP_LOGI(TAG, "  ==> %d %d", x, y);
+    		//LV_LOG_INFO(TAG, "  ==> %d %d", x, y);
     	}
     	
     	z = read_8bit_reg(STMPE_INT_STA);  // Clear interrupts
@@ -144,7 +143,7 @@ bool stmpe610_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
     		// Clear the FIFO if we discover an overflow
     		write_8bit_reg(STMPE_FIFO_STA, STMPE_FIFO_STA_RESET);
 			write_8bit_reg(STMPE_FIFO_STA, 0); // unreset
-			ESP_LOGE(TAG, "Fifo overflow");
+			LV_LOG_ERROR(TAG, "Fifo overflow");
 		}
     }
     
