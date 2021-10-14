@@ -13,23 +13,17 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include <stdbool.h>
-
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
 #include "lvgl/lvgl.h"
 #endif
 
-#include "sdkconfig.h"
+#include "display_config.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define ILI9341_DC        CONFIG_LV_DISP_PIN_DC
-#define ILI9341_USE_RST   CONFIG_LV_DISP_USE_RST
-#define ILI9341_RST       CONFIG_LV_DISP_PIN_RST
-#define ILI9341_INVERT_COLORS CONFIG_LV_INVERT_COLORS
 
 /**********************
  *      TYPEDEFS
@@ -39,10 +33,10 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************/
 
-void ili9341_init(void);
+void ili9341_init(lv_disp_drv_t * drv);
 void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);
-void ili9341_sleep_in(void);
-void ili9341_sleep_out(void);
+void ili9341_sleep_in(lv_disp_drv_t * drv);
+void ili9341_sleep_out(lv_disp_drv_t *drv);
 
 /**********************
  *      MACROS

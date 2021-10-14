@@ -10,7 +10,7 @@
 void *disp_driver_init(lv_disp_drv_t *drv)
 {
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
-    ili9341_init();
+    ili9341_init(drv);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481
     ili9481_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
