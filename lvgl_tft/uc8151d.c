@@ -29,7 +29,7 @@
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
 #include <driver/gpio.h>
-:x
+
 #include "disp_spi.h"
 #include "disp_driver.h"
 #include "uc8151d.h"
