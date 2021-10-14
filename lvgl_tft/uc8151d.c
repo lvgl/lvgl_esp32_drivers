@@ -39,8 +39,12 @@
 
 #define PIN_DC              CONFIG_LV_DISP_PIN_DC
 #define PIN_DC_BIT          ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_DC)))
+
+#if defined CONFIG_LV_DISP_PIN_RST
 #define PIN_RST             CONFIG_LV_DISP_PIN_RST
 #define PIN_RST_BIT         ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_RST)))
+#endif
+
 #define PIN_BUSY            CONFIG_LV_DISP_PIN_BUSY
 #define PIN_BUSY_BIT        ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_BUSY)))
 #define EVT_BUSY            (1UL << 0UL)
@@ -139,14 +143,13 @@ static void uc8151d_sleep()
     uc8151d_spi_send_data_byte(0xa5);
 }
 
+static void uc8151d_reset(void);
+
 static void uc8151d_panel_init()
 {
     // Hardware reset for 3 times - not sure why but it's from official demo code
     for (uint8_t cnt = 0; cnt < 3; cnt++) {
-        gpio_set_level(PIN_RST, 0);
-        vTaskDelay(pdMS_TO_TICKS(10)); // At least 10ms, leave 20ms for now just in case...
-        gpio_set_level(PIN_RST, 1);
-        vTaskDelay(pdMS_TO_TICKS(10));
+        uc8151d_reset();
     }
 
     // Power up
@@ -240,16 +243,6 @@ void uc8151d_init()
         return;
     }
 
-    // Setup output pins, output (PP)
-    gpio_config_t out_io_conf = {
-            .intr_type = GPIO_INTR_DISABLE,
-            .mode = GPIO_MODE_OUTPUT,
-            .pin_bit_mask = PIN_DC_BIT | PIN_RST_BIT,
-            .pull_down_en = 0,
-            .pull_up_en = 0,
-    };
-    ESP_ERROR_CHECK(gpio_config(&out_io_conf));
-
     // Setup input pin, pull-up, input
     gpio_config_t in_io_conf = {
             .intr_type = GPIO_INTR_POSEDGE,
@@ -265,4 +258,15 @@ void uc8151d_init()
     ESP_LOGI(TAG, "IO init finished");
     uc8151d_panel_init();
     ESP_LOGI(TAG, "Panel initialised");
+}
+
+static void uc8151d_reset(void)
+{
+#if defined CONFIG_LV_DISP_USE_RST
+    gpio_set_level(PIN_RST, 0);
+    // At least 10ms, leave 20ms for now just in case...
+    vTaskDelay(pdMS_TO_TICKS(20));
+    gpio_set_level(PIN_RST, 1);
+    vTaskDelay(pdMS_TO_TICKS(10));
+#endif
 }

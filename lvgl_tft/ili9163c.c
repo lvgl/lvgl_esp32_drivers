@@ -69,7 +69,7 @@
 
 #define ST77XX_MADCTL_MY 0x80
 #define ST77XX_MADCTL_MX 0x40
-#define ST77XX_MADCTL_MV 0x20 #define
+#define ST77XX_MADCTL_MV 0x20
 #define ST77XX_MADCTL_ML 0x10
 #define ST77XX_MADCTL_RGB 0x00
 #define ST77XX_MADCTL_BGR 0x08
@@ -94,7 +94,7 @@ static void ili9163c_set_orientation(uint8_t orientation);
 static void ili9163c_send_cmd(uint8_t cmd);
 static void ili9163c_send_data(void *data, uint16_t length);
 static void ili9163c_send_color(void *data, uint16_t length);
-
+static void ili9163c_reset(void);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -136,18 +136,8 @@ void ili9163c_init(void)
 		{ILI9163C_DISPON, {0}, 0x80},																						// Main screen turn on, no args w/delay 100 ms delay
 		{0, {0}, 0xff}
 	};
-
-	//Initialize non-SPI GPIOs
-	gpio_pad_select_gpio(ILI9163C_DC);
-	gpio_set_direction(ILI9163C_DC, GPIO_MODE_OUTPUT);
-	gpio_pad_select_gpio(ILI9163C_RST);
-	gpio_set_direction(ILI9163C_RST, GPIO_MODE_OUTPUT);
-
-	//Reset the display
-	gpio_set_level(ILI9163C_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
-	gpio_set_level(ILI9163C_RST, 1);
-	vTaskDelay(150 / portTICK_RATE_MS);
+ 
+        ili9163c_reset();
 
 	//Send all the commands
 	uint16_t cmd = 0;
@@ -245,4 +235,15 @@ static void ili9163c_set_orientation(uint8_t orientation)
 
 	ili9163c_send_cmd(ILI9163C_MADCTL);
 	ili9163c_send_data((void *)&data[orientation], 1);
+}
+
+static void ili9163c_reset(void)
+{
+#if CONFIG_LV_DISP_USE_RST
+    gpio_set_level(ILI9163C_RST, 0);
+    vTaskDelay(100 / portTICK_RATE_MS);
+    gpio_set_level(ILI9163C_RST, 1);
+    vTaskDelay(150 / portTICK_RATE_MS);
+#else
+#endif
 }
