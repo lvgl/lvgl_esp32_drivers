@@ -98,6 +98,8 @@ void lvgl_driver_init(void);
 bool lvgl_spi_driver_init(int host, int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz, int dma_channel, int quadwp_pin, int quadhd_pin);
 
+/* Initialize display GPIOs, e.g. DC and RST pins */
+void display_bsp_init_io(void);
 /**********************
  *      MACROS
  **********************/
