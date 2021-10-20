@@ -29,15 +29,16 @@
 #include "lvgl_i2c/i2c_manager.h"
 
 #define TAG "FT6X36"
+#define FT6X36_TOUCH_QUEUE_ELEMENTS 1
 
 
-ft6x36_status_t ft6x36_status;
-uint8_t current_dev_addr;       // set during init
+static ft6x36_status_t ft6x36_status;
+static uint8_t current_dev_addr;       // set during init
+static ft6x36_touch_t touch_inputs = { -1, -1, LV_INDEV_STATE_REL };    // -1 coordinates to designate it was never touched
 
-esp_err_t ft6x06_i2c_read8(uint8_t slave_addr, uint8_t register_addr, uint8_t *data_buf) {
+static esp_err_t ft6x06_i2c_read8(uint8_t slave_addr, uint8_t register_addr, uint8_t *data_buf) {
     return lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr, data_buf, 1);
 }
-
 
 /**
   * @brief  Read the FT6x36 gesture ID. Initialize first!
@@ -84,7 +85,14 @@ void ft6x06_init(uint16_t dev_addr) {
 
     ft6x06_i2c_read8(dev_addr, FT6X36_RELEASECODE_REG, &data_buf);
     ESP_LOGI(TAG, "\tRelease code: 0x%02x", data_buf);
-
+    
+    ft6x36_touch_queue_handle = xQueueCreate( FT6X36_TOUCH_QUEUE_ELEMENTS, sizeof( ft6x36_touch_t ));
+    if( ft6x36_touch_queue_handle == NULL )
+    {
+        ESP_LOGE( TAG, "\tError creating touch input FreeRTOS queue" );
+        return;
+    }
+    xQueueSend( ft6x36_touch_queue_handle, &touch_inputs, 0 );
 }
 
 /**
@@ -99,8 +107,6 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         return 0x00;
     }
     uint8_t data_buf[5];        // 1 byte status, 2 bytes X, 2 bytes Y
-    static int16_t last_x = 0;  // 12bit pixel value
-    static int16_t last_y = 0;  // 12bit pixel value
 
     esp_err_t ret = lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, current_dev_addr, FT6X36_TD_STAT_REG, &data_buf[0], 5);
     if (ret != ESP_OK) {
@@ -109,29 +115,38 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     uint8_t touch_pnt_cnt = data_buf[0];  // Number of detected touch points
 
     if (ret != ESP_OK || touch_pnt_cnt != 1) {    // ignore no touch & multi touch
-        data->point.x = last_x;
-        data->point.y = last_y;
-        data->state = LV_INDEV_STATE_REL;
+        if ( touch_inputs.current_state != LV_INDEV_STATE_REL)
+        {
+            touch_inputs.current_state = LV_INDEV_STATE_REL;
+            xQueueOverwrite( ft6x36_touch_queue_handle, &touch_inputs );
+        } 
+        data->point.x = touch_inputs.last_x;
+        data->point.y = touch_inputs.last_y;
+        data->state = touch_inputs.current_state;
         return false;
     }
 
-    last_x = ((data_buf[1] & FT6X36_MSB_MASK) << 8) | (data_buf[2] & FT6X36_LSB_MASK);
-    last_y = ((data_buf[3] & FT6X36_MSB_MASK) << 8) | (data_buf[4] & FT6X36_LSB_MASK);
+    touch_inputs.current_state = LV_INDEV_STATE_PR;
+    touch_inputs.last_x = ((data_buf[1] & FT6X36_MSB_MASK) << 8) | (data_buf[2] & FT6X36_LSB_MASK);
+    touch_inputs.last_y = ((data_buf[3] & FT6X36_MSB_MASK) << 8) | (data_buf[4] & FT6X36_LSB_MASK);
 
 #if CONFIG_LV_FT6X36_SWAPXY
-    int16_t swap_buf = last_x;
-    last_x = last_y;
-    last_y = swap_buf;
+    int16_t swap_buf = touch_inputs.last_x;
+    touch_inputs.last_x = touch_inputs.last_y;
+    touch_inputs.last_y = swap_buf;
 #endif
 #if CONFIG_LV_FT6X36_INVERT_X
-    last_x =  LV_HOR_RES - last_x;
+    touch_inputs.last_x =  LV_HOR_RES - touch_inputs.last_x;
 #endif
 #if CONFIG_LV_FT6X36_INVERT_Y
-    last_y = LV_VER_RES - last_y;
+    touch_inputs.last_y = LV_VER_RES - touch_inputs.last_y;
 #endif
-    data->point.x = last_x;
-    data->point.y = last_y;
-    data->state = LV_INDEV_STATE_PR;
+    data->point.x = touch_inputs.last_x;
+    data->point.y = touch_inputs.last_y;
+    data->state = touch_inputs.current_state;
     ESP_LOGD(TAG, "X=%u Y=%u", data->point.x, data->point.y);
+
+    xQueueOverwrite( ft6x36_touch_queue_handle, &touch_inputs );
+
     return false;
 }
