@@ -9,15 +9,12 @@
 #include "ra8875.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define TAG "RA8875"
-
 #define DIV_ROUND_UP(n, d) (((n)+(d)-1)/(d))
 
 #define SPI_CLOCK_SPEED_SLOW_HZ 1000000
@@ -170,7 +167,7 @@ void ra8875_init(void)
     };
     #define INIT_CMDS_SIZE (sizeof(init_cmds)/sizeof(init_cmds[0]))
 
-    ESP_LOGI(TAG, "Initializing RA8875...");
+    LV_LOG_INFO("Initializing RA8875...");
 
     // Initialize non-SPI GPIOs
 
@@ -204,7 +201,7 @@ void ra8875_init(void)
         vTaskDelay(1);
     }
     if (i == 0) {
-        ESP_LOGW(TAG, "WARNING: Memory clear timed out; RA8875 may be unresponsive.");
+        LV_LOG_WARN("WARNING: Memory clear timed out; RA8875 may be unresponsive.");
     }
 
     // Enable the display
@@ -213,7 +210,7 @@ void ra8875_init(void)
 
 void ra8875_enable_display(bool enable)
 {
-    ESP_LOGI(TAG, "%s display.", enable ? "Enabling" : "Disabling");
+    LV_LOG_INFO("%s display.", enable ? "Enabling" : "Disabling");
     uint8_t val = enable ? (0x80) : (0x00);
     ra8875_write_cmd(RA8875_REG_PWRR, val);            // Power and Display Control Register (PWRR)
 }
@@ -229,14 +226,14 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     size_t linelen = (area->x2 - area->x1 + 1);
     uint8_t * buffer = (uint8_t*)color_map;
 
-    ESP_LOGD(TAG, "flush: %d,%d at %d,%d", area->x1, area->x2, area->y1, area->y2 );
+    LV_LOG_INFO("flush: %d,%d at %d,%d", area->x1, area->x2, area->y1, area->y2 );
 
     // Get lock
     disp_spi_acquire();
 
     // Set window if needed
     if ((x1 != area->x1) || (x2 != area->x2)) {
-        ESP_LOGD(TAG, "flush: set window (x1,x2): %d,%d -> %d,%d", x1, x2, area->x1, area->x2);
+        LV_LOG_INFO("flush: set window (x1,x2): %d,%d -> %d,%d", x1, x2, area->x1, area->x2);
         ra8875_set_window(area->x1, area->x2, 0, LV_VER_RES_MAX-1);
         x1 = area->x1;
         x2 = area->x2;
@@ -244,7 +241,7 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 
     // Set cursor if needed
     if ((x != area->x1) || (y != area->y1)) {
-        ESP_LOGD(TAG, "flush: set cursor (x,y): %d,%d -> %d,%d", x, y, area->x1, area->y1);
+        LV_LOG_INFO("flush: set cursor (x,y): %d,%d -> %d,%d", x, y, area->x1, area->y1);
         ra8875_set_memory_write_cursor(area->x1, area->y1);
         x = area->x1;
     }

@@ -9,14 +9,12 @@
 #include "st7796s.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define TAG "ST7796S"
 
 /**********************
  *      TYPEDEFS
@@ -96,7 +94,7 @@ void st7796s_init(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 #endif
 
-	ESP_LOGI(TAG, "Initialization.");
+	LV_LOG_INFO("Initialization.");
 
 	//Send all the commands
 	uint16_t cmd = 0;
@@ -194,7 +192,7 @@ static void st7796s_set_orientation(uint8_t orientation)
 	const char *orientation_str[] = {
 		"PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"};
 
-	ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
+	LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
 
 #if defined CONFIG_LV_PREDEFINED_DISPLAY_M5STACK
 	const uint8_t data[] = {0x68, 0x68, 0x08, 0x08};
@@ -206,7 +204,7 @@ static void st7796s_set_orientation(uint8_t orientation)
 	const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 #endif
 
-	ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
+	LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
 
 	st7796s_send_cmd(0x36);
 	st7796s_send_data((void *)&data[orientation], 1);

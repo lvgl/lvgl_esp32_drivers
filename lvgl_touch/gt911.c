@@ -18,7 +18,6 @@
 * SOFTWARE.
 */
 
-#include <esp_log.h>
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include <lvgl.h>
 #else
@@ -27,8 +26,6 @@
 #include "gt911.h"
 
 #include "lvgl_i2c/i2c_manager.h"
-
-#define TAG "GT911"
 
 gt911_status_t gt911_status;
 
@@ -53,9 +50,9 @@ void gt911_init(uint8_t dev_addr) {
         uint8_t data_buf;
         esp_err_t ret;
 
-        ESP_LOGI(TAG, "Checking for GT911 Touch Controller");
+        LV_LOG_INFO("Checking for GT911 Touch Controller");
         if ((ret = gt911_i2c_read(dev_addr, GT911_PRODUCT_ID1, &data_buf, 1) != ESP_OK)) {
-            ESP_LOGE(TAG, "Error reading from device: %s",
+            LV_LOG_ERROR("Error reading from device: %s",
                         esp_err_to_name(ret));    // Only show error the first time
             return;
         }
@@ -64,22 +61,22 @@ void gt911_init(uint8_t dev_addr) {
         for (int i = 0; i < GT911_PRODUCT_ID_LEN; i++) {
             gt911_i2c_read(dev_addr, (GT911_PRODUCT_ID1 + i), (uint8_t *)&(gt911_status.product_id[i]), 1);
         }
-        ESP_LOGI(TAG, "\tProduct ID: %s", gt911_status.product_id);
+        LV_LOG_INFO("\tProduct ID: %s", gt911_status.product_id);
 
         gt911_i2c_read(dev_addr, GT911_VENDOR_ID, &data_buf, 1);
-        ESP_LOGI(TAG, "\tVendor ID: 0x%02x", data_buf);
+        LV_LOG_INFO("\tVendor ID: 0x%02x", data_buf);
 
         gt911_i2c_read(dev_addr, GT911_X_COORD_RES_L, &data_buf, 1);
         gt911_status.max_x_coord = data_buf;
         gt911_i2c_read(dev_addr, GT911_X_COORD_RES_H, &data_buf, 1);
         gt911_status.max_x_coord |= ((uint16_t)data_buf << 8);
-        ESP_LOGI(TAG, "\tX Resolution: %d", gt911_status.max_x_coord);
+        LV_LOG_INFO("\tX Resolution: %d", gt911_status.max_x_coord);
 
         gt911_i2c_read(dev_addr, GT911_Y_COORD_RES_L, &data_buf, 1);
         gt911_status.max_y_coord = data_buf;
         gt911_i2c_read(dev_addr, GT911_Y_COORD_RES_H, &data_buf, 1);
         gt911_status.max_y_coord |= ((uint16_t)data_buf << 8);
-        ESP_LOGI(TAG, "\tY Resolution: %d", gt911_status.max_y_coord);
+        LV_LOG_INFO("\tY Resolution: %d", gt911_status.max_y_coord);
         gt911_status.inited = true;
     }
 }
@@ -98,7 +95,7 @@ bool gt911_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     uint8_t status_reg;
 
     gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_STATUS_REG, &status_reg, 1);
-//    ESP_LOGI(TAG, "\tstatus: 0x%02x", status_reg);
+//    LV_LOG_INFO("\tstatus: 0x%02x", status_reg);
     touch_pnt_cnt = status_reg & 0x0F;
     if ((status_reg & 0x80) || (touch_pnt_cnt < 6)) {
         //Reset Status Reg Value
@@ -112,7 +109,7 @@ bool gt911_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     }
 
 //    gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_TRACK_ID1, &data_buf, 1);
-//    ESP_LOGI(TAG, "\ttrack_id: %d", data_buf);
+//    LV_LOG_INFO("\ttrack_id: %d", data_buf);
 
     gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_X_COORD_L, &data_buf, 1);
     last_x = data_buf;
@@ -138,7 +135,7 @@ bool gt911_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     data->point.x = last_x;
     data->point.y = last_y;
     data->state = LV_INDEV_STATE_PR;
-    ESP_LOGI(TAG, "X=%u Y=%u", data->point.x, data->point.y);
-    ESP_LOGV(TAG, "X=%u Y=%u", data->point.x, data->point.y);
+    LV_LOG_INFO("X=%u Y=%u", data->point.x, data->point.y);
+    LV_LOG_INFO("X=%u Y=%u", data->point.x, data->point.y);
     return false;
 }

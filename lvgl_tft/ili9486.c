@@ -9,14 +9,12 @@
 #include "ili9486.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 /*********************
  *      DEFINES
  *********************/
- #define TAG "ILI9486"
 
 /**********************
  *      TYPEDEFS
@@ -80,7 +78,7 @@ void ili9486_init(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 #endif
 
-	ESP_LOGI(TAG, "ILI9486 Initialization.");
+	LV_LOG_INFO("ILI9486 Initialization.");
 
 	//Send all the commands
 	uint16_t cmd = 0;
@@ -171,11 +169,11 @@ static void ili9486_set_orientation(uint8_t orientation)
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
-    ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
+    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
 
     const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 
-    ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
 
     ili9486_send_cmd(0x36);
     ili9486_send_data((void *) &data[orientation], 1);

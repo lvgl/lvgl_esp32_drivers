@@ -30,7 +30,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
  *********************/
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -39,7 +38,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 /*********************
  *      DEFINES
  *********************/
- #define TAG "IL3820"
 
 /**
  * SSD1673, SSD1608 compatible EPD controller driver.
@@ -279,7 +277,7 @@ static void il3820_waitbusy(int wait_ms)
         vTaskDelay(10 / portTICK_RATE_MS);
     }
 
-    ESP_LOGE( TAG, "busy exceeded %dms", i*10 );
+    LV_LOG_ERROR("Busy exceeded %dms", i*10 );
 }
 
 /* Set DC signal to command mode */

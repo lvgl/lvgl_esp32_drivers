@@ -9,7 +9,6 @@
 #include "st7735s.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -20,7 +19,6 @@
 /*********************
  *      DEFINES
  *********************/
- #define TAG "ST7735S"
  #define AXP192_I2C_ADDRESS                    0x34
 
 /**********************
@@ -115,7 +113,7 @@ void st7735s_init(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 #endif
 
-	ESP_LOGI(TAG, "ST7735S initialization.");
+	LV_LOG_INFO("ST7735S initialization.");
 
 	//Send all the commands
 	uint16_t cmd = 0;
@@ -211,7 +209,7 @@ static void st7735s_set_orientation(uint8_t orientation)
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
-    ESP_LOGD(TAG, "Display orientation: %s", orientation_str[orientation]);
+    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
 
     /*
         Portrait:  0xC8 = ST77XX_MADCTL_MX | ST77XX_MADCTL_MY | ST77XX_MADCTL_BGR
@@ -220,7 +218,7 @@ static void st7735s_set_orientation(uint8_t orientation)
     */
     uint8_t data[] = {0xC8, 0xC8, 0xA8, 0xA8};
 
-    ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
 
     st7735s_send_cmd(ST7735_MADCTL);
     st7735s_send_data((void *) &data[orientation], 1);
@@ -232,7 +230,7 @@ static void axp192_write_byte(uint8_t addr, uint8_t data)
 {
     err = lvgl_i2c_write(CONFIG_LV_I2C_DISPLAY_PORT, AXP192_I2C_ADDRESS, addr, &data, 1);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "AXP192 send failed. code: 0x%.2X", ret);
+        LV_LOG_ERROR("AXP192 send failed. code: 0x%.2X", ret);
     }
 }
 
@@ -244,7 +242,7 @@ static void axp192_init()
     axp192_write_byte(0x10, 0xFF);			// OLED_VPP Enable
     axp192_write_byte(0x28, 0xCC);			// Enable LDO2&LDO3, LED&TFT 3.0V
     axp192_sleep_out();
-    ESP_LOGI(TAG, "AXP192 initialized, power enabled for LDO2 and LDO3");
+    LV_LOG_INFO("AXP192 initialized, power enabled for LDO2 and LDO3");
 }
 
 static void axp192_sleep_in()

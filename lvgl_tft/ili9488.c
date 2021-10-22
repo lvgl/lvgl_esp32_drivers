@@ -8,7 +8,6 @@
 #include "ili9488.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
 #include "esp_heap_caps.h"
 
 #include "freertos/FreeRTOS.h"
@@ -17,7 +16,6 @@
 /*********************
  *      DEFINES
  *********************/
- #define TAG "ILI9488"
 
 /**********************
  *      TYPEDEFS
@@ -90,7 +88,7 @@ void ili9488_init(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 #endif
 
-	ESP_LOGI(TAG, "ILI9488 initialization.");
+	LV_LOG_INFO("ILI9488 initialization.");
 
 	// Exit sleep
 	ili9488_send_cmd(0x01);	/* Software reset */
@@ -119,7 +117,7 @@ void ili9488_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
     uint8_t *mybuf;
     do {
         mybuf = (uint8_t *) heap_caps_malloc(3 * size * sizeof(uint8_t), MALLOC_CAP_DMA);
-        if (mybuf == NULL)  ESP_LOGW(TAG, "Could not allocate enough DMA memory!");
+        if (mybuf == NULL)  LV_LOG_WARN("Could not allocate enough DMA memory!");
     } while (mybuf == NULL);
 
     uint32_t LD = 0;
@@ -200,11 +198,11 @@ static void ili9488_set_orientation(uint8_t orientation)
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
-    ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
+    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
 
     const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 
-    ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
 
     ili9488_send_cmd(0x36);
     ili9488_send_data((void *) &data[orientation], 1);

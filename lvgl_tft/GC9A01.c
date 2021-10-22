@@ -16,7 +16,6 @@
 /*********************
  *      DEFINES
  *********************/
- #define TAG "GC9A01"
 
 /**********************
  *      TYPEDEFS
@@ -126,7 +125,7 @@ void GC9A01_init(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 #endif
 
-	ESP_LOGI(TAG, "Initialization.");
+	LV_LOG_INFO("Initialization.");
 
 	//Send all the commands
 	uint16_t cmd = 0;
@@ -226,7 +225,7 @@ static void GC9A01_set_orientation(uint8_t orientation)
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
-    ESP_LOGI(TAG, "Display orientation: %s", orientation_str[orientation]);
+    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
 
 #if defined CONFIG_LV_PREDEFINED_DISPLAY_M5STACK
     const uint8_t data[] = {0x68, 0x68, 0x08, 0x08};
@@ -236,7 +235,7 @@ static void GC9A01_set_orientation(uint8_t orientation)
     const uint8_t data[] = {0x08, 0xC8, 0x68, 0xA8};
 #endif
 
-    ESP_LOGD(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
 
     GC9A01_send_cmd(0x36);
     GC9A01_send_data((void *) &data[orientation], 1);

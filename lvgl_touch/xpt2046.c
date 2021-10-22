@@ -8,7 +8,6 @@
  *********************/
 #include "xpt2046.h"
 #include "esp_system.h"
-#include "esp_log.h"
 #include "driver/gpio.h"
 #include "tp_spi.h"
 #include <stddef.h>
@@ -16,8 +15,6 @@
 /*********************
  *      DEFINES
  *********************/
-#define TAG "XPT2046"
-
 #define CMD_X_READ  0b10010000  // NOTE: XPT2046 data sheet says this is actually Y
 #define CMD_Y_READ  0b11010000  // NOTE: XPT2046 data sheet says this is actually X
 #define CMD_Z1_READ 0b10110000
@@ -59,7 +56,7 @@ uint8_t avg_last;
  */
 void xpt2046_init(void)
 {
-    ESP_LOGI(TAG, "XPT2046 Initialization");
+    LV_LOG_INFO("Initialization");
 
 #if XPT2046_TOUCH_IRQ || XPT2046_TOUCH_IRQ_PRESS
     gpio_config_t irq_config = {
@@ -94,19 +91,19 @@ bool xpt2046_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 
         x = xpt2046_cmd(CMD_X_READ);
         y = xpt2046_cmd(CMD_Y_READ);
-        ESP_LOGI(TAG, "P(%d,%d)", x, y);
+        LV_LOG_INFO("P(%d,%d)", x, y);
 
         /*Normalize Data back to 12-bits*/
         x = x >> 4;
         y = y >> 4;
-        ESP_LOGI(TAG, "P_norm(%d,%d)", x, y);
+        LV_LOG_INFO("P_norm(%d,%d)", x, y);
         
         xpt2046_corr(&x, &y);
         xpt2046_avg(&x, &y);
         last_x = x;
         last_y = y;
 
-        ESP_LOGI(TAG, "x = %d, y = %d", x, y);
+        LV_LOG_INFO("x = %d, y = %d", x, y);
     }
     else
     {
