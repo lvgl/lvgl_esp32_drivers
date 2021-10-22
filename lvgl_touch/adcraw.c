@@ -12,7 +12,6 @@
 
 #if CONFIG_LV_TOUCH_CONTROLLER_ADCRAW
 
-#define TAG "ADCRAW"
 #define CALIBRATIONINSET 1 // range 0 <= CALIBRATIONINSET <= 40
 #define SAMPLE_CALIBRATION_POINTS 4
 // use this scale factor to avoid working in floating point numbers

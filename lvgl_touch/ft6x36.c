@@ -27,8 +27,6 @@
 
 #include "lvgl_i2c/i2c_manager.h"
 
-#define TAG "FT6X36: "
-
 ft6x36_status_t ft6x36_status;
 uint8_t current_dev_addr;       // set during init
 
@@ -44,13 +42,13 @@ esp_err_t ft6x06_i2c_read8(uint8_t slave_addr, uint8_t register_addr, uint8_t *d
   */
 uint8_t ft6x36_get_gesture_id() {
     if (!ft6x36_status.inited) {
-        LV_LOG_ERROR(TAG, "Init first!");
+        LV_LOG_ERROR("Init first!");
         return 0x00;
     }
     uint8_t data_buf;
     esp_err_t ret;
     if ((ret = ft6x06_i2c_read8(current_dev_addr, FT6X36_GEST_ID_REG, &data_buf) != ESP_OK))
-        LV_LOG_ERROR(TAG, "Error reading from device: %s", esp_err_to_name(ret));
+        LV_LOG_ERROR("Error reading from device: %s", esp_err_to_name(ret));
     return data_buf;
 }
 
@@ -65,23 +63,23 @@ void ft6x06_init(uint16_t dev_addr) {
     current_dev_addr = dev_addr;
     uint8_t data_buf;
     esp_err_t ret;
-    LV_LOG_INFO(TAG, "Found touch panel controller");
+    LV_LOG_INFO("Found touch panel controller");
     if ((ret = ft6x06_i2c_read8(dev_addr, FT6X36_PANEL_ID_REG, &data_buf) != ESP_OK))
-        LV_LOG_ERROR(TAG, "Error reading from device: %s",
+        LV_LOG_ERROR("Error reading from device: %s",
                  esp_err_to_name(ret));    // Only show error the first time
-    LV_LOG_INFO(TAG, "\tDevice ID: 0x%02x", data_buf);
+    LV_LOG_INFO("\tDevice ID: 0x%02x", data_buf);
 
     ft6x06_i2c_read8(dev_addr, FT6X36_CHIPSELECT_REG, &data_buf);
-    LV_LOG_INFO(TAG, "\tChip ID: 0x%02x", data_buf);
+    LV_LOG_INFO("\tChip ID: 0x%02x", data_buf);
 
     ft6x06_i2c_read8(dev_addr, FT6X36_DEV_MODE_REG, &data_buf);
-    LV_LOG_INFO(TAG, "\tDevice mode: 0x%02x", data_buf);
+    LV_LOG_INFO("\tDevice mode: 0x%02x", data_buf);
 
     ft6x06_i2c_read8(dev_addr, FT6X36_FIRMWARE_ID_REG, &data_buf);
-    LV_LOG_INFO(TAG, "\tFirmware ID: 0x%02x", data_buf);
+    LV_LOG_INFO("\tFirmware ID: 0x%02x", data_buf);
 
     ft6x06_i2c_read8(dev_addr, FT6X36_RELEASECODE_REG, &data_buf);
-    LV_LOG_INFO(TAG, "\tRelease code: 0x%02x", data_buf);
+    LV_LOG_INFO("\tRelease code: 0x%02x", data_buf);
 
 }
 
@@ -93,7 +91,7 @@ void ft6x06_init(uint16_t dev_addr) {
   */
 bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     if (!ft6x36_status.inited) {
-        LV_LOG_ERROR(TAG, "Init first!");
+        LV_LOG_ERROR("Init first!");
         return 0x00;
     }
     uint8_t data_buf[5];        // 1 byte status, 2 bytes X, 2 bytes Y
@@ -102,7 +100,7 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 
     esp_err_t ret = lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, current_dev_addr, FT6X36_TD_STAT_REG, &data_buf[0], 5);
     if (ret != ESP_OK) {
-        LV_LOG_ERROR(TAG, "Error talking to touch IC: %s", esp_err_to_name(ret));
+        LV_LOG_ERROR("Error talking to touch IC: %s", esp_err_to_name(ret));
     }
     uint8_t touch_pnt_cnt = data_buf[0];  // Number of detected touch points
 
@@ -130,6 +128,6 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     data->point.x = last_x;
     data->point.y = last_y;
     data->state = LV_INDEV_STATE_PR;
-    LV_LOG_INFO(TAG, "X=%u Y=%u", data->point.x, data->point.y);
+    LV_LOG_INFO("X=%u Y=%u", data->point.x, data->point.y);
     return false;
 }

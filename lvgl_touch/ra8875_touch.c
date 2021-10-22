@@ -22,7 +22,6 @@
  *      DEFINES
  *********************/
 #define DEBUG false
-#define TAG "RA8875-Touch"
 
 #define DIV_ROUND_UP(n, d) (((n)+(d)-1)/(d))
 
@@ -82,7 +81,7 @@ void ra8875_touch_init(void)
     };
     #define INIT_CMDS_SIZE (sizeof(init_cmds)/sizeof(init_cmds[0]))
 
-    LV_LOG_INFO(TAG, "Initializing RA8875 Touch...");
+    LV_LOG_INFO("Initializing RA8875 Touch...");
 
     // Send all the commands
     for (unsigned int i = 0; i < INIT_CMDS_SIZE; i++) {
@@ -93,7 +92,7 @@ void ra8875_touch_init(void)
 
 void ra8875_touch_enable(bool enable)
 {
-    LV_LOG_INFO(TAG, "%s touch.", enable ? "Enabling" : "Disabling");
+    LV_LOG_INFO("%s touch.", enable ? "Enabling" : "Disabling");
     uint8_t val = enable ? (0x80 | TPCR0_VAL) : (TPCR0_VAL);
     ra8875_write_cmd(RA8875_REG_TPCR0, val);
 }
@@ -121,7 +120,7 @@ bool ra8875_touch_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
         y = (y << 2) | ((xy >> 2) & 0x03);
 
 #if DEBUG
-        LV_LOG_INFO(TAG, "Touch Poll Raw: %d,%d", x, y);
+        LV_LOG_INFO("Touch Poll Raw: %d,%d", x, y);
 #endif
 
         // Convert to display coordinates
@@ -135,7 +134,7 @@ bool ra8875_touch_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
     data->point.y = y;
 
 #if DEBUG
-        LV_LOG_INFO(TAG, "Touch Poll - Event: %d; %d,%d", data->state, data->point.x, data->point.y);
+        LV_LOG_INFO("Touch Poll - Event: %d; %d,%d", data->state, data->point.x, data->point.y);
 #endif
 
     return false;
