@@ -14,7 +14,6 @@
 /*********************
  *      DEFINES
  *********************/
-#define TAG "ILI9341"
 #define END_OF_CMD_MARKER           0xFFU
 
 #define MEMORY_ACCESS_CONTROL_REG   0x36U

@@ -24,8 +24,6 @@
 /*********************
  *      DEFINES
  *********************/
-#define TAG        "HX8357: "
-
 #define MADCTL_MY  0x80 ///< Bottom to top
 #define MADCTL_MX  0x40 ///< Right to left
 #define MADCTL_MV  0x20 ///< Reverse Mode
@@ -173,7 +171,7 @@ void hx8357_init(void)
 	vTaskDelay(120 / portTICK_RATE_MS);
 #endif
 
-	LV_LOG_INFO(TAG, "Initialization.");
+	LV_LOG_INFO("Initialization.");
 
 	//Send all the commands
 	const uint8_t *addr = (displayType == HX8357B) ? initb : initd;

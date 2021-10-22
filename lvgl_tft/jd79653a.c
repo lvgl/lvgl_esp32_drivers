@@ -33,8 +33,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #include "disp_spi.h"
 #include "jd79653a.h"
 
-#define TAG "lv_jd79653a: "
-
 #define PIN_DC              CONFIG_LV_DISP_PIN_DC
 #define PIN_DC_BIT          ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_DC)))
 
@@ -187,7 +185,7 @@ static void jd79653a_spi_send_fb(uint8_t *data, size_t len)
 
 static void jd79653a_spi_send_seq(const jd79653a_seq_t *seq, size_t len)
 {
-    LV_LOG_INFO(TAG, "Writing cmd/data sequence, count %u", len);
+    LV_LOG_INFO("Writing cmd/data sequence, count %u", len);
 
     if (!seq || len < 1) return;
     for (size_t cmd_idx = 0; cmd_idx < len; cmd_idx++) {
@@ -243,7 +241,7 @@ static void jd79653a_load_partial_lut()
 
 static void jd79653a_partial_in()
 {
-    LV_LOG_INFO(TAG, "Partial in!");
+    LV_LOG_INFO("Partial in!");
 
     // Panel setting: accept LUT from registers instead of OTP
 #if defined (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
@@ -271,7 +269,7 @@ static void jd79653a_partial_in()
 
 static void jd79653a_partial_out()
 {
-    LV_LOG_INFO(TAG, "Partial out!");
+    LV_LOG_INFO("Partial out!");
 
     // Panel setting: use LUT from OTP
 #if defined (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
@@ -298,10 +296,10 @@ static void jd79653a_update_partial(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t 
 {
     jd79653a_power_on();
     jd79653a_partial_in();
-    LV_LOG_INFO(TAG, "x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", x1, x2, y1, y2);
+    LV_LOG_INFO("x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", x1, x2, y1, y2);
 
     size_t len = ((x2 - x1 + 1) * (y2 - y1 + 1)) / 8;
-    LV_LOG_INFO(TAG, "Writing PARTIAL LVGL fb with len: %u", len);
+    LV_LOG_INFO("Writing PARTIAL LVGL fb with len: %u", len);
 
     // Set partial window
     uint8_t ptl_setting[7] = { x1, x2, 0, y1, 0, y2, 0x01 };
@@ -317,12 +315,12 @@ static void jd79653a_update_partial(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t 
         len -= EPD_ROW_LEN;
     }
 
-    LV_LOG_INFO(TAG, "Partial wait start");
+    LV_LOG_INFO("Partial wait start");
 
     jd79653a_spi_send_cmd(0x12);
     jd79653a_wait_busy(0);
 
-    LV_LOG_INFO(TAG, "Partial updated");
+    LV_LOG_INFO("Partial updated");
     jd79653a_partial_out();
     jd79653a_power_off();
 }
@@ -359,7 +357,7 @@ void jd79653a_fb_set_full_color(uint8_t color)
 void jd79653a_fb_full_update(uint8_t *data, size_t len)
 {
     jd79653a_power_on();
-    LV_LOG_INFO(TAG, "Performing full update, len: %u", len);
+    LV_LOG_INFO("Performing full update, len: %u", len);
 
     uint8_t *data_ptr = data;
 
@@ -378,7 +376,7 @@ void jd79653a_fb_full_update(uint8_t *data, size_t len)
         len -= EPD_ROW_LEN;
     }
 
-    LV_LOG_INFO(TAG, "Rest len: %u", len);
+    LV_LOG_INFO("Rest len: %u", len);
 
     jd79653a_spi_send_cmd(0x12); // Issue refresh command
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -413,13 +411,13 @@ void jd79653a_lv_fb_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t 
 {
     size_t len = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)) / 8;
 
-    LV_LOG_INFO(TAG, "x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", area->x1, area->x2, area->y1, area->y2);
-    LV_LOG_INFO(TAG, "Writing LVGL fb with len: %u, partial counter: %u", len, partial_counter);
+    LV_LOG_INFO("x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", area->x1, area->x2, area->y1, area->y2);
+    LV_LOG_INFO("Writing LVGL fb with len: %u, partial counter: %u", len, partial_counter);
 
     uint8_t *buf = (uint8_t *) color_map;
 
     if (partial_counter == 0) {
-        LV_LOG_INFO(TAG, "Refreshing in FULL");
+        LV_LOG_INFO("Refreshing in FULL");
         jd79653a_fb_full_update(buf, ((EPD_HEIGHT * EPD_WIDTH) / 8));
         partial_counter = EPD_PARTIAL_CNT; // Reset partial counter here
     } else {
@@ -445,7 +443,7 @@ void jd79653a_init()
     // Initialise event group
     jd79653a_evts = xEventGroupCreate();
     if (!jd79653a_evts) {
-        LV_LOG_ERROR(TAG, "Failed when initialising event group!");
+        LV_LOG_ERROR("Failed when initialising event group!");
         return;
     }
 
@@ -465,12 +463,12 @@ void jd79653a_init()
 
     // Dump in initialise sequence
     jd79653a_spi_send_seq(init_seq, EPD_SEQ_LEN(init_seq));
-    LV_LOG_INFO(TAG, "Panel init sequence sent");
+    LV_LOG_INFO("Panel init sequence sent");
 
     // Check BUSY status here
     jd79653a_wait_busy(0);
 
-    LV_LOG_INFO(TAG, "Panel is up!");
+    LV_LOG_INFO("Panel is up!");
 }
 
 static void jd79653a_reset(void)

@@ -15,7 +15,6 @@
 /*********************
  *      DEFINES
  *********************/
-#define TAG "ILI9486: "
 
 /**********************
  *      TYPEDEFS
@@ -79,7 +78,7 @@ void ili9486_init(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 #endif
 
-	LV_LOG_INFO(TAG, "ILI9486 Initialization.");
+	LV_LOG_INFO("ILI9486 Initialization.");
 
 	//Send all the commands
 	uint16_t cmd = 0;
@@ -170,11 +169,11 @@ static void ili9486_set_orientation(uint8_t orientation)
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
-    LV_LOG_INFO(TAG, "Display orientation: %s", orientation_str[orientation]);
+    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
 
     const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 
-    LV_LOG_INFO(TAG, "0x36 command value: 0x%02X", data[orientation]);
+    LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
 
     ili9486_send_cmd(0x36);
     ili9486_send_data((void *) &data[orientation], 1);

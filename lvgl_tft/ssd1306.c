@@ -22,8 +22,6 @@
 /*********************
  *      DEFINES
  *********************/
-#define TAG "SSD1306"
-
 #define OLED_I2C_PORT                       (CONFIG_LV_I2C_DISPLAY_PORT)
 // SLA (0x3C) + WRITE_MODE (0x00) =  0x78 (0b01111000)
 #define OLED_I2C_ADDRESS                    0x3C
