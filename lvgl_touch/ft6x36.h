@@ -154,8 +154,9 @@ typedef struct
   lv_indev_state_t current_state;
 } ft6x36_touch_t;
 
+#if CONFIG_LV_FT6X36_COORDINATES_QUEUE
 QueueHandle_t ft6x36_touch_queue_handle;
-
+#endif
 /**
   * @brief  Initialize for FT6x36 communication via I2C
   * @param  dev_addr: Device address on communication Bus (I2C slave address of FT6X36).

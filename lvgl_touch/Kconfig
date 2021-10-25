@@ -201,6 +201,13 @@ menu "LVGL Touch controller"
             prompt "Invert Y coordinate value."
             default n
 
+        config LV_FT6X36_COORDINATES_QUEUE
+            bool
+            prompt "Send coordinates to FreeRTOS queue."
+            default n
+            help
+            Receive from the FreeRTOS queue using the handle 'ft6x36_touch_queue_handle'.
+
     endmenu
 
     menu "Touchpanel (STMPE610) Pin Assignments"
