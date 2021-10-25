@@ -86,6 +86,7 @@ void ft6x06_init(uint16_t dev_addr) {
     ft6x06_i2c_read8(dev_addr, FT6X36_RELEASECODE_REG, &data_buf);
     ESP_LOGI(TAG, "\tRelease code: 0x%02x", data_buf);
     
+#if CONFIG_LV_FT6X36_COORDINATES_QUEUE
     ft6x36_touch_queue_handle = xQueueCreate( FT6X36_TOUCH_QUEUE_ELEMENTS, sizeof( ft6x36_touch_t ));
     if( ft6x36_touch_queue_handle == NULL )
     {
@@ -93,6 +94,7 @@ void ft6x06_init(uint16_t dev_addr) {
         return;
     }
     xQueueSend( ft6x36_touch_queue_handle, &touch_inputs, 0 );
+#endif
 }
 
 /**
@@ -118,7 +120,9 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         if ( touch_inputs.current_state != LV_INDEV_STATE_REL)
         {
             touch_inputs.current_state = LV_INDEV_STATE_REL;
+#if CONFIG_LV_FT6X36_COORDINATES_QUEUE
             xQueueOverwrite( ft6x36_touch_queue_handle, &touch_inputs );
+#endif
         } 
         data->point.x = touch_inputs.last_x;
         data->point.y = touch_inputs.last_y;
@@ -146,7 +150,9 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     data->state = touch_inputs.current_state;
     ESP_LOGD(TAG, "X=%u Y=%u", data->point.x, data->point.y);
 
+#if CONFIG_LV_FT6X36_COORDINATES_QUEUE
     xQueueOverwrite( ft6x36_touch_queue_handle, &touch_inputs );
+#endif
 
     return false;
 }
