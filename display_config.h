@@ -29,6 +29,13 @@ extern "C" {
 
 #define ILI9341_INITIAL_ORIENTATION CONFIG_LV_DISPLAY_ORIENTATION
 
+/* ILI9488 Configuration */
+#if CONFIG_LV_DISP_USE_RST
+#define ILI9488_USE_RST
+#endif
+
+#define ILI9488_INITIAL_ORIENTATION CONFIG_LV_DISPLAY_ORIENTATION
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

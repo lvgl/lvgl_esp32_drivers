@@ -20,14 +20,13 @@ extern "C" {
 #else
 #include "lvgl/lvgl.h"
 #endif
+
 #include "../lvgl_helpers.h"
+#include "display_config.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define ILI9488_DC      CONFIG_LV_DISP_PIN_DC
-#define ILI9488_RST     CONFIG_LV_DISP_PIN_RST
-#define ILI9488_USE_RST CONFIG_LV_DISP_USE_RSTS
 
 /*******************
  * ILI9488 REGS
@@ -144,7 +143,7 @@ typedef struct {
  * GLOBAL PROTOTYPES
  **********************/
 
-void ili9488_init(void);
+void ili9488_init(lv_disp_drv_t * drv);
 void ili9488_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);
 
 /**********************
