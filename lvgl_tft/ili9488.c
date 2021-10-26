@@ -49,7 +49,7 @@ static void ili9488_reset(lv_disp_drv_t * drv);
  **********************/
 // From github.com/jeremyjh/ESP32_TFT_library
 // From github.com/mvturnho/ILI9488-lvgl-ESP32-WROVER-B
-void ili9488_init(void)
+void ili9488_init(lv_disp_drv_t * drv)
 {
     lcd_init_cmd_t ili_init_cmds[]={
         {ILI9488_CMD_SLEEP_OUT, {0x00}, 0x80},
@@ -101,7 +101,9 @@ void ili9488_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
     uint8_t *mybuf;
     do {
         mybuf = (uint8_t *) heap_caps_malloc(3 * size * sizeof(uint8_t), MALLOC_CAP_DMA);
-        if (mybuf == NULL)  LV_LOG_WARN("Could not allocate enough DMA memory!");
+        if (mybuf == NULL) {
+            LV_LOG_WARN("Could not allocate enough DMA memory!");
+        }
     } while (mybuf == NULL);
 
     uint32_t LD = 0;
