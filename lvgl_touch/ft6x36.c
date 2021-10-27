@@ -25,7 +25,6 @@
 #include <lvgl/lvgl.h>
 #endif
 #include "ft6x36.h"
-
 #include "lvgl_i2c/i2c_manager.h"
 
 #define TAG "FT6X36"
@@ -35,6 +34,9 @@
 static ft6x36_status_t ft6x36_status;
 static uint8_t current_dev_addr;       // set during init
 static ft6x36_touch_t touch_inputs = { -1, -1, LV_INDEV_STATE_REL };    // -1 coordinates to designate it was never touched
+#if CONFIG_LV_FT6X36_COORDINATES_QUEUE
+QueueHandle_t ft6x36_touch_queue_handle;
+#endif
 
 static esp_err_t ft6x06_i2c_read8(uint8_t slave_addr, uint8_t register_addr, uint8_t *data_buf) {
     return lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr, data_buf, 1);
@@ -87,7 +89,7 @@ void ft6x06_init(uint16_t dev_addr) {
     ESP_LOGI(TAG, "\tRelease code: 0x%02x", data_buf);
     
 #if CONFIG_LV_FT6X36_COORDINATES_QUEUE
-    ft6x36_touch_queue_handle = xQueueCreate( FT6X36_TOUCH_QUEUE_ELEMENTS, sizeof( ft6x36_touch_t ));
+    ft6x36_touch_queue_handle = xQueueCreate( FT6X36_TOUCH_QUEUE_ELEMENTS, sizeof( ft6x36_touch_t ) );
     if( ft6x36_touch_queue_handle == NULL )
     {
         ESP_LOGE( TAG, "\tError creating touch input FreeRTOS queue" );

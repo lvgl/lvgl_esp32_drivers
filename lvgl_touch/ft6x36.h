@@ -23,8 +23,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#if CONFIG_LV_FT6X36_COORDINATES_QUEUE
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#endif
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
@@ -155,7 +157,7 @@ typedef struct
 } ft6x36_touch_t;
 
 #if CONFIG_LV_FT6X36_COORDINATES_QUEUE
-QueueHandle_t ft6x36_touch_queue_handle;
+extern QueueHandle_t ft6x36_touch_queue_handle;
 #endif
 /**
   * @brief  Initialize for FT6x36 communication via I2C
