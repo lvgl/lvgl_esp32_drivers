@@ -174,6 +174,10 @@ menu "LVGL TFT Display controller"
         help
             ILI9163C display controller.
 
+    config LV_TFT_DISPLAY_CONTROLLER_PCD8544
+        bool
+        help
+            PCD8544 display controller (Nokia 3110/5110)
     # Display controller communication protocol
     #
     # This symbols define the communication protocol used by the
@@ -340,6 +344,11 @@ menu "LVGL TFT Display controller"
             bool "ILI9163C"
             select LV_TFT_DISPLAY_CONTROLLER_ILI9163C
             select LV_TFT_DISPLAY_PROTOCOL_SPI
+        config LV_TFT_DISPLAY_USER_CONTROLLER_PCD8544
+            bool "PCD8544"
+            select LV_TFT_DISPLAY_CONTROLLER_PCD8544
+            select LV_TFT_DISPLAY_PROTOCOL_SPI
+            select LV_TFT_DISPLAY_MONOCHROME
     endchoice
 
     config CUSTOM_DISPLAY_BUFFER_SIZE
