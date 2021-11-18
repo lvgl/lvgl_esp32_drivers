@@ -14,7 +14,7 @@ void *disp_driver_init(lv_disp_drv_t *drv)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481
     ili9481_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
-    ili9488_init();
+    ili9488_init(drv);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789
     st7789_init(drv);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7796S
