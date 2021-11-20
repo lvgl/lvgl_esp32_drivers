@@ -8,7 +8,6 @@
  *********************/
 #include "ili9341.h"
 
-#include "disp_spi.h"
 #include "display_port.h"
 
 /*********************
@@ -35,11 +34,6 @@ typedef struct {
  *  STATIC PROTOTYPES
  **********************/
 static void ili9341_set_orientation(lv_disp_drv_t * drv, uint8_t orientation);
-
-static void ili9341_send_cmd(lv_disp_drv_t * drv, uint8_t cmd);
-static void ili9341_send_data(lv_disp_drv_t * drv, void * data, uint16_t length);
-static void ili9341_send_color(lv_disp_drv_t * drv, void * data, uint16_t length);
-
 static void ili9341_reset(lv_disp_drv_t * drv);
 /**********************
  *  STATIC VARIABLES
@@ -92,24 +86,27 @@ void ili9341_init(lv_disp_drv_t * drv)
     ili9341_reset(drv);
 
     //Send all the commands
-    uint16_t cmd = 0;
-    while (ili_init_cmds[cmd].databytes != END_OF_CMD_MARKER) {
-        ili9341_send_cmd(drv, ili_init_cmds[cmd].cmd);
-        ili9341_send_data(drv, ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes & 0x1F);
+    uint16_t idx = 0;
+    while (ili_init_cmds[idx].databytes != END_OF_CMD_MARKER) {
+        uint8_t cmd = ili_init_cmds[idx].cmd;
+        void *args = ili_init_cmds[idx].data;
+        size_t args_len = ili_init_cmds[idx].databytes & 0x1F;
+
+        display_interface_send_cmd(drv, cmd, args, args_len);
         
-        if (ili_init_cmds[cmd].databytes & 0x80) {
+        if (ili_init_cmds[idx].databytes & 0x80) {
             display_port_delay(drv, 100);
         }
 
-        cmd++;
+        idx++;
     }
 
     ili9341_set_orientation(drv, ILI9341_INITIAL_ORIENTATION);
 
 #if ILI9341_INVERT_COLORS == 1U
-    ili9341_send_cmd(drv, 0x21);
+    display_interface_send_cmd(drv, 0x21, NULL, 0);
 #else
-    ili9341_send_cmd(drv, 0x20);
+    display_interface_send_cmd(drv, 0x20, NULL, 0);
 #endif
 }
 
@@ -124,73 +121,37 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
     data[1] = area->x1 & 0xFF;
     data[2] = (area->x2 >> 8) & 0xFF;
     data[3] = area->x2 & 0xFF;
-
-    ili9341_send_cmd(drv, 0x2A);
-    ili9341_send_data(drv, data, 4);
+    
+    display_interface_send_cmd(drv, 0x2A, data, sizeof(data));
 
     /* Page addresses */
     data[0] = (area->y1 >> 8) & 0xFF;
     data[1] = area->y1 & 0xFF;
     data[2] = (area->y2 >> 8) & 0xFF;
     data[3] = area->y2 & 0xFF;
-
-    ili9341_send_cmd(drv, 0x2B);
-    ili9341_send_data(drv, data, 4);
+    
+    display_interface_send_cmd(drv, 0x2B, data, sizeof(data));
 
     /* Memory write */
-    ili9341_send_cmd(drv, 0x2C);
-    ili9341_send_color(drv, (void*)color_map, size * 2);
+    display_interface_send_cmd(drv, 0x2C, NULL, 0);
+    display_interface_send_data_async(drv, color_map, size * 2);
 }
 
 void ili9341_sleep_in(lv_disp_drv_t * drv)
 {
     uint8_t data[] = {0x08};
-    ili9341_send_cmd(drv, 0x10);
-    ili9341_send_data(drv, data, 1);
+    display_interface_send_cmd(drv, 0x10, data, 1);
 }
 
 void ili9341_sleep_out(lv_disp_drv_t * drv)
 {
     uint8_t data[] = {0x08};
-    ili9341_send_cmd(drv, 0x11);
-    ili9341_send_data(drv, data, 1);
+    display_interface_send_cmd(drv, 0x11, data, 1);
 }
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-
-static inline void set_cmd_mode(lv_disp_drv_t * drv)
-{
-    display_port_gpio_dc(drv, 0);
-}
-
-static inline void set_data_mode(lv_disp_drv_t * drv)
-{
-    display_port_gpio_dc(drv, 1);
-}
-
-static void ili9341_send_cmd(lv_disp_drv_t * drv, uint8_t cmd)
-{
-    disp_wait_for_pending_transactions();
-    set_cmd_mode(drv);
-    disp_spi_send_data(&cmd, 1);
-}
-
-static void ili9341_send_data(lv_disp_drv_t *drv, void * data, uint16_t length)
-{
-    disp_wait_for_pending_transactions();
-    set_data_mode(drv);
-    disp_spi_send_data(data, length);
-}
-
-static void ili9341_send_color(lv_disp_drv_t *drv, void * data, uint16_t length)
-{
-    disp_wait_for_pending_transactions();
-    set_data_mode(drv);
-    disp_spi_send_colors(data, length);
-}
-
 static void ili9341_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
 {
     assert(orientation < 4);
@@ -205,8 +166,7 @@ static void ili9341_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
     const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 #endif
 
-    ili9341_send_cmd(drv, MEMORY_ACCESS_CONTROL_REG);
-    ili9341_send_data(drv, (void *) &data[orientation], 1);
+    display_interface_send_cmd(drv, MEMORY_ACCESS_CONTROL_REG, &data[orientation], 1);
 }
 
 /* Reset the display, if we don't have a reset pin we use software reset */
@@ -218,7 +178,7 @@ static void ili9341_reset(lv_disp_drv_t *drv)
     display_port_gpio_rst(drv, 1);
     display_port_delay(drv, 100);
 #else
-    ili9341_send_cmd(drv, SOFTWARE_RESET_REG);
+    display_interface_send_cmd(drv, SOFTWARE_RESET_REG, NULL, 0);
     display_port_delay(drv, 5);
 #endif
 }

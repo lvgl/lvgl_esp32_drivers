@@ -56,6 +56,9 @@ void display_port_gpio_rst(lv_disp_drv_t *drv, uint8_t state);
  */
 bool display_port_gpio_is_busy(lv_disp_drv_t *drv);
 
+void display_interface_send_cmd(lv_disp_drv_t *drv, uint8_t cmd, void *args, size_t args_len);
+void display_interface_send_data_async(lv_disp_drv_t *drv, void *data, size_t len);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
