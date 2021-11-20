@@ -15,16 +15,13 @@
  *********************/
 #include "assert.h"
 
-#include "lvgl_i2c/i2c_manager.h"
-
 #include "ssd1306.h"
+#include "display_port.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define OLED_I2C_PORT                       (CONFIG_LV_I2C_DISPLAY_PORT)
 // SLA (0x3C) + WRITE_MODE (0x00) =  0x78 (0b01111000)
-#define OLED_I2C_ADDRESS                    0x3C
 #define OLED_WIDTH                          128
 #define OLED_HEIGHT                         64
 #define OLED_COLUMNS                        128
@@ -75,8 +72,6 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len);
-static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len);
 
 /**********************
  *  STATIC VARIABLES
@@ -92,7 +87,7 @@ static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t b
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-void ssd1306_init(void)
+void ssd1306_init(lv_disp_drv_t *disp_drv)
 {
     uint8_t orientation_1 = 0;
     uint8_t orientation_2 = 0;
@@ -127,8 +122,7 @@ void ssd1306_init(void)
         OLED_CMD_DISPLAY_ON
     };
 
-    uint8_t err = send_data(NULL, conf, sizeof(conf));
-    assert(0 == err);
+    display_interface_send_cmd(disp_drv, OLED_CONTROL_BYTE_CMD_STREAM, &conf[1], sizeof(conf) - 1);
 }
 
 void ssd1306_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
@@ -162,10 +156,8 @@ void ssd1306_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
         row2,
     };
 
-    uint8_t err = send_data(disp_drv, conf, sizeof(conf));
-    assert(0 == err);
-    err = send_pixels(disp_drv, color_p, OLED_COLUMNS * (1 + row2 - row1));
-    assert(0 == err);
+    display_interface_send_cmd(disp_drv, OLED_CONTROL_BYTE_CMD_STREAM, &conf[1], sizeof(conf) - 1);
+    display_interface_send_data(disp_drv, color_p, OLED_COLUMNS * (1 + row2 - row1));
 
     lv_disp_flush_ready(disp_drv);
 }
@@ -188,8 +180,7 @@ void ssd1306_sleep_in(void)
         OLED_CMD_DISPLAY_OFF
     };
 
-    uint8_t err = send_data(NULL, conf, sizeof(conf));
-    assert(0 == err);
+    display_interface_send_cmd(NULL, OLED_CONTROL_BYTE_CMD_STREAM, &conf[1], 1);
 }
 
 void ssd1306_sleep_out(void)
@@ -199,25 +190,5 @@ void ssd1306_sleep_out(void)
         OLED_CMD_DISPLAY_ON
     };
 
-    uint8_t err = send_data(NULL, conf, sizeof(conf));
-    assert(0 == err);
-}
-
-/**********************
- *   STATIC FUNCTIONS
- **********************/
-static uint8_t send_data(lv_disp_drv_t *disp_drv, void *bytes, size_t bytes_len)
-{
-    (void) disp_drv;
-
-    uint8_t *data = (uint8_t *) bytes;
-
-    return lvgl_i2c_write(OLED_I2C_PORT, OLED_I2C_ADDRESS, data[0], data + 1, bytes_len - 1 );
-}
-
-static uint8_t send_pixels(lv_disp_drv_t *disp_drv, void *color_buffer, size_t buffer_len)
-{
-    (void) disp_drv;
-
-    return lvgl_i2c_write(OLED_I2C_PORT, OLED_I2C_ADDRESS, OLED_CONTROL_BYTE_DATA_STREAM, color_buffer, buffer_len);
+    display_interface_send_cmd(NULL, OLED_CONTROL_BYTE_CMD_STREAM, &conf[1], 1);
 }

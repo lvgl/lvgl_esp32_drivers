@@ -28,7 +28,7 @@ void *disp_driver_init(lv_disp_drv_t *drv)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SH1107
     sh1107_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306
-    ssd1306_init();
+    ssd1306_init(drv);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X
     FT81x_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820
