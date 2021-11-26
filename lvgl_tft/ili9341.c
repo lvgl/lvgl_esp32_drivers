@@ -134,7 +134,7 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 
     /* Memory write */
     display_interface_send_cmd(drv, 0x2C, CMD_WIDTH_8BITS, NULL, 0);
-    display_interface_send_data(drv, color_map, size * 2, DATA_XFER_MODE_ASYNC);
+    display_interface_send_data(drv, color_map, size * 2);
 }
 
 void ili9341_sleep_in(lv_disp_drv_t * drv)

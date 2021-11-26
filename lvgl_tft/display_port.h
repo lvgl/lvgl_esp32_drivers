@@ -21,11 +21,6 @@ typedef enum {
     CMD_WIDTH_INVALID,
 } cmd_width_t;
 
-typedef enum {
-    DATA_XFER_MODE_SYNC,
-    DATA_XFER_MODE_ASYNC,
-} data_xfer_mode_t;
-
 /**
  * Busy wait delay port
  *
@@ -81,13 +76,13 @@ void display_interface_send_cmd(lv_disp_drv_t *drv, uint32_t cmd, cmd_width_t cm
 /**
  * Send (image) data to display
  *
+ * User must call lv_disp_flush after the image is sent
+ *
  * @param drv Pointer to driver
  * @param data Pointer to data to be sent
  * @param len Data length (in bytes) to be sent
- * @param mode Data transfer mode, sync (polling) and async, lv_disp_flush must
- *             be called when finishing the data transfer
  */
-void display_interface_send_data(lv_disp_drv_t *drv, void *data, size_t len, data_xfer_mode_t mode);
+void display_interface_send_data(lv_disp_drv_t *drv, void *data, size_t len);
 
 #ifdef __cplusplus
 } /* extern "C" */

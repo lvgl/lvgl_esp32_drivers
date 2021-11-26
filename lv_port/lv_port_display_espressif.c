@@ -95,23 +95,15 @@ void display_interface_send_cmd(lv_disp_drv_t *drv, uint32_t cmd, cmd_width_t cm
 #endif
 }
 
-void display_interface_send_data(lv_disp_drv_t *drv, void *data, size_t len, data_xfer_mode_t mode)
+void display_interface_send_data(lv_disp_drv_t *drv, void *data, size_t len)
 {
     (void) drv;
 
 #if defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI)
     disp_wait_for_pending_transactions();
     display_port_gpio_dc(drv, LV_DISPLAY_DC_DATA_MODE);
-    
-    if (DATA_XFER_MODE_ASYNC == mode) {
-        disp_spi_send_colors(data, len);
-    }
-    else if (DATA_XFER_MODE_SYNC == mode) {
-        /* Send data in polling mode and call lv_disp_flush after that */
-    }
-    else {
-
-    }
+    disp_spi_send_colors(data, len);
+    /* lv_disp_flush is called in the SPI xfer done callback */
 #elif defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_I2C)
     lvgl_i2c_write(OLED_I2C_PORT, OLED_I2C_ADDRESS, OLED_CONTROL_BYTE_DATA_STREAM, data, len);
 #endif
