@@ -15,11 +15,13 @@ extern "C"
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef enum {
+enum {
     CMD_WIDTH_8BITS,
     CMD_WIDTH_16BITS,
     CMD_WIDTH_INVALID,
-} cmd_width_t;
+};
+
+typedef uint8_t cmd_width_t;
 
 /**
  * Busy wait delay port
