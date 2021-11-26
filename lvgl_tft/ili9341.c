@@ -116,6 +116,11 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
     uint8_t data[4] = {0};
     uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
 
+#if LV_COLOR_DEPTH == 16
+    /* Each pixel is 2bytes */
+    size *= 2;
+#endif
+
     /*Column addresses*/
     data[0] = (area->x1 >> 8) & 0xFF;
     data[1] = area->x1 & 0xFF;
@@ -134,7 +139,7 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 
     /* Memory write */
     display_interface_send_cmd(drv, 0x2C, CMD_WIDTH_8BITS, NULL, 0);
-    display_interface_send_data(drv, color_map, size * 2);
+    display_interface_send_data(drv, color_map, size);
 }
 
 void ili9341_sleep_in(lv_disp_drv_t * drv)
