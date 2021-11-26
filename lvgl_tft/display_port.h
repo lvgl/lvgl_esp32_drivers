@@ -15,6 +15,17 @@ extern "C"
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef enum {
+    CMD_WIDTH_8BITS,
+    CMD_WIDTH_16BITS,
+    CMD_WIDTH_INVALID,
+} cmd_width_t;
+
+typedef enum {
+    DATA_XFER_MODE_SYNC,
+    DATA_XFER_MODE_ASYNC,
+} data_xfer_mode_t;
+
 /**
  * Busy wait delay port
  *
@@ -56,9 +67,27 @@ void display_port_gpio_rst(lv_disp_drv_t *drv, uint8_t state);
  */
 bool display_port_gpio_is_busy(lv_disp_drv_t *drv);
 
-void display_interface_send_cmd(lv_disp_drv_t *drv, uint8_t cmd, void *args, size_t args_len);
-void display_interface_send_data(lv_disp_drv_t *drv, void *data, size_t len);
-void display_interface_send_data_async(lv_disp_drv_t *drv, void *data, size_t len);
+/**
+ * Send cmd to display
+ * 
+ * @param drv Pointer to driver
+ * @param cmd Command to send
+ * @param cmd_width Width of the command (in bits) to be sent, see @ref cmd_width_t
+ * @param args Pointer to arguments, use NULL to send command without arguments
+ * @param args_len Arguments length (in bytes) to be sent
+ */
+void display_interface_send_cmd(lv_disp_drv_t *drv, uint32_t cmd, cmd_width_t cmd_width, void *args, size_t args_len);
+
+/**
+ * Send (image) data to display
+ *
+ * @param drv Pointer to driver
+ * @param data Pointer to data to be sent
+ * @param len Data length (in bytes) to be sent
+ * @param mode Data transfer mode, sync (polling) and async, lv_disp_flush must
+ *             be called when finishing the data transfer
+ */
+void display_interface_send_data(lv_disp_drv_t *drv, void *data, size_t len, data_xfer_mode_t mode);
 
 #ifdef __cplusplus
 } /* extern "C" */
