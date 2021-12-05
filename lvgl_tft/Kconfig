@@ -476,11 +476,13 @@ menu "LVGL TFT Display controller"
               Select the SPI Bus the TFT Display is attached to.
 
         config LV_TFT_DISPLAY_SPI_HSPI
-            bool "HSPI"
+            bool "HSPI" if IDF_TARGET_ESP32
         config LV_TFT_DISPLAY_SPI_VSPI
-            bool "VSPI" if !IDF_TARGET_ESP32S2
+            bool "VSPI" if IDF_TARGET_ESP32
         config LV_TFT_DISPLAY_SPI_FSPI
             bool "FSPI" if IDF_TARGET_ESP32S2
+        config LV_TFT_DISPLAY_SPI2
+            bool "SPI2" if IDF_TARGET_ESP32C3
     endchoice
 
     choice
