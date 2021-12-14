@@ -89,7 +89,7 @@ void ft6x06_init(uint16_t dev_addr) {
 
     ft6x06_i2c_read8(dev_addr, FT6X36_RELEASECODE_REG, &data_buf);
     LV_LOG_INFO("\tRelease code: 0x%02x", data_buf);
- 
+
 #if CONFIG_LV_FT6X36_COORDINATES_QUEUE
     ft6x36_touch_queue_handle = xQueueCreate( FT6X36_TOUCH_QUEUE_ELEMENTS, sizeof( ft6x36_touch_t ) );
     if( ft6x36_touch_queue_handle == NULL )

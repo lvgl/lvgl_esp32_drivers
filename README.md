@@ -30,6 +30,7 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 | RA8875                                      | TFT        | SPI                    | 16: RGB565                   | Yes                                    |
 | SH1107                                      | Monochrome | SPI                    | 1: 1byte per pixel           | No                                     |
 | SSD1306                                     | Monochrome | I2C                    | 1: 1byte per pixel           | No                                     |
+| PCD8544                                     | Monochrome | SPI                    | 1: 1byte per pixel           | No                                     |
 | IL3820                                      | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | UC8151D/ GoodDisplay GDEW0154M10 DES        | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | FitiPower JD79653A/ GoodDisplay GDEW0154M09 | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |

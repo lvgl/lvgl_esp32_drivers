@@ -174,6 +174,10 @@ menu "LVGL TFT Display controller"
         help
             ILI9163C display controller.
 
+    config LV_TFT_DISPLAY_CONTROLLER_PCD8544
+        bool
+        help
+            PCD8544 display controller (Nokia 3110/5110)
     # Display controller communication protocol
     #
     # This symbols define the communication protocol used by the
@@ -340,6 +344,11 @@ menu "LVGL TFT Display controller"
             bool "ILI9163C"
             select LV_TFT_DISPLAY_CONTROLLER_ILI9163C
             select LV_TFT_DISPLAY_PROTOCOL_SPI
+        config LV_TFT_DISPLAY_USER_CONTROLLER_PCD8544
+            bool "PCD8544"
+            select LV_TFT_DISPLAY_CONTROLLER_PCD8544
+            select LV_TFT_DISPLAY_PROTOCOL_SPI
+            select LV_TFT_DISPLAY_MONOCHROME
     endchoice
 
     config CUSTOM_DISPLAY_BUFFER_SIZE
@@ -460,18 +469,17 @@ menu "LVGL TFT Display controller"
 
     choice
         prompt "TFT SPI Bus." if LV_TFT_DISPLAY_PROTOCOL_SPI
-        default LV_TFT_DISPLAY_SPI_VSPI if LV_PREDEFINED_DISPLAY_TTGO && \
+        default LV_TFT_DISPLAY_SPI3_HOST if LV_PREDEFINED_DISPLAY_TTGO && \
             !IDF_TARGET_ESP32S2
-        default LV_TFT_DISPLAY_SPI_FSPI if IDF_TARGET_ESP32S2
         help
               Select the SPI Bus the TFT Display is attached to.
 
-        config LV_TFT_DISPLAY_SPI_HSPI
-            bool "HSPI"
-        config LV_TFT_DISPLAY_SPI_VSPI
-            bool "VSPI" if !IDF_TARGET_ESP32S2
-        config LV_TFT_DISPLAY_SPI_FSPI
-            bool "FSPI" if IDF_TARGET_ESP32S2
+        config LV_TFT_DISPLAY_SPI1_HOST
+            bool "SPI1_HOST"
+        config LV_TFT_DISPLAY_SPI2_HOST
+            bool "SPI2_HOST"
+        config LV_TFT_DISPLAY_SPI3_HOST
+            bool "SPI3_HOST"
     endchoice
 
     choice

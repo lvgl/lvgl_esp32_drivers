@@ -52,6 +52,8 @@ extern "C" {
 #include "uc8151d.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C
 #include "ili9163c.h"
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544
+#include "pcd8544.h"
 #endif
 
 /*********************

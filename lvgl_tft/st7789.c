@@ -28,12 +28,11 @@ typedef struct {
  *  STATIC PROTOTYPES
  **********************/
 static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation);
-
 static void st7789_send_cmd(lv_disp_drv_t * drv, uint8_t cmd);
 static void st7789_send_data(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_send_color(lv_disp_drv_t * drv, void *data, uint16_t length);
-
 static void st7789_reset(lv_disp_drv_t * drv);
+
 /**********************
  *  STATIC VARIABLES
  **********************/

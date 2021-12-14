@@ -31,6 +31,7 @@ list(APPEND SOURCES "${LV_PORT_PATH}/lv_port_display_espressif.c")
     list(APPEND SOURCES "lvgl_tft/ra8875.c")
     list(APPEND SOURCES "lvgl_tft/GC9A01.c")
     list(APPEND SOURCES "lvgl_tft/ili9163c.c")
+    list(APPEND SOURCES "lvgl_tft/pcd8544.c")
 
 if(CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI)
     list(APPEND SOURCES "lvgl_tft/disp_spi.c")
