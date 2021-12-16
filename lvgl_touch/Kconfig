@@ -67,17 +67,14 @@ menu "LVGL Touch controller"
         prompt "Touch Controller SPI Bus."
         depends on LV_TOUCH_DRIVER_PROTOCOL_SPI
 
-        default LV_TOUCH_CONTROLLER_SPI_VSPI if !IDF_TARGET_ESP32S2
-        default LV_TOUCH_CONTROLLER_SPI_FSPI if IDF_TARGET_ESP32S2
+        default LV_TOUCH_CONTROLLER_SPI2_HOST
         help
-            Select the SPI Bus the TFT Display is attached to.
+            Select the SPI Bus the touch controller is attached to.
 
-        config LV_TOUCH_CONTROLLER_SPI_HSPI
-            bool "HSPI"
-        config LV_TOUCH_CONTROLLER_SPI_VSPI
-            bool "VSPI" if !IDF_TARGET_ESP32S2
-        config LV_TOUCH_CONTROLLER_SPI_FSPI
-            bool "FSPI" if IDF_TARGET_ESP32S2
+        config LV_TOUCH_CONTROLLER_SPI2_HOST
+            bool "SPI2_HOST"
+        config LV_TOUCH_CONTROLLER_SPI3_HOST
+            bool "SPI3_HOST"
         endchoice
 
     menu "Touchpanel (XPT2046) Pin Assignments"
@@ -86,7 +83,7 @@ menu "LVGL Touch controller"
         config LV_TOUCH_SPI_MISO
             int
             prompt "GPIO for MISO (Master In Slave Out)"
-            
+
             default 35 if LV_PREDEFINED_PINS_38V1
             default 19
             help
@@ -103,7 +100,7 @@ menu "LVGL Touch controller"
 
         config LV_TOUCH_SPI_CLK
             int "GPIO for CLK (SCK / Serial Clock)"
-            
+
             default 26 if LV_PREDEFINED_PINS_38V1
             default 18
             help
@@ -119,7 +116,7 @@ menu "LVGL Touch controller"
 
         config LV_TOUCH_PIN_IRQ
             int "GPIO for IRQ (Interrupt Request)"
-	    
+
             default 27 if LV_PREDEFINED_PINS_38V4
             default 25
             help
@@ -216,7 +213,7 @@ menu "LVGL Touch controller"
         config LV_TOUCH_SPI_MISO
             int
             prompt "GPIO for MISO (Master In Slave Out)"
-            
+
             default 35 if LV_PREDEFINED_PINS_38V1
             default 19 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
             default 19
@@ -472,14 +469,14 @@ menu "LVGL Touch controller"
         config LV_I2C_TOUCH_PORT_0
             bool
             prompt "I2C port 0"
-            help 
+            help
                 I2C is shared peripheral managed by I2C Manager. In order to configure I2C Manager (pinout, etc.) see menu
                 Component config->I2C Port Settings.
 
         config LV_I2C_TOUCH_PORT_1
             bool
             prompt "I2C port 1"
-            help 
+            help
                 I2C is shared peripheral managed by I2C Manager. In order to configure I2C Manager (pinout, etc.) see menu
                 Component config->I2C Port Settings.
 
