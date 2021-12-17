@@ -154,12 +154,34 @@ bool lvgl_spi_driver_init(int host,
     int dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
-    assert((0 <= host) && (SPI_HOST_MAX > host));
+    int dma_chan = 0 /* SPI_DMA_DISABLED */;
+
+#if defined (CONFIG_IDF_TARGET_ESP32)
+    assert((SPI_HOST <= host) && (VSPI_HOST >= host));
+    const char *spi_names[] = {
+        "SPI_HOST", "HSPI_HOST", "VSPI_HOST"
+    };
+
+    dma_chan = dma_channel;
+#elif defined (CONFIG_IDF_TARGET_ESP32S2)
+    assert((SPI_HOST <= host) && (HSPI_HOST >= host));
+    const char *spi_names[] = {
+        "SPI_HOST", "", ""
+    };
+
+    dma_chan = dma_channel;
+#elif defined (CONFIG_IDF_TARGET_ESP32C3)
+    assert((SPI1_HOST <= host) && (SPI3_HOST >= host));
     const char *spi_names[] = {
         "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
     };
 
-    ESP_LOGI(TAG, "Configuring SPI host %s", spi_names[host]);
+    dma_chan = 3 /* SPI_DMA_CH_AUTO */;
+#else
+#error "Target chip not selected"
+#endif
+
+    ESP_LOGI(TAG, "Configuring SPI host %s (%d)", spi_names[host], host);
     ESP_LOGI(TAG, "MISO pin: %d, MOSI pin: %d, SCLK pin: %d, IO2/WP pin: %d, IO3/HD pin: %d",
         miso_pin, mosi_pin, sclk_pin, quadwp_pin, quadhd_pin);
 
@@ -167,16 +189,17 @@ bool lvgl_spi_driver_init(int host,
 
     spi_bus_config_t buscfg = {
         .miso_io_num = miso_pin,
-	    .mosi_io_num = mosi_pin,
-	    .sclk_io_num = sclk_pin,
-	    .quadwp_io_num = quadwp_pin,
-	    .quadhd_io_num = quadhd_pin,
+	.mosi_io_num = mosi_pin,
+	.sclk_io_num = sclk_pin,
+	.quadwp_io_num = quadwp_pin,
+	.quadhd_io_num = quadhd_pin,
         .max_transfer_sz = max_transfer_sz
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_chan);
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
 }
+
