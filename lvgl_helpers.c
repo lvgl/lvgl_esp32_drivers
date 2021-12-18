@@ -195,14 +195,18 @@ bool lvgl_spi_driver_init(int host,
 
     spi_bus_config_t buscfg = {
         .miso_io_num = miso_pin,
-	    .mosi_io_num = mosi_pin,
-	    .sclk_io_num = sclk_pin,
-	    .quadwp_io_num = quadwp_pin,
-	    .quadhd_io_num = quadhd_pin,
+        .mosi_io_num = mosi_pin,
+        .sclk_io_num = sclk_pin,
+        .quadwp_io_num = quadwp_pin,
+        .quadhd_io_num = quadhd_pin,
         .max_transfer_sz = max_transfer_sz
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
+    #if defined (CONFIG_IDF_TARGET_ESP32C3)
+    dma_channel = 3;
+    #endif
+    
     esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
     assert(ret == ESP_OK);
 
