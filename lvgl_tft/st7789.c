@@ -98,9 +98,9 @@ void st7789_init(lv_disp_drv_t *drv)
     st7789_set_orientation(drv, ST7789_INITIAL_ORIENTATION);
 }
 
-/* The ST7789 display controller can drive 320*240 displays, when using a 240*240
- * display there's a gap of 80px, we need to edit the coordinates to take into
- * account that gap, this is not necessary in all orientations. */
+/* The ST7789 display controller can drive up to 320*240 displays, when using a 240*240
+ * or 240*135 displays there's a gap of 80px or 40/52/53px respectivly, we need to edit 
+ * the coordinates to take into account those gaps, this is not necessary in all orientations. */
 void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
     uint8_t data[4] = {0};
@@ -118,13 +118,29 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     offsety2 += CONFIG_LV_TFT_DISPLAY_Y_OFFSET;
 
 #elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
-#if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
-    offsetx1 += 80;
-    offsetx2 += 80;
-#elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
-    offsety1 += 80;
-    offsety2 += 80;
-#endif
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
+        offsetx1 += 80;
+        offsetx2 += 80;
+    #elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        offsety1 += 80;
+        offsety2 += 80;
+    #endif
+#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || \
+        (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+        offsetx1 += 40;
+        offsetx2 += 40;
+        offsety1 += 53;
+        offsety2 += 53;
+    #endif
+#elif (LV_HOR_RES_MAX == 135) && (LV_VER_RES_MAX == 240)
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || \
+        (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        offsetx1 += 52;
+        offsetx2 += 52;
+        offsety1 += 40;
+        offsety2 += 40;
+    #endif
 #endif
 
     /*Column addresses*/
