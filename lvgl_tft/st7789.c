@@ -98,9 +98,9 @@ void st7789_init(lv_disp_drv_t *drv)
     st7789_set_orientation(drv, ST7789_INITIAL_ORIENTATION);
 }
 
-/* The ST7789 display controller can drive up to 320*240 displays, when using a 240*240
- * or 240*135 displays there's a gap of 80px or 40/52/53px respectivly, we need to edit 
- * the coordinates to take into account those gaps, this is not necessary in all orientations. */
+/* The ST7789 display controller can drive up to 320*240 displays, when using a 240*240 or 240*135
+ * displays there's a gap of 80px or 40/52/53px respectively. 52px or 53x offset depends on display orientation.
+ * We need to edit the coordinates to take into account those gaps, this is not necessary in all orientations. */
 void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
     uint8_t data[4] = {0};
