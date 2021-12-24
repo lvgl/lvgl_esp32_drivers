@@ -29,6 +29,8 @@
 
  #define TAG "lvgl_helpers"
 
+#define GPIO_NOT_USED   (-1)
+#define DMA_DEFAULT_TRANSFER_SIZE   (0u)
 /**********************
  *      TYPEDEFS
  **********************/
@@ -49,8 +51,8 @@
  *   GLOBAL FUNCTIONS
  **********************/
 
-/* Interface and driver initialization */
-void lvgl_driver_init(void)
+/* Interface (SPI, I2C) initialization */
+void lvgl_interface_init(void)
 {
     /* Since LVGL v8 LV_HOR_RES_MAX and LV_VER_RES_MAX are not defined, so
      * print it only if they are defined. */
@@ -65,7 +67,7 @@ void lvgl_driver_init(void)
 
     lvgl_spi_driver_init(TFT_SPI_HOST,
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        SPI_BUS_MAX_TRANSFER_SZ, 1,
+        SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH1,
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
@@ -82,8 +84,8 @@ void lvgl_driver_init(void)
 
     lvgl_spi_driver_init(TFT_SPI_HOST,
         TP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        SPI_BUS_MAX_TRANSFER_SZ, 1,
-        -1, -1);
+        SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH1,
+        GPIO_NOT_USED, GPIO_NOT_USED);
 
     disp_spi_add_device(TFT_SPI_HOST);
     tp_spi_add_device(TOUCH_SPI_HOST);
@@ -99,7 +101,7 @@ void lvgl_driver_init(void)
 
     lvgl_spi_driver_init(TFT_SPI_HOST,
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        SPI_BUS_MAX_TRANSFER_SZ, 1,
+        SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH1,
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
@@ -115,8 +117,8 @@ void lvgl_driver_init(void)
 
         lvgl_spi_driver_init(TOUCH_SPI_HOST,
             TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
-            0 /* Defaults to 4094 */, 2,
-            -1, -1);
+            DMA_DEFAULT_TRANSFER_SIZE, SPI_DMA_CH2,
+            GPIO_NOT_USED, GPIO_NOT_USED);
 
         tp_spi_add_device(TOUCH_SPI_HOST);
 
@@ -176,13 +178,18 @@ void display_bsp_init_io(void)
  * We could use the ESP_IDF_VERSION_VAL macro available in the "esp_idf_version.h"
  * header available since ESP-IDF v4.
  */
-bool lvgl_spi_driver_init(int host,
+bool lvgl_spi_driver_init(spi_host_device_t host,
     int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz,
-    int dma_channel,
+    spi_dma_chan_t dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
-    assert((0 <= host) && (SPI_HOST_MAX > host));
+#if defined (SPI_HOST_MAX)
+    assert((SPI1_HOST <= host) && (SPI_HOST_MAX > host));
+#else
+    assert((SPI1_HOST <= host) && ((SPI3_HOST + 1) > host));
+#endif
+
     const char *spi_names[] = {
         "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
     };

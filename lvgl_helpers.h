@@ -14,6 +14,8 @@ extern "C" {
  *********************/
 #include <stdbool.h>
 
+#include "driver/spi_common.h"
+
 #include "lvgl_spi_conf.h"
 #include "lvgl_tft/disp_driver.h"
 #include "lvgl_tft/esp_lcd_backlight.h"
@@ -94,11 +96,11 @@ extern "C" {
 void lvgl_i2c_locking(void* leader);
 
 /* Initialize detected SPI and I2C bus and devices */
-void lvgl_driver_init(void);
+void lvgl_interface_init(void);
 
 /* Initialize SPI master  */
-bool lvgl_spi_driver_init(int host, int miso_pin, int mosi_pin, int sclk_pin,
-    int max_transfer_sz, int dma_channel, int quadwp_pin, int quadhd_pin);
+bool lvgl_spi_driver_init(spi_host_device_t host, int miso_pin, int mosi_pin, int sclk_pin,
+    int max_transfer_sz, spi_dma_chan_t dma_channel, int quadwp_pin, int quadhd_pin);
 
 /* Initialize display GPIOs, e.g. DC and RST pins */
 void display_bsp_init_io(void);
