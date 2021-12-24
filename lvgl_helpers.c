@@ -79,32 +79,29 @@ void lvgl_interface_init(void)
     return;
 #endif
 
+/* Display controller initialization */
+#if defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI) || defined (SHARED_SPI_BUS)
+    ESP_LOGI(TAG, "Initializing SPI master");
+
+    int miso = DISP_SPI_MISO;
+
 #if defined (SHARED_SPI_BUS)
-    ESP_LOGI(TAG, "Initializing shared SPI master");
+    miso = TP_SPI_MISO;
+#endif
 
     lvgl_spi_driver_init(TFT_SPI_HOST,
-        TP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
+        miso, DISP_SPI_MOSI, DISP_SPI_CLK,
         SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH1,
-        GPIO_NOT_USED, GPIO_NOT_USED);
+        DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
+#if defined (SHARED_SPI_BUS)
     tp_spi_add_device(TOUCH_SPI_HOST);
-
     touch_driver_init();
 
     return;
 #endif
 
-/* Display controller initialization */
-#if defined CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI
-    ESP_LOGI(TAG, "Initializing SPI master for display");
-
-    lvgl_spi_driver_init(TFT_SPI_HOST,
-        DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH1,
-        DISP_SPI_IO2, DISP_SPI_IO3);
-
-    disp_spi_add_device(TFT_SPI_HOST);
 #elif defined (CONFIG_LV_I2C_DISPLAY)
 #else
 #error "No protocol defined for display controller"
