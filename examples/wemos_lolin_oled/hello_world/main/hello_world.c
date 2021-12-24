@@ -50,7 +50,7 @@ static void guiTask(void *pvParameter)
 {
     (void) pvParameter;
     lv_init();
-    lvgl_driver_init();
+    lvgl_interface_init();
 
     lv_color_t* buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(buf1 != NULL);
