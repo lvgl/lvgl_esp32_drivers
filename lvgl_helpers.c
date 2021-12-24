@@ -178,7 +178,7 @@ void display_bsp_init_io(void)
 bool lvgl_spi_driver_init(spi_host_device_t host,
     int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz,
-    spi_dma_chan_t dma_channel,
+    int dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
 #if defined (SPI_HOST_MAX)
