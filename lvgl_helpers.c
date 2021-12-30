@@ -39,6 +39,13 @@
  *  STATIC PROTOTYPES
  **********************/
 
+/**
+ * Calculates the SPI max transfer size based on the display buffer size
+ *
+ * @return SPI max transfer size in bytes
+ */
+static int calculate_spi_max_transfer_size(const int display_buffer_size);
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -65,9 +72,12 @@ void lvgl_interface_init(void)
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
     ESP_LOGI(TAG, "Initializing SPI master for FT81X");
 
+    size_t display_buffer_size = lvgl_get_display_buffer_size();
+    int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
+
     lvgl_spi_driver_init(TFT_SPI_HOST,
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH1,
+        spi_max_transfer_size, SPI_DMA_CH1,
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
@@ -84,6 +94,8 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Initializing SPI master");
 
     int miso = DISP_SPI_MISO;
+    size_t display_buffer_size = lvgl_get_display_buffer_size();
+    int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
 
 #if defined (SHARED_SPI_BUS)
     miso = TP_SPI_MISO;
@@ -91,7 +103,7 @@ void lvgl_interface_init(void)
 
     lvgl_spi_driver_init(TFT_SPI_HOST,
         miso, DISP_SPI_MOSI, DISP_SPI_CLK,
-        SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH1,
+        spi_max_transfer_size, SPI_DMA_CH1,
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
@@ -272,4 +284,28 @@ bool lvgl_spi_driver_init(spi_host_device_t host,
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
+}
+
+static int calculate_spi_max_transfer_size(const int display_buffer_size)
+{
+    int retval = 0;
+    
+#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481) || \
+    defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488)
+    retval = display_buffer_size * 3;
+#elif defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341)  || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)   || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7735S)  || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_HX8357)   || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_SH1107)   || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)    || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820)   || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_JD79653A) || \
+      defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C)
+    retval = display_buffer_size * 2;
+#else
+    retval = display_buffer_size * 2;
+#endif
+    
+    return retval;
 }
