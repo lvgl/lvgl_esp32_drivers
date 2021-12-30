@@ -182,8 +182,8 @@ void sh1107_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
     // workaround: always send complete size display buffer
     area->x1 = 0;
     area->y1 = 0;
-    area->x2 = get_display_hor_res(drv) - 1;
-    area->y2 = get_display_ver_res(drv) - 1;
+    area->x2 = get_display_hor_res(disp_drv) - 1;
+    area->y2 = get_display_ver_res(disp_drv) - 1;
 }
 
 void sh1107_sleep_in(void)
