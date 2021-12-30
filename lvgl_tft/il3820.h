@@ -20,8 +20,19 @@ extern "C"
 
 /* Values for Waveshare 2.9inch e-Paper Module, this values shouldn't be
  * swapped to change display orientation */
+#if defined (LV_HOR_RES_MAX)
 #define EPD_PANEL_WIDTH         LV_HOR_RES_MAX   /* 128 */
+#else
+    /* Fallback to default value */
+#define EPD_PANEL_WIDTH         128u
+#endif
+
+#if defined (LV_VER_RES_MAX)
 #define EPD_PANEL_HEIGHT        LV_VER_RES_MAX  /* 296 */
+#else
+    /* Fallback to default value */
+#define EPD_PANEL_HEIGHT        296u
+#endif
 
 /* 128 = panel width */
 #define IL3820_COLUMNS          (EPD_PANEL_WIDTH / 8)
