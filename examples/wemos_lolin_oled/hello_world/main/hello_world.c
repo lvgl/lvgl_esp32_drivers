@@ -52,11 +52,12 @@ static void guiTask(void *pvParameter)
     lv_init();
     lvgl_interface_init();
 
-    lv_color_t* buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    size_t display_buffer_size = lvgl_get_display_buffer_size();
+    lv_color_t* buf1 = heap_caps_malloc(display_buffer_size * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(buf1 != NULL);
 
     static lv_disp_buf_t disp_buf;
-    lv_disp_buf_init(&disp_buf, buf1, NULL, DISP_BUF_SIZE * 8);
+    lv_disp_buf_init(&disp_buf, buf1, NULL, display_buffer_size * 8);
 
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
