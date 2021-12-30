@@ -104,6 +104,10 @@ bool lvgl_spi_driver_init(spi_host_device_t host, int miso_pin, int mosi_pin, in
 
 /* Initialize display GPIOs, e.g. DC and RST pins */
 void display_bsp_init_io(void);
+
+/* Get display buffer size */
+size_t lvgl_get_display_buffer_size(void);
+
 /**********************
  *      MACROS
  **********************/
