@@ -26,8 +26,19 @@
 
 #define BYTES_PER_PIXEL (LV_COLOR_DEPTH / 8)
 
+#if defined (LV_HOR_RES_MAX)
 #define HDWR_VAL (LV_HOR_RES_MAX/8 - 1)
+#else
+    /* ToDo Remove magic number 256u */
+#define HDWR_VAL (256u/8u - 1u)
+#endif
+
+#if defined (LV_VER_RES_MAX)
 #define VDHR_VAL (LV_VER_RES_MAX - 1)
+#else
+    /* ToDo Remove magic number 128u */
+#define VDHR_VAL (128u - 1u)
+#endif
 
 #define VDIR_MASK (1 << 2)
 #define HDIR_MASK (1 << 3)
@@ -234,7 +245,16 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     // Set window if needed
     if ((x1 != area->x1) || (x2 != area->x2)) {
         LV_LOG_INFO("flush: set window (x1,x2): %d,%d -> %d,%d", x1, x2, area->x1, area->x2);
-        ra8875_set_window(area->x1, area->x2, 0, LV_VER_RES_MAX-1);
+        unsigned int ye = 0;
+
+#if defined (LV_VER_RES_MAX)
+        ye = LV_VER_RES_MAX-1;
+#else
+        /* ToDo Get y end from driver information */
+#endif
+        
+        ra8875_set_window(area->x1, area->x2, 0, ye);
+        
         x1 = area->x1;
         x2 = area->x2;
     }
@@ -248,7 +268,16 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 
     // Update to future cursor location
     y = area->y2 + 1;
-    if (y >= LV_VER_RES_MAX) {
+    lv_coord_t ver_max = 0;
+    
+#if defined (LV_VER_RES_MAX)
+    ver_max = LV_VER_RES_MAX; 
+#else
+    /* ToDo Get vertical max from driver information */
+    ver_max = lv_disp_get_ver_res((lv_drv_t *) drv);
+#endif
+    
+    if (y >= ver_max) {
         y = 0;
     }
 
