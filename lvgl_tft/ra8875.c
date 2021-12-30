@@ -247,8 +247,8 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
         LV_LOG_INFO("flush: set window (x1,x2): %d,%d -> %d,%d", x1, x2, area->x1, area->x2);
         unsigned int ye = 0;
 
-#if defined (LV_VER_RES_MAX)
-        ye = LV_VER_RES_MAX-1;
+#if LVGL_VERSION_MAJOR < 8
+        ye = LV_VER_RES_MAX - 1;
 #else
         /* ToDo Get y end from driver information */
 #endif
@@ -270,11 +270,11 @@ void ra8875_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     y = area->y2 + 1;
     lv_coord_t ver_max = 0;
     
-#if defined (LV_VER_RES_MAX)
+#if LVGL_VERSION_MAJOR < 8
     ver_max = LV_VER_RES_MAX; 
 #else
     /* ToDo Get vertical max from driver information */
-    ver_max = lv_disp_get_ver_res((lv_drv_t *) drv);
+    ver_max = lv_disp_get_ver_res((lv_disp_t *) drv);
 #endif
     
     if (y >= ver_max) {
