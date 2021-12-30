@@ -56,15 +56,15 @@ static void guiTask(void *pvParameter)
     lv_color_t* buf1 = heap_caps_malloc(display_buffer_size * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(buf1 != NULL);
 
-    static lv_disp_buf_t disp_buf;
-    lv_disp_buf_init(&disp_buf, buf1, NULL, display_buffer_size * 8);
+    static lv_disp_draw_buf_t disp_buf;
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, DISP_BUF_SIZE * 8);
 
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.rounder_cb = disp_driver_rounder;
     disp_drv.set_px_cb = disp_driver_set_px;
-    disp_drv.buffer = &disp_buf;
+    disp_drv.draw_buffer = &disp_buf;
     lv_disp_drv_register(&disp_drv);
 
     /* Create and start a periodic timer interrupt to call lv_tick_inc */
@@ -78,13 +78,13 @@ static void guiTask(void *pvParameter)
 
     /* Create a Hellow World label on the currently active screen */
     lv_obj_t *scr = lv_disp_get_scr_act(NULL);
-    lv_obj_t *label1 =  lv_label_create(scr, NULL);
+    lv_obj_t *label1 =  lv_label_create(scr);
     lv_label_set_text(label1, "Hello\nworld");
 
     /* Align the Label to the center
      * NULL means align on parent (which is the screen now)
      * 0, 0 at the end means an x, y offset after alignment*/
-    lv_obj_align(label1, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(label1, LV_ALIGN_CENTER, 0, 0);
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(10));
