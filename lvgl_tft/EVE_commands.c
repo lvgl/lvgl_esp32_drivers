@@ -273,7 +273,7 @@ void EVE_memWrite_buffer(uint32_t ftAddress, const uint8_t *data, uint32_t len, 
 		block_len = (bytes_left > SPI_TRANSER_SIZE ? SPI_TRANSER_SIZE : bytes_left);
 #else
         /* ToDo Update SPI_TRANSFER_SIZE calculation, it's based on the DISP_BUF_SIZE */
-#enfig
+#endif
 
 		// only send flush on last chunk
 		disp_spi_send_flag_t flush_flag = 0;
