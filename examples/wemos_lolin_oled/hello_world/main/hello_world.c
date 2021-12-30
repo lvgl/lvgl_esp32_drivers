@@ -57,14 +57,14 @@ static void guiTask(void *pvParameter)
     assert(buf1 != NULL);
 
     static lv_disp_draw_buf_t disp_buf;
-    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, DISP_BUF_SIZE * 8);
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, display_buffer_size * 8);
 
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.rounder_cb = disp_driver_rounder;
     disp_drv.set_px_cb = disp_driver_set_px;
-    disp_drv.draw_buffer = &disp_buf;
+    disp_drv.draw_buf = &disp_buf;
     lv_disp_drv_register(&disp_drv);
 
     /* Create and start a periodic timer interrupt to call lv_tick_inc */
