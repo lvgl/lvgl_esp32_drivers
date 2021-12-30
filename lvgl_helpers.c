@@ -67,7 +67,7 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Display hor size: %d, ver size: %d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
 #endif
 
-    ESP_LOGI(TAG, "Display buffer size: %d", DISP_BUF_SIZE);
+    ESP_LOGI(TAG, "Display buffer size: %d", lvgl_get_display_buffer_size());
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
     ESP_LOGI(TAG, "Initializing SPI master for FT81X");
@@ -281,7 +281,7 @@ bool lvgl_spi_driver_init(spi_host_device_t host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
