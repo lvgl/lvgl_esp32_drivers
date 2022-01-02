@@ -4,7 +4,8 @@
 
 #include "disp_driver.h"
 #include "disp_spi.h"
-
+#include "esp_lcd_backlight.h"
+#include "sdkconfig.h"
 
 void *disp_driver_init(void)
 {

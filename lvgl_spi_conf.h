@@ -64,16 +64,10 @@ extern "C" {
 
 #define ENABLE_TOUCH_INPUT  CONFIG_LV_ENABLE_TOUCH
 
-#if defined (CONFIG_LV_TFT_DISPLAY_SPI_HSPI)
-#if defined (CONFIG_IDF_TARGET_ESP32C3)
-#define TFT_SPI_HOST    SPI2_HOST
-#else
-#define TFT_SPI_HOST    HSPI_HOST
-#endif
-#elif defined (CONFIG_LV_TFT_DISPLAY_SPI_VSPI)
-#define TFT_SPI_HOST    VSPI_HOST
-#elif defined (CONFIG_LV_TFT_DISPLAY_SPI_FSPI)
-#define TFT_SPI_HOST    FSPI_HOST
+#if defined (CONFIG_LV_TFT_DISPLAY_SPI2_HOST)
+#define TFT_SPI_HOST SPI2_HOST
+#elif defined (CONFIG_LV_TFT_DISPLAY_SPI3_HOST)
+#define TFT_SPI_HOST SPI3_HOST
 #endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI_HALF_DUPLEX)
@@ -90,12 +84,10 @@ extern "C" {
 #define DISP_SPI_TRANS_MODE_SIO
 #endif
 
-#if defined (CONFIG_LV_TOUCH_CONTROLLER_SPI_HSPI)
-#define TOUCH_SPI_HOST HSPI_HOST
-#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI_VSPI)
-#define TOUCH_SPI_HOST VSPI_HOST
-#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI_FSPI)
-#define TOUCH_SPI_HOST FSPI_HOST
+#if defined (CONFIG_LV_TOUCH_CONTROLLER_SPI2_HOST)
+#define TOUCH_SPI_HOST SPI2_HOST
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI3_HOST)
+#define TOUCH_SPI_HOST SPI3_HOST
 #endif
 
 /* Handle the FT81X Special case */
@@ -111,7 +103,7 @@ extern "C" {
 // Detect the use of a shared SPI Bus and verify the user specified the same SPI bus for both touch and tft
 #if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI) && TP_SPI_MOSI == DISP_SPI_MOSI && TP_SPI_CLK == DISP_SPI_CLK
 #if TFT_SPI_HOST != TOUCH_SPI_HOST
-#error You must specify the same SPI host (HSPI, VSPI or FSPI) for both display and touch driver
+#error You must specify the same SPI host (SPIx_HOST) for both display and touch driver
 #endif
 
 #define SHARED_SPI_BUS
@@ -166,6 +158,8 @@ extern "C" {
 #define SPI_TFT_CLOCK_SPEED_HZ (40 * 1000 * 1000)
 #elif defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
 #define SPI_TFT_CLOCK_SPEED_HZ  (32*1000*1000)
+#elif defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544)
+#define SPI_TFT_CLOCK_SPEED_HZ  (4*1000*1000)
 #else
 #define SPI_TFT_CLOCK_SPEED_HZ  (40*1000*1000)
 #endif

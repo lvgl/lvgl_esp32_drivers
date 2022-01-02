@@ -114,6 +114,8 @@ void lvgl_driver_init(void)
     ESP_LOGI(TAG, "Initializing Parallel driver for display");
     // Check how not to initialize SPI. disp_driver_init() call is needed:
     disp_driver_init();
+#elif defined (CONFIG_LV_I2C_DISPLAY)
+    disp_driver_init();
 #else
 #error "No protocol defined for display controller"
 #endif

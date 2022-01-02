@@ -35,7 +35,7 @@ typedef struct {
  **********************/
 static void st7789_set_orientation(uint8_t orientation);
 
-static void st7789_send_color(void *data, uint16_t length);
+static void st7789_send_color(void *data, size_t length);
 
 /**********************
  *  STATIC VARIABLES
@@ -94,11 +94,6 @@ void st7789_init(void)
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
 
-#if ST7789_ENABLE_BACKLIGHT_CONTROL
-    gpio_pad_select_gpio(ST7789_BCKL);
-    gpio_set_direction(ST7789_BCKL, GPIO_MODE_OUTPUT);
-#endif
-
     //Reset the display
 #if !defined(ST7789_SOFT_RST)
     gpio_set_level(ST7789_RST, 0);
@@ -122,30 +117,12 @@ void st7789_init(void)
         cmd++;
     }
 
-    st7789_enable_backlight(true);
-
     st7789_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
 }
 
-void st7789_enable_backlight(bool backlight)
-{
-#if ST7789_ENABLE_BACKLIGHT_CONTROL
-    printf("%s backlight.\n", backlight ? "Enabling" : "Disabling");
-    uint32_t tmp = 0;
-
-#if (ST7789_BCKL_ACTIVE_LVL==1)
-    tmp = backlight ? 1 : 0;
-#else
-    tmp = backlight ? 0 : 1;
-#endif
-
-    gpio_set_level(ST7789_BCKL, tmp);
-#endif
-}
-
-/* The ST7789 display controller can drive 320*240 displays, when using a 240*240
- * display there's a gap of 80px, we need to edit the coordinates to take into
- * account that gap, this is not necessary in all orientations. */
+/* The ST7789 display controller can drive up to 320*240 displays, when using a 240*240 or 240*135
+ * displays there's a gap of 80px or 40/52/53px respectively. 52px or 53x offset depends on display orientation.
+ * We need to edit the coordinates to take into account those gaps, this is not necessary in all orientations. */
 void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
     uint8_t data[4] = {0};
@@ -162,13 +139,29 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     offsety2 += CONFIG_LV_TFT_DISPLAY_Y_OFFSET;
 
 #elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
-#if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
-    offsetx1 += 80;
-    offsetx2 += 80;
-#elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
-    offsety1 += 80;
-    offsety2 += 80;
-#endif
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
+        offsetx1 += 80;
+        offsetx2 += 80;
+    #elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        offsety1 += 80;
+        offsety2 += 80;
+    #endif
+#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || \
+        (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+        offsetx1 += 40;
+        offsetx2 += 40;
+        offsety1 += 53;
+        offsety2 += 53;
+    #endif
+#elif (LV_HOR_RES_MAX == 135) && (LV_VER_RES_MAX == 240)
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || \
+        (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        offsetx1 += 52;
+        offsetx2 += 52;
+        offsety1 += 40;
+        offsety2 += 40;
+    #endif
 #endif
 
     /*Column addresses*/
@@ -190,7 +183,7 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     /*Memory write*/
     st7789_send_cmd(ST7789_RAMWR);
 
-    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
+    size_t size = (size_t)lv_area_get_width(area) * (size_t)lv_area_get_height(area);
 
     st7789_send_color((void*)color_map, size * 2);
 
@@ -213,7 +206,7 @@ void st7789_send_data(void * data, uint16_t length)
     disp_spi_send_data(data, length);
 }
 
-static void st7789_send_color(void * data, uint16_t length)
+static void st7789_send_color(void * data, size_t length)
 {
     disp_wait_for_pending_transactions();
     gpio_set_level(ST7789_DC, 1);

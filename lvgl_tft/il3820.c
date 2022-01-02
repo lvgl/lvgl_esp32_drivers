@@ -199,15 +199,13 @@ void il3820_init(void)
     gpio_pad_select_gpio(IL3820_DC_PIN);
     gpio_set_direction(IL3820_DC_PIN, GPIO_MODE_OUTPUT);
 
-#if IL3820_USE_RST
-    gpio_pad_select_gpio(IL3820_RST_PIN);
-    gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
-#endif
-
     gpio_pad_select_gpio(IL3820_BUSY_PIN);
     gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
 
 #if IL3820_USE_RST
+    gpio_pad_select_gpio(IL3820_RST_PIN);
+    gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
+
     /* Harware reset */
     gpio_set_level( IL3820_RST_PIN, 0);
     vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);

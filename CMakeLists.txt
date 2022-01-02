@@ -3,8 +3,7 @@ if(ESP_PLATFORM)
 file(GLOB SOURCES *.c)
 set(LVGL_INCLUDE_DIRS . lvgl_tft lvgl_touch/L58/include)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
-
-#@todo add SimleInclude macro here
+list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
 
 # Include only the source file of the selected
 # display controller.
@@ -45,6 +44,8 @@ elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_GC9A01)
     list(APPEND SOURCES "lvgl_tft/GC9A01.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C)
     list(APPEND SOURCES "lvgl_tft/ili9163c.c")
+elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544)
+    list(APPEND SOURCES "lvgl_tft/pcd8544.c")
 else()
     message(WARNING "LVGL ESP32 drivers: Display controller not defined.")
 endif()
@@ -81,15 +82,17 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
 
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         list(APPEND SOURCES "lvgl_touch/tp_spi.c")
-    elseif(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)
-        list(APPEND SOURCES "lvgl_touch/tp_i2c.c")
     endif()
+endif()
+
+if(CONFIG_LV_I2C)
+    list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
 endif()
 
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
                        REQUIRES lvgl)
-                       
+
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")
 
 else()

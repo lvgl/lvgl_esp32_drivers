@@ -8,6 +8,7 @@
 // Is not being included in CMakeLists.txt (Research why)
 #include "l58.h"
 
+
 void touch_driver_init(void)
 {
 #if defined (CONFIG_LV_TOUCH_CONTROLLER_XPT2046)

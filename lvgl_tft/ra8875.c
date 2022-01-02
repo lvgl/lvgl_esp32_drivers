@@ -148,29 +148,12 @@ void ra8875_init(void)
 
     ESP_LOGI(TAG, "Initializing RA8875...");
 
-#if (CONFIG_LV_DISP_PIN_BCKL == 15)
-    gpio_config_t io_conf;
-    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = GPIO_SEL_15;
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-    gpio_config(&io_conf);
-#endif
-
     // Initialize non-SPI GPIOs
 
 #if RA8875_USE_RST
     gpio_pad_select_gpio(RA8875_RST);
     gpio_set_direction(RA8875_RST, GPIO_MODE_OUTPUT);
-#endif
 
-#ifdef CONFIG_LV_DISP_PIN_BCKL
-    gpio_pad_select_gpio(CONFIG_LV_DISP_PIN_BCKL);
-    gpio_set_direction(CONFIG_LV_DISP_PIN_BCKL, GPIO_MODE_OUTPUT);
-#endif
-
-#if RA8875_USE_RST
     // Reset the RA8875
     gpio_set_level(RA8875_RST, 0);
     vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
@@ -200,28 +183,8 @@ void ra8875_init(void)
         ESP_LOGW(TAG, "WARNING: Memory clear timed out; RA8875 may be unresponsive.");
     }
 
-    // Enable the display and backlight
+    // Enable the display
     ra8875_enable_display(true);
-    ra8875_enable_backlight(true);
-}
-
-void ra8875_enable_backlight(bool backlight)
-{
-#if CONFIG_LV_ENABLE_BACKLIGHT_CONTROL
-    ESP_LOGI(TAG, "%s backlight.", backlight ? "Enabling" : "Disabling");
-    uint32_t tmp = 0;
-
-    #if CONFIG_LV_BACKLIGHT_ACTIVE_LVL
-        tmp = backlight ? 1 : 0;
-    #else
-        tmp = backlight ? 0 : 1;
-    #endif
-
-#ifdef CONFIG_LV_DISP_PIN_BCKL
-    gpio_set_level(CONFIG_LV_DISP_PIN_BCKL, tmp);
-#endif
-
-#endif
 }
 
 void ra8875_enable_display(bool enable)
