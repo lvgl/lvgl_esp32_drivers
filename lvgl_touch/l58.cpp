@@ -25,7 +25,6 @@
 #include <lvgl/lvgl.h>
 #endif
 #include "l58.h"
-#include "../lvgl_i2c_conf.h"
 // Cale touch implementation
 #include "L58Touch.h"
 L58Touch Touch(CONFIG_LV_TOUCH_INT);

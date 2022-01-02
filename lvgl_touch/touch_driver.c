@@ -4,7 +4,7 @@
 
 #include "touch_driver.h"
 #include "tp_spi.h"
-#include "tp_i2c.h"
+
 // Is not being included in CMakeLists.txt (Research why)
 #include "l58.h"
 
