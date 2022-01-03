@@ -86,6 +86,7 @@ static void guiTask(void *pvParameter)
 
     /* Create a Hellow World label on the currently active screen */
     lv_obj_t *scr = lv_disp_get_scr_act(NULL);
+
     /* LVGL v8 lv_label_create no longer takes 2 parameters */
     lv_obj_t *label1 =  lv_label_create(scr);
     lv_label_set_text(label1, "Hello\nworld");
