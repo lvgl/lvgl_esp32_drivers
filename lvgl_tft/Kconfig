@@ -475,7 +475,7 @@ menu "LVGL TFT Display controller"
         config LV_TFT_DISPLAY_SPI2_HOST
             bool "SPI2_HOST"
         config LV_TFT_DISPLAY_SPI3_HOST
-            bool "SPI3_HOST"
+            bool "SPI3_HOST" if !IDF_TARGET_ESP32C3
         help
               Select the SPI Bus the TFT Display is attached to.
     endchoice
