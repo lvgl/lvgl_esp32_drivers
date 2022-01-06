@@ -116,6 +116,26 @@ void st7789_init(lv_disp_drv_t *drv);
 void st7789_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
 
 /**
+ * Set display buffer offset at x axis
+ */
+void st7789_set_x_offset(const uint16_t offset);
+
+/**
+ * Set display buffer offset at y axis
+ */
+void st7789_set_y_offset(const uint16_t offset);
+
+/**
+ * Get display buffer offset at x axis
+ */
+uint16_t st7789_x_offset(void);
+
+/**
+ * Get display buffer offset at y axis
+ */
+uint16_t st7789_y_offset(void);
+
+/**
  * Display updated callback
  *
  * @param drv Pointer to lv_disp_drv_t being used

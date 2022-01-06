@@ -33,9 +33,12 @@ static void st7789_send_data(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_send_color(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_reset(lv_disp_drv_t * drv);
 
+static void setup_initial_offsets(void);
 /**********************
  *  STATIC VARIABLES
  **********************/
+static uint16_t user_x_offset = 0u;
+static uint16_t user_y_offset = 0u;
 
 /**********************
  *      MACROS
@@ -46,6 +49,8 @@ static void st7789_reset(lv_disp_drv_t * drv);
  **********************/
 void st7789_init(lv_disp_drv_t *drv)
 {
+    setup_initial_offsets();
+
     lcd_init_cmd_t st7789_init_cmds[] = {
         {0xCF, {0x00, 0x83, 0X30}, 3},
         {0xED, {0x64, 0x03, 0X12, 0X81}, 4},
@@ -111,37 +116,10 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     uint16_t offsety2 = area->y2;
     uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
 
-#if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
-    offsetx1 += CONFIG_LV_TFT_DISPLAY_X_OFFSET;
-    offsetx2 += CONFIG_LV_TFT_DISPLAY_X_OFFSET;
-    offsety1 += CONFIG_LV_TFT_DISPLAY_Y_OFFSET;
-    offsety2 += CONFIG_LV_TFT_DISPLAY_Y_OFFSET;
-
-#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
-        offsetx1 += 80;
-        offsetx2 += 80;
-    #elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
-        offsety1 += 80;
-        offsety2 += 80;
-    #endif
-#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || \
-        (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
-        offsetx1 += 40;
-        offsetx2 += 40;
-        offsety1 += 53;
-        offsety2 += 53;
-    #endif
-#elif (LV_HOR_RES_MAX == 135) && (LV_VER_RES_MAX == 240)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || \
-        (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
-        offsetx1 += 52;
-        offsetx2 += 52;
-        offsety1 += 40;
-        offsety2 += 40;
-    #endif
-#endif
+    offsetx1 += st7789_x_offset();
+    offsetx2 += st7789_x_offset();
+    offsety1 += st7789_y_offset();
+    offsety2 += st7789_y_offset();
 
     /*Column addresses*/
     st7789_send_cmd(drv, ST7789_CASET);
@@ -162,6 +140,26 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     /*Memory write*/
     st7789_send_cmd(drv, ST7789_RAMWR);
     st7789_send_color(drv, (void*) color_map, size * 2);
+}
+
+void st7789_set_x_offset(const uint16_t offset)
+{
+    user_x_offset = offset;
+}
+
+void st7789_set_y_offset(const uint16_t offset)
+{
+    user_y_offset = offset;
+}
+
+uint16_t st7789_x_offset(void)
+{
+    return user_x_offset;
+}
+
+uint16_t st7789_y_offset(void)
+{
+    return user_y_offset;
 }
 
 /**********************
@@ -215,6 +213,35 @@ static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
 
     st7789_send_cmd(drv, ST7789_MADCTL);
     st7789_send_data(drv, (void *) &data[orientation], 1);
+}
+
+static void setup_initial_offsets(void)
+{
+#if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
+    st7789_set_x_offset(CONFIG_LV_TFT_DISPLAY_X_OFFSET);
+    st7789_set_y_offset(CONFIG_LV_TFT_DISPLAY_Y_OFFSET);
+
+#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
+        st7789_set_x_offset(80);
+        st7789_set_y_offset(0);
+    #elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        st7789_set_x_offset(0);
+        st7789_set_y_offset(80);
+    #endif
+#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || \
+        (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+        st7789_set_x_offset(40);
+        st7789_set_y_offset(53);
+    #endif
+#elif (LV_HOR_RES_MAX == 135) && (LV_VER_RES_MAX == 240)
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || \
+        (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        st7789_set_x_offset(52);
+        st7789_set_y_offset(40);
+    #endif
+#endif
 }
 
 /* Display update callback, we could update the orientation in here
