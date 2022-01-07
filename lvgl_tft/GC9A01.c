@@ -229,7 +229,7 @@ static void GC9A01_set_orientation(uint8_t orientation)
     const uint8_t data[] = {0x08, 0xC8, 0x68, 0xA8};
 #endif
 
-#if (LV_USE_LOG == 1);
+#if (LV_USE_LOG == 1)
     const char *orientation_str[] = {
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
