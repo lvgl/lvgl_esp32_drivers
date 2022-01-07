@@ -50,20 +50,29 @@ static void guiTask(void *pvParameter)
 {
     (void) pvParameter;
     lv_init();
-    lvgl_driver_init();
+    
+    /* Initialize the needed peripherals */
+    lvgl_interface_init();
+    /* Initialize needed GPIOs, e.g. backlight, reset GPIOs */
+    display_bsp_init_io();
+    /* ToDo Initialize used display driver passing registered lv_disp_drv_t as parameter */
 
-    lv_color_t* buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    size_t display_buffer_size = lvgl_get_display_buffer_size();
+    lv_color_t* buf1 = heap_caps_malloc(display_buffer_size * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(buf1 != NULL);
 
     static lv_disp_draw_buf_t disp_buf;
-    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, DISP_BUF_SIZE * 8);
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, display_buffer_size * 8);
 
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.rounder_cb = disp_driver_rounder;
     disp_drv.set_px_cb = disp_driver_set_px;
-    disp_drv.draw_buffer = &disp_buf;
+    disp_drv.draw_buf = &disp_buf;
+    /* LVGL v8: Set display horizontal and vertical resolution (in pixels), it's no longer done with lv_conf.h */
+    disp_drv.hor_res = 128u;
+    disp_drv.ver_res = 64u;
     lv_disp_drv_register(&disp_drv);
 
     /* Create and start a periodic timer interrupt to call lv_tick_inc */
@@ -77,6 +86,8 @@ static void guiTask(void *pvParameter)
 
     /* Create a Hellow World label on the currently active screen */
     lv_obj_t *scr = lv_disp_get_scr_act(NULL);
+
+    /* LVGL v8 lv_label_create no longer takes 2 parameters */
     lv_obj_t *label1 =  lv_label_create(scr);
     lv_label_set_text(label1, "Hello\nworld");
 

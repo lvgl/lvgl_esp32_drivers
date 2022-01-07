@@ -44,9 +44,24 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #define PIN_BUSY            CONFIG_LV_DISP_PIN_BUSY
 #define PIN_BUSY_BIT        ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_BUSY)))
 #define EVT_BUSY            (1UL << 0UL)
+
+#if defined (LV_HOR_RES_MAX)
 #define EPD_WIDTH           LV_HOR_RES_MAX
+#else
+    /* ToDo Remove magic number */
+#define EPD_WIDTH           256u
+#endif
+
+#if defined (LV_VER_RES_MAX)
 #define EPD_HEIGHT          LV_VER_RES_MAX
+#else
+    /* ToDo Remove magic number */
+#define EPD_HEIGHT          128u
+#endif
+
 #define EPD_ROW_LEN         (EPD_HEIGHT / 8u)
+
+/* ToDo Remove semicolon */
 #define EPD_PARTIAL_CNT     5;
 
 #define BIT_SET(a, b)       ((a) |= (1U << (b)))
@@ -200,21 +215,21 @@ static esp_err_t jd79653a_wait_busy(uint32_t timeout_ms)
     return ((bits & EVT_BUSY) != 0) ? ESP_OK : ESP_ERR_TIMEOUT;
 }
 
-static void jd79653a_power_on()
+static void jd79653a_power_on(void)
 {
     jd79653a_spi_send_seq(power_on_seq, EPD_SEQ_LEN(power_on_seq));
     vTaskDelay(pdMS_TO_TICKS(10));
     jd79653a_wait_busy(0);
 }
 
-static void jd79653a_power_off()
+static void jd79653a_power_off(void)
 {
     jd79653a_spi_send_seq(power_off_seq, EPD_SEQ_LEN(power_off_seq));
     vTaskDelay(pdMS_TO_TICKS(10));
     jd79653a_wait_busy(0);
 }
 
-static void jd79653a_load_partial_lut()
+static void jd79653a_load_partial_lut(void)
 {
     jd79653a_spi_send_cmd(0x20); // LUT VCOM register
     jd79653a_spi_send_data((uint8_t *)lut_vcom_dc1, sizeof(lut_vcom_dc1));
@@ -232,7 +247,7 @@ static void jd79653a_load_partial_lut()
     jd79653a_spi_send_data((uint8_t *)lut_bb1, sizeof(lut_bb1));
 }
 
-static void jd79653a_partial_in()
+static void jd79653a_partial_in(void)
 {
     LV_LOG_INFO("Partial in!");
 
@@ -260,7 +275,7 @@ static void jd79653a_partial_in()
     jd79653a_spi_send_cmd(0x91);
 }
 
-static void jd79653a_partial_out()
+static void jd79653a_partial_out(void)
 {
     LV_LOG_INFO("Partial out!");
 
@@ -378,7 +393,7 @@ void jd79653a_fb_full_update(uint8_t *data, size_t len)
     jd79653a_power_off();
 }
 
-void jd79653a_lv_set_fb_cb(struct _disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
+void jd79653a_lv_set_fb_cb(lv_disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
                            lv_color_t color, lv_opa_t opa)
 {
     uint16_t byte_index = (x >> 3u) + (y * EPD_ROW_LEN);
@@ -391,7 +406,7 @@ void jd79653a_lv_set_fb_cb(struct _disp_drv_t *disp_drv, uint8_t *buf, lv_coord_
     }
 }
 
-void jd79653a_lv_rounder_cb(struct _disp_drv_t *disp_drv, lv_area_t *area)
+void jd79653a_lv_rounder_cb(lv_disp_drv_t *disp_drv, lv_area_t *area)
 {
     // Always send full framebuffer if it's not in partial mode
     area->x1 = 0;
@@ -419,7 +434,7 @@ void jd79653a_lv_fb_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t 
     lv_disp_flush_ready(drv);
 }
 
-void jd79653a_deep_sleep()
+void jd79653a_deep_sleep(void)
 {
     jd79653a_spi_send_seq(power_off_seq, EPD_SEQ_LEN(power_off_seq));
     jd79653a_wait_busy(1000);
@@ -429,7 +444,7 @@ void jd79653a_deep_sleep()
     jd79653a_spi_send_data(&check_code, sizeof(check_code));
 }
 
-void jd79653a_init()
+void jd79653a_init(void)
 {
     // Initialise event group
     jd79653a_evts = xEventGroupCreate();

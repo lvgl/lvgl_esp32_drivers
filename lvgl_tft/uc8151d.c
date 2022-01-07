@@ -45,8 +45,21 @@
 #define PIN_BUSY            CONFIG_LV_DISP_PIN_BUSY
 #define PIN_BUSY_BIT        ((1ULL << (uint8_t)(CONFIG_LV_DISP_PIN_BUSY)))
 #define EVT_BUSY            (1UL << 0UL)
+
+#if defined (LV_HOR_RES_MAX)
 #define EPD_WIDTH           LV_HOR_RES_MAX
+#else
+    /* ToDo Fix, 256 is just a magic number */
+#define EPD_WIDTH           256u
+#endif
+
+#if defined (LV_VER_RES_MAX)
 #define EPD_HEIGHT          LV_VER_RES_MAX
+#else
+    /* ToDo Fix, 128 is just a magic number */
+#define EPD_HEIGHT          128u
+#endif
+
 #define EPD_ROW_LEN         (EPD_HEIGHT / 8u)
 
 #define BIT_SET(a, b)       ((a) |= (1U << (b)))
@@ -105,7 +118,7 @@ static esp_err_t uc8151d_wait_busy(uint32_t timeout_ms)
     return ((bits & EVT_BUSY) != 0) ? ESP_OK : ESP_ERR_TIMEOUT;
 }
 
-static void uc8151d_sleep()
+static void uc8151d_sleep(void)
 {
     // Set VCOM to 0xf7
     uc8151d_spi_send_cmd(0x50);
@@ -122,7 +135,7 @@ static void uc8151d_sleep()
 
 static void uc8151d_reset(void);
 
-static void uc8151d_panel_init()
+static void uc8151d_panel_init(void)
 {
     // Hardware reset for 3 times - not sure why but it's from official demo code
     for (uint8_t cnt = 0; cnt < 3; cnt++) {
@@ -186,7 +199,7 @@ void uc8151d_lv_fb_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *
     LV_LOG_INFO("Ready");
 }
 
-void uc8151d_lv_set_fb_cb(struct _disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
+void uc8151d_lv_set_fb_cb(lv_disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
                            lv_color_t color, lv_opa_t opa)
 {
     uint16_t byte_index = (x >> 3u) + (y * EPD_ROW_LEN);
@@ -200,7 +213,7 @@ void uc8151d_lv_set_fb_cb(struct _disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t
     }
 }
 
-void uc8151d_lv_rounder_cb(struct _disp_drv_t *disp_drv, lv_area_t *area)
+void uc8151d_lv_rounder_cb(lv_disp_drv_t *disp_drv, lv_area_t *area)
 {
     // Always send full framebuffer if it's not in partial mode
     area->x1 = 0;
@@ -209,7 +222,7 @@ void uc8151d_lv_rounder_cb(struct _disp_drv_t *disp_drv, lv_area_t *area)
     area->y2 = EPD_HEIGHT - 1;
 }
 
-void uc8151d_init()
+void uc8151d_init(void)
 {
     // Initialise event group
     uc8151d_evts = xEventGroupCreate();

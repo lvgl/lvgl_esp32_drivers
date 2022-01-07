@@ -35,6 +35,9 @@ static void sh1107_send_cmd(uint8_t cmd);
 static void sh1107_send_data(void * data, uint16_t length);
 static void sh1107_send_color(void * data, uint16_t length);
 
+static lv_coord_t get_display_ver_res(lv_disp_drv_t *disp_drv);
+static lv_coord_t get_display_hor_res(lv_disp_drv_t *disp_drv);
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -117,7 +120,7 @@ void sh1107_init(void)
 	}
 }
 
-void sh1107_set_px_cb(struct _disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
+void sh1107_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
         lv_color_t color, lv_opa_t opa)
 {
 	/* buf_w will be ignored, the configured CONFIG_LV_DISPLAY_HEIGHT and _WIDTH,
@@ -126,10 +129,10 @@ void sh1107_set_px_cb(struct _disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t b
     uint8_t  bit_index = 0;
 
 #if defined CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE
-	byte_index = y + (( x>>3 ) * LV_VER_RES_MAX);
+	byte_index = y + (( x>>3 ) * get_display_ver_res(disp_drv));
 	bit_index  = x & 0x7;
 #elif defined CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT
-    byte_index = x + (( y>>3 ) * LV_HOR_RES_MAX);
+    byte_index = x + (( y>>3 ) * get_display_hor_res(disp_drv));
     bit_index  = y & 0x7;
 #endif
 
@@ -161,9 +164,9 @@ void sh1107_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	    sh1107_send_cmd(0xB0 | i);                  // Set Page Start Address for Page Addressing Mode
 	    size = area->y2 - area->y1 + 1;
 #if defined CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE
-        ptr = color_map + i * LV_VER_RES_MAX;
+        ptr = color_map + i * get_display_ver_res(drv);
 #else
-        ptr = color_map + i * LV_HOR_RES_MAX;
+        ptr = color_map + i * get_display_hor_res(drv);
 #endif
         if(i != row2){
 	    sh1107_send_data( (void *) ptr, size);
@@ -174,21 +177,21 @@ void sh1107_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     }
 }
 
-void sh1107_rounder(struct _disp_drv_t * disp_drv, lv_area_t *area)
+void sh1107_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area)
 {
     // workaround: always send complete size display buffer
     area->x1 = 0;
     area->y1 = 0;
-    area->x2 = LV_HOR_RES_MAX-1;
-    area->y2 = LV_VER_RES_MAX-1;
+    area->x2 = get_display_hor_res(disp_drv) - 1;
+    area->y2 = get_display_ver_res(disp_drv) - 1;
 }
 
-void sh1107_sleep_in()
+void sh1107_sleep_in(void)
 {
     sh1107_send_cmd(0xAE);
 }
 
-void sh1107_sleep_out()
+void sh1107_sleep_out(void)
 {
     sh1107_send_cmd(0xAF);
 }
@@ -217,4 +220,40 @@ static void sh1107_send_color(void * data, uint16_t length)
     disp_wait_for_pending_transactions();
     gpio_set_level(SH1107_DC, 1);   /*Data mode*/
     disp_spi_send_colors(data, length);
+}
+
+static lv_coord_t get_display_ver_res(lv_disp_drv_t *disp_drv)
+{
+    lv_coord_t val = 0;
+
+#if LVGL_VERSION_MAJOR < 8
+#if defined CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE
+    val = LV_VER_RES_MAX;
+#endif
+#else
+    /* ToDo Use display rotation API to get vertical size */
+#if defined CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE
+    val = lv_disp_get_ver_res((lv_disp_t *) disp_drv);
+#endif
+#endif
+
+    return val;
+}
+
+static lv_coord_t get_display_hor_res(lv_disp_drv_t *disp_drv)
+{
+    lv_coord_t val = 0;
+
+#if LVGL_VERSION_MAJOR < 8
+#if defined CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT
+    val = LV_HOR_RES_MAX;
+#endif
+#else
+    /* ToDo Use display rotation API to get horizontal size */
+#if defined CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT
+    val = lv_disp_get_hor_res((lv_disp_t *) disp_drv);
+#endif
+#endif
+
+    return val;
 }
