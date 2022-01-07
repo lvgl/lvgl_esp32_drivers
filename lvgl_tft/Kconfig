@@ -907,6 +907,13 @@ menu "LVGL TFT Display controller"
             help
                 Configure the display Reset pin here.
 
+        config LV_DISP_USE_BUSY
+            bool "Use a GPIO for busy signal" if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
+            default y if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
+            default n
+            help
+                Use a GPIO for busy signal available in e-ink display controllers.
+
         config LV_DISP_PIN_BUSY
             int "GPIO for Busy" if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
             default 35 if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D

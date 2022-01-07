@@ -137,7 +137,11 @@ void lvgl_driver_init(void)
 void display_bsp_init_io(void)
 {
     esp_err_t err = ESP_OK;
-    gpio_config_t io_conf;
+    gpio_config_t io_conf = {
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
 
 #ifdef CONFIG_LV_DISPLAY_USE_DC
     io_conf.mode = GPIO_MODE_OUTPUT;
@@ -160,7 +164,7 @@ void display_bsp_init_io(void)
     ESP_ERROR_CHECK(err);
 #endif
 
-#ifdef CONFIG_LV_DISP_PIN_BUSY
+#ifdef CONFIG_LV_DISP_USE_BUSY
     io_conf.mode = GPIO_MODE_INPUT;
     io_conf.pin_bit_mask = (1ULL << CONFIG_LV_DISP_PIN_BUSY);
     err = gpio_config(&io_conf);
