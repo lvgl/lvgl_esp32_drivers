@@ -221,12 +221,6 @@ static void GC9A01_set_orientation(uint8_t orientation)
 {
     assert(orientation < 4);
 
-    const char *orientation_str[] = {
-        "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
-    };
-
-    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
-
 #if defined CONFIG_LV_PREDEFINED_DISPLAY_M5STACK
     const uint8_t data[] = {0x68, 0x68, 0x08, 0x08};
 #elif defined (CONFIG_LV_PREDEFINED_DISPLAY_WROVER4)
@@ -235,7 +229,14 @@ static void GC9A01_set_orientation(uint8_t orientation)
     const uint8_t data[] = {0x08, 0xC8, 0x68, 0xA8};
 #endif
 
+#if (LV_USE_LOG == 1);
+    const char *orientation_str[] = {
+        "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
+    };
+
+    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
     LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
+#endif
 
     GC9A01_send_cmd(0x36);
     GC9A01_send_data((void *) &data[orientation], 1);

@@ -188,16 +188,16 @@ static void ili9488_send_color(lv_disp_drv_t * drv, void * data, uint16_t length
 static void ili9488_set_orientation(lv_disp_drv_t * drv, uint8_t orientation)
 {
     assert(orientation < 4);
+    const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 
+#if (LV_USE_LOG == 1)
     const char *orientation_str[] = {
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
     LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
-
-    const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
-
     LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
+#endif
 
     ili9488_send_cmd(drv, 0x36);
     ili9488_send_data(drv, (void *) &data[orientation], 1);

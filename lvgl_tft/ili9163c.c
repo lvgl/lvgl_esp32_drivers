@@ -223,11 +223,12 @@ static void ili9163c_set_orientation(uint8_t orientation)
 {
 	assert(orientation < 4);
 
+#if (LV_USE_LOG == 1)
 	const char *orientation_str[] = {
 		"PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"};
 
 	LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
-
+#endif
 	uint8_t data[] = {0x48, 0x88, 0xA8, 0x68};
 
 	ili9163c_send_cmd(ILI9163C_MADCTL);
