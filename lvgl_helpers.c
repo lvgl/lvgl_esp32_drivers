@@ -9,6 +9,7 @@
 #include "sdkconfig.h"
 #include "lvgl_helpers.h"
 #include "esp_log.h"
+#include "esp_idf_version.h"
 
 #include "lvgl_tft/disp_spi.h"
 #include "lvgl_touch/tp_spi.h"
@@ -288,8 +289,13 @@ bool lvgl_spi_driver_init(spi_host_device_t host,
     #if defined (CONFIG_IDF_TARGET_ESP32C3)
     dma_channel = SPI_DMA_CH_AUTO;
     #endif
-    
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
     esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
+#else
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
+#endif
+    
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
