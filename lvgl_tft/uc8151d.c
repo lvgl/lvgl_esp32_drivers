@@ -94,26 +94,6 @@ static void uc8151d_spi_send_data_byte(uint8_t data)
     disp_spi_send_data(&data, 1);
 }
 
-static void uc8151d_spi_send_fb(uint8_t *data, size_t len)
-{
-    disp_wait_for_pending_transactions();
-    gpio_set_level(PIN_DC, 1);   // DC = 1 for data
-    disp_spi_send_colors(data, len);
-}
-
-static void uc8151d_spi_send_seq(const uc8151d_seq_t *seq, size_t len)
-{
-    LV_LOG_INFO("Writing cmd/data sequence, count %u", len);
-
-    if (!seq || len < 1) return;
-    for (size_t cmd_idx = 0; cmd_idx < len; cmd_idx++) {
-        uc8151d_spi_send_cmd(seq[cmd_idx].cmd);
-        if (seq[cmd_idx].len > 0) {
-            uc8151d_spi_send_data((uint8_t *) seq[cmd_idx].data, seq[cmd_idx].len);
-        }
-    }
-}
-
 static esp_err_t uc8151d_wait_busy(uint32_t timeout_ms)
 {
     uint32_t wait_ticks = (timeout_ms == 0 ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms));
@@ -196,8 +176,6 @@ static void uc8151d_full_update(uint8_t *buf)
 
 void uc8151d_lv_fb_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
-    size_t len = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)) / 8;
-
     LV_LOG_INFO("x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", area->x1, area->x2, area->y1, area->y2);
     LV_LOG_INFO("Writing LVGL fb with len: %u", len);
 
