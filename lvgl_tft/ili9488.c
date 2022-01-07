@@ -212,7 +212,7 @@ static void ili9488_reset(lv_disp_drv_t *drv)
     display_port_gpio_rst(drv, 1);
     display_port_delay(drv, 100);
 #else
-    ili9341_send_cmd(drv, 0x01);
+    ili9488_send_cmd(drv, 0x01);
     display_port_delay(drv, 5);
 #endif
 }
