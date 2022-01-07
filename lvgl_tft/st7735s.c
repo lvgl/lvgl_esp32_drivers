@@ -205,11 +205,7 @@ static void st7735s_send_color(void * data, uint16_t length)
 
 static void st7735s_set_orientation(uint8_t orientation)
 {
-    const char *orientation_str[] = {
-        "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
-    };
-
-    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
+    assert(orientation < 4);
 
     /*
         Portrait:  0xC8 = ST77XX_MADCTL_MX | ST77XX_MADCTL_MY | ST77XX_MADCTL_BGR
@@ -218,7 +214,14 @@ static void st7735s_set_orientation(uint8_t orientation)
     */
     uint8_t data[] = {0xC8, 0xC8, 0xA8, 0xA8};
 
+#if (LV_USE_LOG == 1)
+    const char *orientation_str[] = {
+        "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
+    };
+
+    LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
     LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
+#endif
 
     st7735s_send_cmd(ST7735_MADCTL);
     st7735s_send_data((void *) &data[orientation], 1);

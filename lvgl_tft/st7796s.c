@@ -189,11 +189,6 @@ static void st7796s_set_orientation(uint8_t orientation)
 {
 	assert(orientation < 4);
 
-	const char *orientation_str[] = {
-		"PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"};
-
-	LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
-
 #if defined CONFIG_LV_PREDEFINED_DISPLAY_M5STACK
 	const uint8_t data[] = {0x68, 0x68, 0x08, 0x08};
 #elif defined(CONFIG_LV_PREDEFINED_DISPLAY_WROVER4)
@@ -204,7 +199,13 @@ static void st7796s_set_orientation(uint8_t orientation)
 	const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
 #endif
 
+#if (LV_USE_LOG == 1)
+	const char *orientation_str[] = {
+		"PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"};
+
+	LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
 	LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
+#endif
 
 	st7796s_send_cmd(0x36);
 	st7796s_send_data((void *)&data[orientation], 1);

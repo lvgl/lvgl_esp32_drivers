@@ -165,15 +165,16 @@ static void ili9486_set_orientation(uint8_t orientation)
 {
     assert(orientation < 4);
 
+    const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
+
+#if (LV_USE_LOG == 1)
     const char *orientation_str[] = {
         "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     };
 
     LV_LOG_INFO("Display orientation: %s", orientation_str[orientation]);
-
-    const uint8_t data[] = {0x48, 0x88, 0x28, 0xE8};
-
     LV_LOG_INFO("0x36 command value: 0x%02X", data[orientation]);
+#endif
 
     ili9486_send_cmd(0x36);
     ili9486_send_data((void *) &data[orientation], 1);
