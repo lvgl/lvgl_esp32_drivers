@@ -148,7 +148,11 @@ void lvgl_interface_init(void)
 void display_bsp_init_io(void)
 {
     esp_err_t err = ESP_OK;
-    gpio_config_t io_conf;
+    gpio_config_t io_conf = {
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
 
 #ifdef CONFIG_LV_DISPLAY_USE_DC
     io_conf.mode = GPIO_MODE_OUTPUT;
@@ -172,7 +176,7 @@ void display_bsp_init_io(void)
     ESP_ERROR_CHECK(err);
 #endif
 
-#ifdef CONFIG_LV_DISP_PIN_BUSY
+#ifdef CONFIG_LV_DISP_USE_BUSY
     io_conf.mode = GPIO_MODE_INPUT;
     io_conf.pin_bit_mask = (1ULL << CONFIG_LV_DISP_PIN_BUSY);
     err = gpio_config(&io_conf);
@@ -273,15 +277,19 @@ bool lvgl_spi_driver_init(spi_host_device_t host,
 
     spi_bus_config_t buscfg = {
         .miso_io_num = miso_pin,
-	    .mosi_io_num = mosi_pin,
-	    .sclk_io_num = sclk_pin,
-	    .quadwp_io_num = quadwp_pin,
-	    .quadhd_io_num = quadhd_pin,
+        .mosi_io_num = mosi_pin,
+        .sclk_io_num = sclk_pin,
+        .quadwp_io_num = quadwp_pin,
+        .quadhd_io_num = quadhd_pin,
         .max_transfer_sz = max_transfer_sz
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
+    #if defined (CONFIG_IDF_TARGET_ESP32C3)
+    dma_channel = SPI_DMA_CH_AUTO;
+    #endif
+    
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;
