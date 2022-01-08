@@ -334,7 +334,6 @@ uint8_t EVE_busy(void)
 
 		cmdOffset += 8;
 
-		BUFFER_SPI_BYTE
 		BUFFER_SPI_BYTE(MEM_WRITE | 0x30); /* send Memory Write plus high address byte of REG_CMD_WRITE for EVE81x */
 		BUFFER_SPI_BYTE(0x20);	/* send middle address byte of REG_CMD_WRITE for EVE81x */
 		BUFFER_SPI_BYTE(0xfc);	/* send low address byte of REG_CMD_WRITE for EVE81x */
