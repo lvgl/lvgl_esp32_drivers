@@ -261,7 +261,7 @@ size_t lvgl_get_display_buffer_size(void)
  * We could use the ESP_IDF_VERSION_VAL macro available in the "esp_idf_version.h"
  * header available since ESP-IDF v4.
  */
-bool lvgl_spi_driver_init(spi_host_device_t host,
+bool lvgl_spi_driver_init(int host,
     int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz,
     int dma_channel,
@@ -295,7 +295,7 @@ bool lvgl_spi_driver_init(spi_host_device_t host,
     ESP_LOGI(TAG, "Initializing SPI bus...");
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
+    esp_err_t ret = spi_bus_initialize((spi_host_device_t) host, &buscfg, (spi_dma_chan_t)dma_channel);
 #else
     esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
 #endif
