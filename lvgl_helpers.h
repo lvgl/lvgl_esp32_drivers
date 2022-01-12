@@ -14,8 +14,6 @@ extern "C" {
  *********************/
 #include <stdbool.h>
 
-#include "driver/spi_common.h"
-
 #include "lvgl_spi_conf.h"
 #include "lvgl_tft/disp_driver.h"
 #include "lvgl_tft/esp_lcd_backlight.h"

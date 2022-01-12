@@ -6,8 +6,11 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "sdkconfig.h"
 #include "lvgl_helpers.h"
+
+#include "sdkconfig.h"
+
+#include "driver/spi_common.h"
 #include "esp_log.h"
 #include "esp_idf_version.h"
 
