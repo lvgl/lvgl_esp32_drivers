@@ -44,7 +44,7 @@ void *disp_driver_init(lv_disp_drv_t *drv)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C
     ili9163c_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544
-    pcd8544_init();
+    pcd8544_init(drv);
 #endif
 
     return disp_backlight_init();
