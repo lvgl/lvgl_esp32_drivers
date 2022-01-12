@@ -8,8 +8,8 @@ extern "C" {
 #include "sdkconfig.h"
 
 /* Configuration options for ST7789 display controllers */
-#if CONFIG_LV_DISP_USE_RST
-  #if CONFIG_LV_DISP_ST7789_SOFT_RESET
+#if defined CONFIG_LV_DISP_USE_RST
+  #if defined CONFIG_LV_DISP_ST7789_SOFT_RESET
     #define ST7789_SOFT_RST
   #endif
 #else
