@@ -100,6 +100,7 @@ static inline void il3820_set_window( uint16_t sx, uint16_t ex, uint16_t ys, uin
 static inline void il3820_set_cursor(uint16_t sx, uint16_t ys);
 static void il3820_update_display(void);
 static void il3820_clear_cntlr_mem(uint8_t ram_cmd, bool update);
+static void il3820_reset(void);
 
 /* Required by LVGL */
 void il3820_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
@@ -195,26 +196,7 @@ void il3820_init(void)
 {
     uint8_t tmp[3] = {0};
 
-    /* Initialize non-SPI GPIOs */
-    gpio_pad_select_gpio(IL3820_DC_PIN);
-    gpio_set_direction(IL3820_DC_PIN, GPIO_MODE_OUTPUT);
-
-    gpio_pad_select_gpio(IL3820_BUSY_PIN);
-    gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
-
-#if IL3820_USE_RST
-    gpio_pad_select_gpio(IL3820_RST_PIN);
-    gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
-
-    /* Harware reset */
-    gpio_set_level( IL3820_RST_PIN, 0);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
-    gpio_set_level( IL3820_RST_PIN, 1);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
-#endif
-
-    /* Software reset */
-    il3820_write_cmd(IL3820_CMD_SW_RESET, NULL, 0);
+    il3820_reset();
 
     /* Busy wait for the BUSY signal to go low */
     il3820_waitbusy(IL3820_WAIT);
@@ -415,4 +397,18 @@ static void il3820_clear_cntlr_mem(uint8_t ram_cmd, bool update)
 	il3820_set_window( 0, EPD_PANEL_WIDTH - 1, 0, EPD_PANEL_HEIGHT - 1);
 	il3820_update_display();
     }
+}
+
+static void il3820_reset(void)
+{
+#if IL3820_USE_RST
+    /* Harware reset */
+    gpio_set_level( IL3820_RST_PIN, 0);
+    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+    gpio_set_level( IL3820_RST_PIN, 1);
+    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+#endif
+
+    /* Software reset */
+    il3820_write_cmd(IL3820_CMD_SW_RESET, NULL, 0);
 }
