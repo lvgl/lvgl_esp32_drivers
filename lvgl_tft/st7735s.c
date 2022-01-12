@@ -39,6 +39,7 @@ static void st7735s_send_cmd(uint8_t cmd);
 static void st7735s_send_data(void * data, uint16_t length);
 static void st7735s_send_color(void * data, uint16_t length);
 static void st7735s_set_orientation(uint8_t orientation);
+static void st7735s_reset(void);
 
 #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
 static void axp192_write_byte(uint8_t addr, uint8_t data);
@@ -98,20 +99,7 @@ void st7735s_init(void)
 		{0, {0}, 0xff}
     };
 
-	//Initialize non-SPI GPIOs
-        gpio_pad_select_gpio(ST7735S_DC);
-	gpio_set_direction(ST7735S_DC, GPIO_MODE_OUTPUT);
-
-#if ST7735S_USE_RST
-        gpio_pad_select_gpio(ST7735S_RST);
-	gpio_set_direction(ST7735S_RST, GPIO_MODE_OUTPUT);
-
-	//Reset the display
-	gpio_set_level(ST7735S_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
-	gpio_set_level(ST7735S_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
+    st7735s_reset();
 
 	LV_LOG_INFO("ST7735S initialization.");
 
@@ -137,29 +125,29 @@ void st7735s_init(void)
 
 void st7735s_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
-	uint8_t data[4];
+    uint8_t data[4] = {0};
 
-	/*Column addresses*/
-	st7735s_send_cmd(0x2A);
-	data[0] = (area->x1 >> 8) & 0xFF;
-	data[1] = (area->x1 & 0xFF) + (st7735s_portrait_mode ? COLSTART : ROWSTART);
-	data[2] = (area->x2 >> 8) & 0xFF;
-	data[3] = (area->x2 & 0xFF) + (st7735s_portrait_mode ? COLSTART : ROWSTART);
-	st7735s_send_data(data, 4);
+    /*Column addresses*/
+    st7735s_send_cmd(0x2A);
+    data[0] = (area->x1 >> 8) & 0xFF;
+    data[1] = (area->x1 & 0xFF) + (st7735s_portrait_mode ? COLSTART : ROWSTART);
+    data[2] = (area->x2 >> 8) & 0xFF;
+    data[3] = (area->x2 & 0xFF) + (st7735s_portrait_mode ? COLSTART : ROWSTART);
+    st7735s_send_data(data, 4);
 
-	/*Page addresses*/
-	st7735s_send_cmd(0x2B);
-	data[0] = (area->y1 >> 8) & 0xFF;
-	data[1] = (area->y1 & 0xFF) + (st7735s_portrait_mode ? ROWSTART : COLSTART);
-	data[2] = (area->y2 >> 8) & 0xFF;
-	data[3] = (area->y2 & 0xFF) + (st7735s_portrait_mode ? ROWSTART : COLSTART);
-	st7735s_send_data(data, 4);
+    /*Page addresses*/
+    st7735s_send_cmd(0x2B);
+    data[0] = (area->y1 >> 8) & 0xFF;
+    data[1] = (area->y1 & 0xFF) + (st7735s_portrait_mode ? ROWSTART : COLSTART);
+    data[2] = (area->y2 >> 8) & 0xFF;
+    data[3] = (area->y2 & 0xFF) + (st7735s_portrait_mode ? ROWSTART : COLSTART);
+    st7735s_send_data(data, 4);
 
-	/*Memory write*/
-	st7735s_send_cmd(0x2C);
+    /*Memory write*/
+    st7735s_send_cmd(0x2C);
 
-	uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
-	st7735s_send_color((void*)color_map, size * 2);
+    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area) * 2;
+    st7735s_send_color((void*)color_map, size);
 }
 
 void st7735s_sleep_in()
@@ -225,6 +213,16 @@ static void st7735s_set_orientation(uint8_t orientation)
 
     st7735s_send_cmd(ST7735_MADCTL);
     st7735s_send_data((void *) &data[orientation], 1);
+}
+
+static void st7735s_reset(void)
+{
+#if ST7735S_USE_RST
+    gpio_set_level(ST7735S_RST, 0);
+    vTaskDelay(100 / portTICK_RATE_MS);
+    gpio_set_level(ST7735S_RST, 1);
+    vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 }
 
 #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192

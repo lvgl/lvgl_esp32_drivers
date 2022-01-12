@@ -36,6 +36,7 @@ static void st7796s_set_orientation(uint8_t orientation);
 static void st7796s_send_cmd(uint8_t cmd);
 static void st7796s_send_data(void *data, uint16_t length);
 static void st7796s_send_color(void *data, uint16_t length);
+static void st7796s_reset(void);
 
 /**********************
  *  STATIC VARIABLES
@@ -79,37 +80,24 @@ void st7796s_init(void)
 		{0, {0}, 0xff},
 	};
 
-	//Initialize non-SPI GPIOs
-	gpio_pad_select_gpio(ST7796S_DC);
-	gpio_set_direction(ST7796S_DC, GPIO_MODE_OUTPUT);
+    st7796s_reset();
 
-#if ST7796S_USE_RST
-	gpio_pad_select_gpio(ST7796S_RST);
-	gpio_set_direction(ST7796S_RST, GPIO_MODE_OUTPUT);
+    LV_LOG_INFO("Initialization.");
 
-	//Reset the display
-	gpio_set_level(ST7796S_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
-	gpio_set_level(ST7796S_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
+    //Send all the commands
+    uint16_t cmd = 0;
+    while (init_cmds[cmd].databytes != 0xff)
+    {
+            st7796s_send_cmd(init_cmds[cmd].cmd);
+            st7796s_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes & 0x1F);
+            if (init_cmds[cmd].databytes & 0x80)
+            {
+                    vTaskDelay(100 / portTICK_RATE_MS);
+            }
+            cmd++;
+    }
 
-	LV_LOG_INFO("Initialization.");
-
-	//Send all the commands
-	uint16_t cmd = 0;
-	while (init_cmds[cmd].databytes != 0xff)
-	{
-		st7796s_send_cmd(init_cmds[cmd].cmd);
-		st7796s_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes & 0x1F);
-		if (init_cmds[cmd].databytes & 0x80)
-		{
-			vTaskDelay(100 / portTICK_RATE_MS);
-		}
-		cmd++;
-	}
-
-	st7796s_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
+    st7796s_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
 
 #if ST7796S_INVERT_COLORS == 1
 	st7796s_send_cmd(0x21);
@@ -209,4 +197,14 @@ static void st7796s_set_orientation(uint8_t orientation)
 
 	st7796s_send_cmd(0x36);
 	st7796s_send_data((void *)&data[orientation], 1);
+}
+
+static void st7796s_reset(void)
+{
+#if ST7796S_USE_RST
+    gpio_set_level(ST7796S_RST, 0);
+    vTaskDelay(100 / portTICK_RATE_MS);
+    gpio_set_level(ST7796S_RST, 1);
+    vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 }
