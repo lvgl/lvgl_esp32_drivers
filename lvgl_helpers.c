@@ -70,6 +70,14 @@ void lvgl_interface_init(void)
 
     ESP_LOGI(TAG, "Display buffer size: %d", lvgl_get_display_buffer_size());
 
+    /* SPI DMA Channel selection
+     * SPI_DMA_CH1 is only defined for ESP32, so let the driver choose which
+     * channel to use, and use the proven channel 1 on esp32 targets */
+    int dma_channel = SPI_DMA_CH_AUTO;
+#if defined (CONFIG_IDF_TARGET_ESP32)
+    dma_channel = SPI_DMA_CH1;
+#endif
+
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
     ESP_LOGI(TAG, "Initializing SPI master for FT81X");
 
@@ -78,7 +86,7 @@ void lvgl_interface_init(void)
 
     lvgl_spi_driver_init(TFT_SPI_HOST,
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, SPI_DMA_CH1,
+        spi_max_transfer_size, dma_channel,
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
@@ -104,7 +112,7 @@ void lvgl_interface_init(void)
 
     lvgl_spi_driver_init(TFT_SPI_HOST,
         miso, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, SPI_DMA_CH1,
+        spi_max_transfer_size, dma_channel,
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
@@ -125,9 +133,13 @@ void lvgl_interface_init(void)
     #if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         ESP_LOGI(TAG, "Initializing SPI master for touch");
 
+#if defined (CONFIG_IDF_TARGET_ESP32)
+    dma_channel = SPI_DMA_CH2;
+#endif
+
         lvgl_spi_driver_init(TOUCH_SPI_HOST,
             TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
-            DMA_DEFAULT_TRANSFER_SIZE, SPI_DMA_CH2,
+            DMA_DEFAULT_TRANSFER_SIZE, dma_channel,
             GPIO_NOT_USED, GPIO_NOT_USED);
 
         tp_spi_add_device(TOUCH_SPI_HOST);
@@ -286,9 +298,6 @@ bool lvgl_spi_driver_init(spi_host_device_t host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    #if defined (CONFIG_IDF_TARGET_ESP32C3)
-    dma_channel = SPI_DMA_CH_AUTO;
-    #endif
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
     esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
