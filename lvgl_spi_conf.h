@@ -68,6 +68,8 @@ extern "C" {
 #define TFT_SPI_HOST SPI2_HOST
 #elif defined (CONFIG_LV_TFT_DISPLAY_SPI3_HOST)
 #define TFT_SPI_HOST SPI3_HOST
+#else
+#define TFT_SPI_HOST
 #endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI_HALF_DUPLEX)
