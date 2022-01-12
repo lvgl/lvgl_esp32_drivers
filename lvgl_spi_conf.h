@@ -69,7 +69,8 @@ extern "C" {
 #elif defined (CONFIG_LV_TFT_DISPLAY_SPI3_HOST)
 #define TFT_SPI_HOST SPI3_HOST
 #else
-#define TFT_SPI_HOST
+/* FIXME: This is not expected to work, only a placeholder */
+#define TFT_SPI_HOST 0
 #endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI_HALF_DUPLEX)
