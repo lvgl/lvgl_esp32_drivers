@@ -73,7 +73,9 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Display hor size: %d, ver size: %d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
 #endif
 
-    ESP_LOGI(TAG, "Display buffer size: %d", lvgl_get_display_buffer_size());
+    size_t display_buffer_size = lvgl_get_display_buffer_size();
+
+    ESP_LOGI(TAG, "Display buffer size: %d", display_buffer_size);
 
     /* SPI DMA Channel selection
      * SPI_DMA_CH1 is only defined for ESP32, so let the driver choose which
@@ -93,19 +95,19 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Initializing SPI master");
 
     int miso = DISP_SPI_MISO;
-    size_t display_buffer_size = lvgl_get_display_buffer_size();
     int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
 
+    /* Set the miso signal to be the selected for the touch driver */
 #if defined (SHARED_SPI_BUS)
     miso = TP_SPI_MISO;
 #endif
 
-    lvgl_spi_driver_init(TFT_SPI_HOST,
-        miso, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, dma_channel,
-        DISP_SPI_IO2, DISP_SPI_IO3);
+    lvgl_spi_driver_init(TFT_SPI_HOST, miso, DISP_SPI_MOSI, DISP_SPI_CLK,
+        spi_max_transfer_size, dma_channel, DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
+
+    /* Add device for touch driver */
 #if defined (SHARED_SPI_BUS)
     tp_spi_add_device(TOUCH_SPI_HOST);
     touch_driver_init();
@@ -120,30 +122,28 @@ void lvgl_interface_init(void)
 
 /* Touch controller initialization */
 #if CONFIG_LV_TOUCH_CONTROLLER != TOUCH_CONTROLLER_NONE
-    #if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
-        ESP_LOGI(TAG, "Initializing SPI master for touch");
+#if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
+    ESP_LOGI(TAG, "Initializing SPI master for touch");
 
 #if defined (CONFIG_IDF_TARGET_ESP32)
     dma_channel = SPI_DMA_CH2;
 #endif
 
-        lvgl_spi_driver_init(TOUCH_SPI_HOST,
-            TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
-            DMA_DEFAULT_TRANSFER_SIZE, dma_channel,
-            GPIO_NOT_USED, GPIO_NOT_USED);
+    lvgl_spi_driver_init(TOUCH_SPI_HOST, TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
+        DMA_DEFAULT_TRANSFER_SIZE, dma_channel, GPIO_NOT_USED, GPIO_NOT_USED);
 
-        tp_spi_add_device(TOUCH_SPI_HOST);
+    tp_spi_add_device(TOUCH_SPI_HOST);
 
-        touch_driver_init();
-    #elif defined (CONFIG_LV_I2C_TOUCH)
-        touch_driver_init();
-    #elif defined (CONFIG_LV_TOUCH_DRIVER_ADC)
-        touch_driver_init();
-    #elif defined (CONFIG_LV_TOUCH_DRIVER_DISPLAY)
-        touch_driver_init();
-    #else
-    #error "No protocol defined for touch controller"
-    #endif
+    touch_driver_init();
+#elif defined (CONFIG_LV_I2C_TOUCH)
+    touch_driver_init();
+#elif defined (CONFIG_LV_TOUCH_DRIVER_ADC)
+    touch_driver_init();
+#elif defined (CONFIG_LV_TOUCH_DRIVER_DISPLAY)
+    touch_driver_init();
+#else
+#error "No protocol defined for touch controller"
+#endif
 #else
 #endif
 }
