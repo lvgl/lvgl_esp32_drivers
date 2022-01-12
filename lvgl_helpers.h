@@ -37,7 +37,7 @@ void lvgl_i2c_locking(void* leader);
 void lvgl_interface_init(void);
 
 /* Initialize SPI master  */
-bool lvgl_spi_driver_init(spi_host_device_t host, int miso_pin, int mosi_pin, int sclk_pin,
+bool lvgl_spi_driver_init(int host, int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz, int dma_channel, int quadwp_pin, int quadhd_pin);
 
 /* Initialize display GPIOs, e.g. DC and RST pins */
