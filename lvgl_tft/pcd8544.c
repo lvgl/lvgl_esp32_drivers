@@ -6,14 +6,10 @@
  *    https://github.com/olikraus/u8g2
  */
 
-#include "disp_spi.h"
-#include "driver/gpio.h"
-
-#include <esp_log.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 #include "pcd8544.h"
+
+#include "disp_spi.h"
+#include "display_port.h"
 
 #define TAG "lv_pcd8544"
 
@@ -27,24 +23,33 @@
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+static inline void set_cmd_mode(lv_disp_drv_t * drv)
+{
+    display_port_gpio_dc(drv, 0);
+}
 
-static void pcd8544_send_cmd(uint8_t cmd)
+static inline void set_data_mode(lv_disp_drv_t * drv)
+{
+    display_port_gpio_dc(drv, 1);
+}
+
+static void pcd8544_send_cmd(lv_disp_drv_t *drv, uint8_t cmd)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(PCD8544_DC, 0);	 /*Command mode*/
+    set_cmd_mode(drv);
     disp_spi_send_data(&cmd, 1);
 }
 
-static void pcd8544_send_data(void * data, uint16_t length)
+static void pcd8544_send_data(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-    gpio_set_level(PCD8544_DC, 1);	 /*Data mode*/
+    set_data_mode(drv);
     disp_spi_send_data(data, length);
 }
 
-static void pcd8544_send_colors(void * data, uint16_t length)
+static void pcd8544_send_colors(lv_disp_drv_t *drv, void * data, uint16_t length)
 {
-    gpio_set_level(PCD8544_DC, 1);	 /*Data mode*/
+    set_data_mode(drv);
     disp_spi_send_colors(data, length);
 }
 
@@ -52,37 +57,38 @@ static void pcd8544_send_colors(void * data, uint16_t length)
  *   GLOBAL FUNCTIONS
  **********************/
 
-void pcd8544_init(void){
-
-    // TODO: orientation
-
-    // Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(PCD8544_DC);
-    gpio_set_direction(PCD8544_DC, GPIO_MODE_OUTPUT);
-    gpio_pad_select_gpio(PCD8544_RST);
-    gpio_set_direction(PCD8544_RST, GPIO_MODE_OUTPUT);
-
-    // Reset the display
-    gpio_set_level(PCD8544_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
-    gpio_set_level(PCD8544_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
-
-    pcd8544_send_cmd(0x21);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=1) */
-    pcd8544_send_cmd(0x06);     /* temp. control: b10 = 2  */
-    pcd8544_send_cmd(0x13);     /* bias system 1:48 */
-    pcd8544_send_cmd(0xc0);     /* medium Vop = Contrast 0x40 = 64 */
-
-    pcd8544_send_cmd(0x20);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=0) */
-    pcd8544_send_cmd(0x0c);     /* display mode normal */
+void pcd8544_reset(lv_disp_drv_t *drv)
+{
+    display_port_gpio_rst(drv, 0);
+    display_port_delay(drv, 100);
+    display_port_gpio_rst(drv, 1);
+    display_port_delay(drv, 100);
 }
 
-void pcd8544_set_contrast (uint8_t contrast){
+void pcd8544_init(lv_disp_drv_t *drv)
+{
+    // TODO: orientation
+
+    // Reset the display
+    pcd8544_reset(drv);
+
+    pcd8544_send_cmd(drv, 0x21);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=1) */
+    pcd8544_send_cmd(drv, 0x06);     /* temp. control: b10 = 2  */
+    pcd8544_send_cmd(drv, 0x13);     /* bias system 1:48 */
+    pcd8544_send_cmd(drv, 0xc0);     /* medium Vop = Contrast 0x40 = 64 */
+
+    pcd8544_send_cmd(drv, 0x20);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=0) */
+    pcd8544_send_cmd(drv, 0x0c);     /* display mode normal */
+}
+
+void pcd8544_set_contrast(lv_disp_drv_t *drv, uint8_t contrast)
+{
     if (contrast > 0x7f){
         contrast = 0x7f;
     }
-    pcd8544_send_cmd(0x21);                /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=1) */
-    pcd8544_send_cmd(0x80 | contrast);     /* medium Vop = Contrast */
+
+    pcd8544_send_cmd(drv, 0x21);                /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=1) */
+    pcd8544_send_cmd(drv, 0x80 | contrast);     /* medium Vop = Contrast */
 }
 
 void pcd8544_rounder(lv_disp_drv_t * disp_drv, lv_area_t *area){
@@ -112,7 +118,7 @@ void pcd8544_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w
 
 void pcd8544_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_map){
 
-    pcd8544_send_cmd(0x20);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=0) */
+    pcd8544_send_cmd(disp_drv, 0x20);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=0) */
 
     uint8_t * buf = (uint8_t *) color_map;
 
@@ -123,9 +129,9 @@ void pcd8544_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
         // send complete frame buffer at once. 
         // NOTE: disp_spi_send_colors triggers lv_disp_flush_ready
 
-        pcd8544_send_cmd(0x40);  /* set Y address */
-        pcd8544_send_cmd(0x80);  /* set X address */
-        pcd8544_send_colors(buf, disp_drv->hor_res * disp_drv->ver_res / 8);
+        pcd8544_send_cmd(disp_drv, 0x40);  /* set Y address */
+        pcd8544_send_cmd(disp_drv, 0x80);  /* set X address */
+        pcd8544_send_colors(disp_drv, buf, disp_drv->hor_res * disp_drv->ver_res / 8);
 
     } else {
 
@@ -136,11 +142,11 @@ void pcd8544_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t 
 
         uint16_t bank;
         uint16_t cols_to_update = area->x2 - area->x1 + 1;
-        for (bank = bank_start ; bank <= bank_end ; bank++ ){
-            pcd8544_send_cmd(0x40 | bank );      /* set Y address */
-            pcd8544_send_cmd(0x80 | area->x1 );  /* set X address */
+        for (bank = bank_start ; bank <= bank_end ; bank++){
+            pcd8544_send_cmd(disp_drv, 0x40 | bank);      /* set Y address */
+            pcd8544_send_cmd(disp_drv, 0x80 | area->x1);  /* set X address */
             uint16_t offset = bank * disp_drv->hor_res + area->x1;
-            pcd8544_send_data(&buf[offset], cols_to_update);
+            pcd8544_send_data(disp_drv, &buf[offset], cols_to_update);
         }
 
         lv_disp_flush_ready(disp_drv);
