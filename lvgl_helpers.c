@@ -14,6 +14,8 @@
 #include "esp_log.h"
 #include "esp_idf_version.h"
 
+#include "hal/spi_hal.h"
+
 #include "lvgl_tft/disp_spi.h"
 #include "lvgl_touch/tp_spi.h"
 
