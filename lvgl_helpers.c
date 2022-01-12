@@ -80,9 +80,9 @@ void lvgl_interface_init(void)
     /* SPI DMA Channel selection
      * SPI_DMA_CH1 is only defined for ESP32, so let the driver choose which
      * channel to use, and use the proven channel 1 on esp32 targets */
-    int dma_channel = SPI_DMA_CH_AUTO;
+    int dma_channel = 3;
 #if defined (CONFIG_IDF_TARGET_ESP32)
-    dma_channel = SPI_DMA_CH1;
+    dma_channel = 1;
 #endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
@@ -126,7 +126,7 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Initializing SPI master for touch");
 
 #if defined (CONFIG_IDF_TARGET_ESP32)
-    dma_channel = SPI_DMA_CH2;
+    dma_channel = 2;
 #endif
 
     lvgl_spi_driver_init(TOUCH_SPI_HOST, TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
