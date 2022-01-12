@@ -47,6 +47,11 @@
  */
 static int calculate_spi_max_transfer_size(const int display_buffer_size);
 
+/**
+ * Handle FT81X initialization as it's a particular case
+ */
+static void init_ft81x(int dma_channel);
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -79,22 +84,7 @@ void lvgl_interface_init(void)
 #endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
-    ESP_LOGI(TAG, "Initializing SPI master for FT81X");
-
-    size_t display_buffer_size = lvgl_get_display_buffer_size();
-    int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
-
-    lvgl_spi_driver_init(TFT_SPI_HOST,
-        DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, dma_channel,
-        DISP_SPI_IO2, DISP_SPI_IO3);
-
-    disp_spi_add_device(TFT_SPI_HOST);
-
-#if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
-    touch_driver_init();
-#endif
-
+    init_ft81x(dma_channel);
     return;
 #endif
 
@@ -332,4 +322,19 @@ static int calculate_spi_max_transfer_size(const int display_buffer_size)
 #endif
     
     return retval;
+}
+
+static void init_ft81x(int dma_channel)
+{
+    size_t display_buffer_size = lvgl_get_display_buffer_size();
+    int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
+
+    lvgl_spi_driver_init(TFT_SPI_HOST, DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
+        spi_max_transfer_size, dma_channel, DISP_SPI_IO2, DISP_SPI_IO3);
+
+    disp_spi_add_device(TFT_SPI_HOST);
+
+#if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
+    touch_driver_init();
+#endif
 }
