@@ -36,6 +36,7 @@ static void GC9A01_set_orientation(uint8_t orientation);
 static void GC9A01_send_cmd(uint8_t cmd);
 static void GC9A01_send_data(void * data, uint16_t length);
 static void GC9A01_send_color(void * data, uint16_t length);
+static void GC9A01_reset(void);
 
 /**********************
  *  STATIC VARIABLES
@@ -110,20 +111,7 @@ void GC9A01_init(void)
 
 	};
 
-	//Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(GC9A01_DC);
-	gpio_set_direction(GC9A01_DC, GPIO_MODE_OUTPUT);
-
-#if GC9A01_USE_RST
-    gpio_pad_select_gpio(GC9A01_RST);
-	gpio_set_direction(GC9A01_RST, GPIO_MODE_OUTPUT);
-
-	//Reset the display
-	gpio_set_level(GC9A01_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
-	gpio_set_level(GC9A01_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
+        GC9A01_reset();
 
 	LV_LOG_INFO("Initialization.");
 
@@ -240,4 +228,15 @@ static void GC9A01_set_orientation(uint8_t orientation)
 
     GC9A01_send_cmd(0x36);
     GC9A01_send_data((void *) &data[orientation], 1);
+}
+
+static void GC9A01_reset(void)
+{
+#if GC9A01_USE_RST
+    //Reset the display
+    gpio_set_level(GC9A01_RST, 0);
+    vTaskDelay(100 / portTICK_RATE_MS);
+    gpio_set_level(GC9A01_RST, 1);
+    vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 }
