@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "driver/gpio.h"
-#include "esp_rom/include/esp_rom_gpio.h"
+#include "esp_rom_gpio.h"
 
 #include "FT81x.h"
 
