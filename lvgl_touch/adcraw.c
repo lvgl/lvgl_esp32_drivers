@@ -136,6 +136,7 @@ void adcraw_init(void)
 
 static void setup_axis(gpio_num_t plus, gpio_num_t minus, gpio_num_t measure, gpio_num_t ignore)
 {
+#if 0
 	// Set GPIOs:
 	// - Float "ignore" and "measure"
 	gpio_pad_select_gpio(ignore);
@@ -151,6 +152,7 @@ static void setup_axis(gpio_num_t plus, gpio_num_t minus, gpio_num_t measure, gp
 	});
 	gpio_set_level(plus, 1);
 	gpio_set_level(minus, 0);
+#endif
 }
 
 static void setup_adc(gpio_num_t measure)
