@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "driver/gpio.h"
-#include "esp_rom_gpio.h"
 
 #include "FT81x.h"
 
@@ -264,7 +263,7 @@ void TFT_bitmap_display(void)
 void FT81x_init(void)
 {
 #if EVE_USE_PDN
-	esp_rom_gpio_pad_select_gpio(EVE_PDN);
+	gpio_pad_select_gpio(EVE_PDN);
 #endif
 
 	gpio_set_level(EVE_CS, 1);
