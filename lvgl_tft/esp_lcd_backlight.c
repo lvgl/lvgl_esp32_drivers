@@ -12,6 +12,8 @@
 #include "esp_log.h"
 #include "soc/ledc_periph.h" // to invert LEDC output on IDF version < v4.3
 
+#include "esp_idf_version.h"
+
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
 #include "esp_rom_gpio.h"
 #include "soc/gpio_sig_map.h"
@@ -72,7 +74,7 @@ disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config)
         // Configure GPIO for output
         bckl_dev->index = config->gpio_num;
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
-        esp_rom_gpio_pad_select_gpio(config->num);
+        esp_rom_gpio_pad_select_gpio(config->gpio_num);
 #else
         gpio_pad_select_gpio(config->gpio_num);
 #endif
