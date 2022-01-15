@@ -6,6 +6,8 @@
 #ifndef LVGL_SPI_CONF_H
 #define LVGL_SPI_CONF_H
 
+#include <sdkconfig.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
