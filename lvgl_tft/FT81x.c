@@ -8,6 +8,8 @@
 #include "EVE.h"
 #include "EVE_commands.h"
 
+#include "esp_idf_version.h"
+
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
 #include "esp_rom_gpio.h"
 #endif
