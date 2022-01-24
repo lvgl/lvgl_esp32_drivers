@@ -73,10 +73,18 @@ extern "C" {
 
 #define ENABLE_TOUCH_INPUT  CONFIG_LV_ENABLE_TOUCH
 
+/* Display controller SPI host configuration */
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI2_HOST)
 #define TFT_SPI_HOST SPI2_HOST
 #elif defined (CONFIG_LV_TFT_DISPLAY_SPI3_HOST)
 #define TFT_SPI_HOST SPI3_HOST
+#endif
+
+/* Touch controller SPI host configuration */
+#if defined (CONFIG_LV_TOUCH_CONTROLLER_SPI2_HOST)
+#define TOUCH_SPI_HOST SPI2_HOST
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI3_HOST)
+#define TOUCH_SPI_HOST SPI3_HOST
 #endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI_HALF_DUPLEX)
