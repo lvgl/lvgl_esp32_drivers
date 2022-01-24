@@ -18,25 +18,32 @@ extern "C" {
  *      DEFINES
  *********************/
 // DISPLAY PINS
+
+/* Mandatory pins are MOSI and CLK */
 #define DISP_SPI_MOSI CONFIG_LV_DISP_SPI_MOSI
+#define DISP_SPI_CLK CONFIG_LV_DISP_SPI_CLK
+
+/* Optional pins */
 #if defined (CONFIG_LV_DISPLAY_USE_SPI_MISO)
-    #define DISP_SPI_MISO CONFIG_LV_DISP_SPI_MISO
-    #define DISP_SPI_INPUT_DELAY_NS CONFIG_LV_DISP_SPI_INPUT_DELAY_NS
+#define DISP_SPI_MISO CONFIG_LV_DISP_SPI_MISO
+#define DISP_SPI_INPUT_DELAY_NS CONFIG_LV_DISP_SPI_INPUT_DELAY_NS
 #else
-    #define DISP_SPI_MISO (-1)
-    #define DISP_SPI_INPUT_DELAY_NS (0)
+#define DISP_SPI_MISO (-1)
+#define DISP_SPI_INPUT_DELAY_NS (0U)
 #endif
+
 #if defined(CONFIG_LV_DISP_SPI_IO2)
 #define DISP_SPI_IO2 CONFIG_LV_DISP_SPI_IO2
 #else
 #define DISP_SPI_IO2 (-1)
 #endif
+
 #if defined(CONFIG_LV_DISP_SPI_IO3)
 #define DISP_SPI_IO3 CONFIG_LV_DISP_SPI_IO3
 #else
 #define DISP_SPI_IO3 (-1)
 #endif
-#define DISP_SPI_CLK CONFIG_LV_DISP_SPI_CLK
+
 #if defined (CONFIG_LV_DISPLAY_USE_SPI_CS)
     #define DISP_SPI_CS CONFIG_LV_DISP_SPI_CS
 #else
