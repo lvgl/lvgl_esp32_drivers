@@ -144,7 +144,7 @@ extern "C" {
 #elif defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341)
 #define SPI_TFT_CLOCK_SPEED_HZ  (40*1000*1000)
 #elif defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C)
-#define SPI_TFT_CLOCK_SPEED_HZ (40 * 1000 * 1000)
+#define SPI_TFT_CLOCK_SPEED_HZ  (40*1000*1000)
 #elif defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
 #define SPI_TFT_CLOCK_SPEED_HZ  (32*1000*1000)
 #elif defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544)
@@ -153,22 +153,21 @@ extern "C" {
 #define SPI_TFT_CLOCK_SPEED_HZ  (40*1000*1000)
 #endif
 
-#endif
-
+#endif /* CONFIG_LV_TFT_USE_CUSTOM_SPI_CLK_DIVIDER */
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
-#define SPI_TFT_SPI_MODE    (2)
+#define SPI_TFT_SPI_MODE    (2U)
 #else
-#define SPI_TFT_SPI_MODE    (0)
+#define SPI_TFT_SPI_MODE    (0U)
 #endif
 
 /* Touch driver */
 #if (CONFIG_LV_TOUCH_CONTROLLER == TOUCH_CONTROLLER_STMPE610)
 #define SPI_TOUCH_CLOCK_SPEED_HZ    (1*1000*1000)
-#define SPI_TOUCH_SPI_MODE          (1)
+#define SPI_TOUCH_SPI_MODE          (1U)
 #else
 #define SPI_TOUCH_CLOCK_SPEED_HZ    (2*1000*1000)
-#define SPI_TOUCH_SPI_MODE          (0)
+#define SPI_TOUCH_SPI_MODE          (0U)
 #endif
 
 /**********************
