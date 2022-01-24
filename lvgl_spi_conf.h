@@ -101,28 +101,21 @@ extern "C" {
 #define DISP_SPI_TRANS_MODE_SIO
 #endif
 
-#if defined (CONFIG_LV_TOUCH_CONTROLLER_SPI2_HOST)
-#define TOUCH_SPI_HOST SPI2_HOST
-#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI3_HOST)
-#define TOUCH_SPI_HOST SPI3_HOST
-#endif
+/* Detect usage of shared SPI bus between display and indev controllers
+ *
+ * If the user sets the same MOSI and CLK pins for both display and indev
+ * controllers then we can assume the user is using the same SPI bus
+ * If so verify the user specified the same SPI bus for both */
+#if !defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
 
-/* Handle the FT81X Special case */
-#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
+#if defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI) && \
+            (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI == 1) && \
+    defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI) && \
+            (TP_SPI_MOSI == DISP_SPI_MOSI) && (TP_SPI_CLK == DISP_SPI_CLK)
 
-#if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
-#define SHARED_SPI_BUS
-#else
-/* Empty */
-#endif
-
-#else
-// Detect the use of a shared SPI Bus and verify the user specified the same SPI bus for both touch and tft
-#if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI) && TP_SPI_MOSI == DISP_SPI_MOSI && TP_SPI_CLK == DISP_SPI_CLK
 #if TFT_SPI_HOST != TOUCH_SPI_HOST
 #error You must specify the same SPI host (SPIx_HOST) for both display and touch driver
-#endif
-
+#else
 #define SHARED_SPI_BUS
 #endif
 
