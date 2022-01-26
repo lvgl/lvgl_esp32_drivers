@@ -18,25 +18,32 @@ extern "C" {
  *      DEFINES
  *********************/
 // DISPLAY PINS
+
+/* Mandatory pins are MOSI and CLK */
 #define DISP_SPI_MOSI CONFIG_LV_DISP_SPI_MOSI
+#define DISP_SPI_CLK CONFIG_LV_DISP_SPI_CLK
+
+/* Optional pins */
 #if defined (CONFIG_LV_DISPLAY_USE_SPI_MISO)
-    #define DISP_SPI_MISO CONFIG_LV_DISP_SPI_MISO
-    #define DISP_SPI_INPUT_DELAY_NS CONFIG_LV_DISP_SPI_INPUT_DELAY_NS
+#define DISP_SPI_MISO CONFIG_LV_DISP_SPI_MISO
+#define DISP_SPI_INPUT_DELAY_NS CONFIG_LV_DISP_SPI_INPUT_DELAY_NS
 #else
-    #define DISP_SPI_MISO (-1)
-    #define DISP_SPI_INPUT_DELAY_NS (0)
+#define DISP_SPI_MISO (-1)
+#define DISP_SPI_INPUT_DELAY_NS (0U)
 #endif
+
 #if defined(CONFIG_LV_DISP_SPI_IO2)
 #define DISP_SPI_IO2 CONFIG_LV_DISP_SPI_IO2
 #else
 #define DISP_SPI_IO2 (-1)
 #endif
+
 #if defined(CONFIG_LV_DISP_SPI_IO3)
 #define DISP_SPI_IO3 CONFIG_LV_DISP_SPI_IO3
 #else
 #define DISP_SPI_IO3 (-1)
 #endif
-#define DISP_SPI_CLK CONFIG_LV_DISP_SPI_CLK
+
 #if defined (CONFIG_LV_DISPLAY_USE_SPI_CS)
     #define DISP_SPI_CS CONFIG_LV_DISP_SPI_CS
 #else
@@ -50,24 +57,34 @@ extern "C" {
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X) && \
     defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
 
-    #define TP_SPI_MOSI CONFIG_LV_DISP_SPI_MOSI
-    #define TP_SPI_MISO CONFIG_LV_DISP_SPI_MISO
-    #define TP_SPI_CLK  CONFIG_LV_DISP_SPI_CLK
-    #define TP_SPI_CS   CONFIG_LV_DISP_SPI_CS
+#define SHARED_SPI_BUS
+
+#define TP_SPI_MOSI CONFIG_LV_DISP_SPI_MOSI
+#define TP_SPI_MISO CONFIG_LV_DISP_SPI_MISO
+#define TP_SPI_CLK  CONFIG_LV_DISP_SPI_CLK
+#define TP_SPI_CS   CONFIG_LV_DISP_SPI_CS
 #else
-    #define TP_SPI_MOSI CONFIG_LV_TOUCH_SPI_MOSI
-    #define TP_SPI_MISO CONFIG_LV_TOUCH_SPI_MISO
-    #define TP_SPI_CLK  CONFIG_LV_TOUCH_SPI_CLK
-    #define TP_SPI_CS   CONFIG_LV_TOUCH_SPI_CS
+#define TP_SPI_MOSI CONFIG_LV_TOUCH_SPI_MOSI
+#define TP_SPI_MISO CONFIG_LV_TOUCH_SPI_MISO
+#define TP_SPI_CLK  CONFIG_LV_TOUCH_SPI_CLK
+#define TP_SPI_CS   CONFIG_LV_TOUCH_SPI_CS
 #endif
 #endif
 
 #define ENABLE_TOUCH_INPUT  CONFIG_LV_ENABLE_TOUCH
 
+/* Display controller SPI host configuration */
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI2_HOST)
 #define TFT_SPI_HOST SPI2_HOST
 #elif defined (CONFIG_LV_TFT_DISPLAY_SPI3_HOST)
 #define TFT_SPI_HOST SPI3_HOST
+#endif
+
+/* Touch controller SPI host configuration */
+#if defined (CONFIG_LV_TOUCH_CONTROLLER_SPI2_HOST)
+#define TOUCH_SPI_HOST SPI2_HOST
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI3_HOST)
+#define TOUCH_SPI_HOST SPI3_HOST
 #endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI_HALF_DUPLEX)
@@ -84,31 +101,25 @@ extern "C" {
 #define DISP_SPI_TRANS_MODE_SIO
 #endif
 
-#if defined (CONFIG_LV_TOUCH_CONTROLLER_SPI2_HOST)
-#define TOUCH_SPI_HOST SPI2_HOST
-#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI3_HOST)
-#define TOUCH_SPI_HOST SPI3_HOST
-#endif
+/* Detect usage of shared SPI bus between display and indev controllers
+ *
+ * If the user sets the same MOSI and CLK pins for both display and indev
+ * controllers then we can assume the user is using the same SPI bus
+ * If so verify the user specified the same SPI bus for both */
+#if !defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
 
-/* Handle the FT81X Special case */
-#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
+#if defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI) && \
+            (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI == 1) && \
+    defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI) && \
+            (TP_SPI_MOSI == DISP_SPI_MOSI) && (TP_SPI_CLK == DISP_SPI_CLK)
 
-#if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
-#define SHARED_SPI_BUS
-#else
-/* Empty */
-#endif
-
-#else
-// Detect the use of a shared SPI Bus and verify the user specified the same SPI bus for both touch and tft
-#if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI) && TP_SPI_MOSI == DISP_SPI_MOSI && TP_SPI_CLK == DISP_SPI_CLK
 #if TFT_SPI_HOST != TOUCH_SPI_HOST
 #error You must specify the same SPI host (SPIx_HOST) for both display and touch driver
-#endif
-
+#else
 #define SHARED_SPI_BUS
 #endif
 
+#endif
 #endif
 
 /**********************
@@ -134,7 +145,7 @@ extern "C" {
 #elif defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341)
 #define SPI_TFT_CLOCK_SPEED_HZ  (40*1000*1000)
 #elif defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C)
-#define SPI_TFT_CLOCK_SPEED_HZ (40 * 1000 * 1000)
+#define SPI_TFT_CLOCK_SPEED_HZ  (40*1000*1000)
 #elif defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
 #define SPI_TFT_CLOCK_SPEED_HZ  (32*1000*1000)
 #elif defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544)
@@ -143,22 +154,21 @@ extern "C" {
 #define SPI_TFT_CLOCK_SPEED_HZ  (40*1000*1000)
 #endif
 
-#endif
-
+#endif /* CONFIG_LV_TFT_USE_CUSTOM_SPI_CLK_DIVIDER */
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
-#define SPI_TFT_SPI_MODE    (2)
+#define SPI_TFT_SPI_MODE    (2U)
 #else
-#define SPI_TFT_SPI_MODE    (0)
+#define SPI_TFT_SPI_MODE    (0U)
 #endif
 
 /* Touch driver */
 #if (CONFIG_LV_TOUCH_CONTROLLER == TOUCH_CONTROLLER_STMPE610)
 #define SPI_TOUCH_CLOCK_SPEED_HZ    (1*1000*1000)
-#define SPI_TOUCH_SPI_MODE          (1)
+#define SPI_TOUCH_SPI_MODE          (1U)
 #else
 #define SPI_TOUCH_CLOCK_SPEED_HZ    (2*1000*1000)
-#define SPI_TOUCH_SPI_MODE          (0)
+#define SPI_TOUCH_SPI_MODE          (0U)
 #endif
 
 /**********************
