@@ -69,6 +69,8 @@ if(CONFIG_LV_I2C)
     list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
 endif()
 
+list(APPEND LVGL_INCLUDE_DIRS lv_port)
+
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
                        REQUIRES lvgl)
