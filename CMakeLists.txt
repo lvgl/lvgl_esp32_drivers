@@ -34,7 +34,7 @@ list(APPEND SOURCES "${LV_PORT_PATH}/lv_port_display_espressif.c")
     list(APPEND SOURCES "lvgl_tft/pcd8544.c")
 
 if(CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI)
-    list(APPEND SOURCES "lvgl_tft/disp_spi.c")
+    list(APPEND SOURCES "lv_port/disp_spi.c")
 endif()
 
 # Add touch driver to compilation only if it is selected in menuconfig
@@ -61,7 +61,7 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
     endif()
 
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
-        list(APPEND SOURCES "lvgl_touch/tp_spi.c")
+        list(APPEND SOURCES "lv_port/tp_spi.c")
     endif()
 endif()
 
