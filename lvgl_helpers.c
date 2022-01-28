@@ -50,10 +50,12 @@
  */
 static int calculate_spi_max_transfer_size(const int display_buffer_size);
 
+#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
 /**
  * Handle FT81X initialization as it's a particular case
  */
 static void init_ft81x(int dma_channel);
+#endif
 
 /**********************
  *  STATIC VARIABLES
@@ -327,6 +329,7 @@ static int calculate_spi_max_transfer_size(const int display_buffer_size)
     return retval;
 }
 
+#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
 static void init_ft81x(int dma_channel)
 {
     size_t display_buffer_size = lvgl_get_display_buffer_size();
@@ -341,3 +344,4 @@ static void init_ft81x(int dma_channel)
     touch_driver_init();
 #endif
 }
+#endif
