@@ -10,6 +10,11 @@
 #include "driver/gpio.h"
 #include <stddef.h>
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
+#include "esp_rom_gpio.h"
+#include "soc/gpio_sig_map.h"
+#endif
+
 #if CONFIG_LV_TOUCH_CONTROLLER_ADCRAW
 
 #define CALIBRATIONINSET 1 // range 0 <= CALIBRATIONINSET <= 40
@@ -136,22 +141,38 @@ void adcraw_init(void)
 
 static void setup_axis(gpio_num_t plus, gpio_num_t minus, gpio_num_t measure, gpio_num_t ignore)
 {
-#if 0
-	// Set GPIOs:
-	// - Float "ignore" and "measure"
-	gpio_pad_select_gpio(ignore);
-	gpio_set_direction(ignore, GPIO_MODE_DISABLE);
-	gpio_set_pull_mode(ignore, GPIO_FLOATING);
-	gpio_pad_select_gpio(measure);
-	gpio_set_direction(measure, GPIO_MODE_DISABLE);
-	gpio_set_pull_mode(measure, GPIO_FLOATING);
-	// - Set "plus" to 1, "minus" to 0
-	gpio_config(&(gpio_config_t) {
-		.mode = GPIO_MODE_OUTPUT,
-		.pin_bit_mask = (1ULL << plus) | (1ULL << minus)
-	});
-	gpio_set_level(plus, 1);
-	gpio_set_level(minus, 0);
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
+    // Set GPIOs:
+    // - Float "ignore" and "measure"
+    esp_rom_gpio_pad_select_gpio(ignore);
+    gpio_set_direction(ignore, GPIO_MODE_DISABLE);
+    gpio_set_pull_mode(ignore, GPIO_FLOATING);
+    esp_rom_gpio_pad_select_gpio(measure);
+    gpio_set_direction(measure, GPIO_MODE_DISABLE);
+    gpio_set_pull_mode(measure, GPIO_FLOATING);
+    // - Set "plus" to 1, "minus" to 0
+    gpio_config(&(gpio_config_t) {
+	.mode = GPIO_MODE_OUTPUT,
+	.pin_bit_mask = (1ULL << plus) | (1ULL << minus)
+    });
+    gpio_set_level(plus, 1);
+    gpio_set_level(minus, 0);
+#elif
+    // Set GPIOs:
+    // - Float "ignore" and "measure"
+    gpio_pad_select_gpio(ignore);
+    gpio_set_direction(ignore, GPIO_MODE_DISABLE);
+    gpio_set_pull_mode(ignore, GPIO_FLOATING);
+    gpio_pad_select_gpio(measure);
+    gpio_set_direction(measure, GPIO_MODE_DISABLE);
+    gpio_set_pull_mode(measure, GPIO_FLOATING);
+    // - Set "plus" to 1, "minus" to 0
+    gpio_config(&(gpio_config_t) {
+	.mode = GPIO_MODE_OUTPUT,
+	.pin_bit_mask = (1ULL << plus) | (1ULL << minus)
+    });
+    gpio_set_level(plus, 1);
+    gpio_set_level(minus, 0);
 #endif
 }
 
