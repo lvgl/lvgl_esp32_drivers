@@ -6,6 +6,8 @@
 #ifndef LVGL_SPI_CONF_H
 #define LVGL_SPI_CONF_H
 
+#include <sdkconfig.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -73,11 +75,15 @@ extern "C" {
 
 #define ENABLE_TOUCH_INPUT  CONFIG_LV_ENABLE_TOUCH
 
+#if defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI)
 /* Display controller SPI host configuration */
 #if defined (CONFIG_LV_TFT_DISPLAY_SPI2_HOST)
 #define TFT_SPI_HOST SPI2_HOST
 #elif defined (CONFIG_LV_TFT_DISPLAY_SPI3_HOST)
 #define TFT_SPI_HOST SPI3_HOST
+#else
+#error SPI host not defined
+#endif
 #endif
 
 /* Touch controller SPI host configuration */

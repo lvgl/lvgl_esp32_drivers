@@ -49,7 +49,7 @@ typedef struct {
 static void hx8357_send_cmd(uint8_t cmd);
 static void hx8357_send_data(void * data, uint16_t length);
 static void hx8357_send_color(void * data, uint16_t length);
-
+static void hx8357_reset(void);
 
 /**********************
  *  INITIALIZATION ARRAYS
@@ -156,44 +156,31 @@ static uint8_t displayType = HX8357D;
 
 void hx8357_init(void)
 {
-	//Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(HX8357_DC);
-	gpio_set_direction(HX8357_DC, GPIO_MODE_OUTPUT);
+    hx8357_reset();
 
-#if HX8357_USE_RST
-    gpio_pad_select_gpio(HX8357_RST);
-	gpio_set_direction(HX8357_RST, GPIO_MODE_OUTPUT);
+    LV_LOG_INFO("Initialization.");
 
-	//Reset the display
-	gpio_set_level(HX8357_RST, 0);
-	vTaskDelay(10 / portTICK_RATE_MS);
-	gpio_set_level(HX8357_RST, 1);
-	vTaskDelay(120 / portTICK_RATE_MS);
-#endif
+    //Send all the commands
+    const uint8_t *addr = (displayType == HX8357B) ? initb : initd;
+    uint8_t        cmd, x, numArgs;
+    while((cmd = *addr++) > 0) { // '0' command ends list
+        x = *addr++;
+        numArgs = x & 0x7F;
+        if (cmd != 0xFF) { // '255' is ignored
+            if (x & 0x80) {  // If high bit set, numArgs is a delay time
+                hx8357_send_cmd(cmd);
+            } else {
+                hx8357_send_cmd(cmd);
+                hx8357_send_data((void *) addr, numArgs);
+                addr += numArgs;
+            }
+        }
+        if (x & 0x80) {       // If high bit set...
+            vTaskDelay(numArgs * 5 / portTICK_RATE_MS); // numArgs is actually a delay time (5ms units)
+        }
+    }
 
-	LV_LOG_INFO("Initialization.");
-
-	//Send all the commands
-	const uint8_t *addr = (displayType == HX8357B) ? initb : initd;
-	uint8_t        cmd, x, numArgs;
-	while((cmd = *addr++) > 0) { // '0' command ends list
-		x = *addr++;
-		numArgs = x & 0x7F;
-		if (cmd != 0xFF) { // '255' is ignored
-			if (x & 0x80) {  // If high bit set, numArgs is a delay time
-				hx8357_send_cmd(cmd);
-			} else {
-				hx8357_send_cmd(cmd);
-				hx8357_send_data((void *) addr, numArgs);
-				addr += numArgs;
-			}
-		}
-		if (x & 0x80) {       // If high bit set...
-			vTaskDelay(numArgs * 5 / portTICK_RATE_MS); // numArgs is actually a delay time (5ms units)
-		}
-	}
-
-	hx8357_set_rotation(1);
+    hx8357_set_rotation(1);
 
 #if HX8357_INVERT_COLORS
 	hx8357_send_cmd(HX8357_INVON);
@@ -285,4 +272,14 @@ static void hx8357_send_color(void * data, uint16_t length)
 	disp_wait_for_pending_transactions();
 	gpio_set_level(HX8357_DC, 1);   /*Data mode*/
 	disp_spi_send_colors(data, length);
+}
+
+static void hx8357_reset(void)
+{
+#if HX8357_USE_RST
+    gpio_set_level(HX8357_RST, 0);
+    vTaskDelay(10 / portTICK_RATE_MS);
+    gpio_set_level(HX8357_RST, 1);
+    vTaskDelay(120 / portTICK_RATE_MS);
+#endif
 }

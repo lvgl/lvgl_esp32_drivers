@@ -189,8 +189,11 @@ static void uc8151d_full_update(uint8_t *buf)
 
 void uc8151d_lv_fb_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
+#if LV_USE_LOG
+    size_t len = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)) / 8;
     LV_LOG_INFO("x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", area->x1, area->x2, area->y1, area->y2);
     LV_LOG_INFO("Writing LVGL fb with len: %u", len);
+#endif
 
     uint8_t *buf = (uint8_t *) color_map;
     uc8151d_full_update(buf);

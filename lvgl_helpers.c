@@ -6,8 +6,11 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "sdkconfig.h"
 #include "lvgl_helpers.h"
+
+#include "sdkconfig.h"
+
+#include "driver/spi_common.h"
 #include "esp_log.h"
 #include "esp_idf_version.h"
 
@@ -47,6 +50,13 @@
  */
 static int calculate_spi_max_transfer_size(const int display_buffer_size);
 
+#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
+/**
+ * Handle FT81X initialization as it's a particular case
+ */
+static void init_ft81x(int dma_channel);
+#endif
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -68,25 +78,20 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Display hor size: %d, ver size: %d", LV_HOR_RES_MAX, LV_VER_RES_MAX);
 #endif
 
-    ESP_LOGI(TAG, "Display buffer size: %d", lvgl_get_display_buffer_size());
-
-#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
-    ESP_LOGI(TAG, "Initializing SPI master for FT81X");
-
     size_t display_buffer_size = lvgl_get_display_buffer_size();
-    int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
 
-    lvgl_spi_driver_init(TFT_SPI_HOST,
-        DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, SPI_DMA_CH1,
-        DISP_SPI_IO2, DISP_SPI_IO3);
+    ESP_LOGI(TAG, "Display buffer size: %d", display_buffer_size);
 
-    disp_spi_add_device(TFT_SPI_HOST);
-
-#if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
-    touch_driver_init();
+    /* SPI DMA Channel selection
+     * SPI_DMA_CH1 is only defined for ESP32, so let the driver choose which
+     * channel to use, and use the proven channel 1 on esp32 targets */
+    int dma_channel = 3;
+#if defined (CONFIG_IDF_TARGET_ESP32)
+    dma_channel = 1;
 #endif
 
+#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
+    init_ft81x(dma_channel);
     return;
 #endif
 
@@ -95,19 +100,19 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Initializing SPI master");
 
     int miso = DISP_SPI_MISO;
-    size_t display_buffer_size = lvgl_get_display_buffer_size();
     int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
 
+    /* Set the miso signal to be the selected for the touch driver */
 #if defined (SHARED_SPI_BUS)
     miso = TP_SPI_MISO;
 #endif
 
-    lvgl_spi_driver_init(TFT_SPI_HOST,
-        miso, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, SPI_DMA_CH1,
-        DISP_SPI_IO2, DISP_SPI_IO3);
+    lvgl_spi_driver_init(TFT_SPI_HOST, miso, DISP_SPI_MOSI, DISP_SPI_CLK,
+        spi_max_transfer_size, dma_channel, DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
+
+    /* Add device for touch driver */
 #if defined (SHARED_SPI_BUS)
     tp_spi_add_device(TOUCH_SPI_HOST);
     touch_driver_init();
@@ -122,26 +127,28 @@ void lvgl_interface_init(void)
 
 /* Touch controller initialization */
 #if CONFIG_LV_TOUCH_CONTROLLER != TOUCH_CONTROLLER_NONE
-    #if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
-        ESP_LOGI(TAG, "Initializing SPI master for touch");
+#if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
+    ESP_LOGI(TAG, "Initializing SPI master for touch");
 
-        lvgl_spi_driver_init(TOUCH_SPI_HOST,
-            TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
-            DMA_DEFAULT_TRANSFER_SIZE, SPI_DMA_CH2,
-            GPIO_NOT_USED, GPIO_NOT_USED);
+#if defined (CONFIG_IDF_TARGET_ESP32)
+    dma_channel = 2;
+#endif
 
-        tp_spi_add_device(TOUCH_SPI_HOST);
+    lvgl_spi_driver_init(TOUCH_SPI_HOST, TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
+        DMA_DEFAULT_TRANSFER_SIZE, dma_channel, GPIO_NOT_USED, GPIO_NOT_USED);
 
-        touch_driver_init();
-    #elif defined (CONFIG_LV_I2C_TOUCH)
-        touch_driver_init();
-    #elif defined (CONFIG_LV_TOUCH_DRIVER_ADC)
-        touch_driver_init();
-    #elif defined (CONFIG_LV_TOUCH_DRIVER_DISPLAY)
-        touch_driver_init();
-    #else
-    #error "No protocol defined for touch controller"
-    #endif
+    tp_spi_add_device(TOUCH_SPI_HOST);
+
+    touch_driver_init();
+#elif defined (CONFIG_LV_I2C_TOUCH)
+    touch_driver_init();
+#elif defined (CONFIG_LV_TOUCH_DRIVER_ADC)
+    touch_driver_init();
+#elif defined (CONFIG_LV_TOUCH_DRIVER_DISPLAY)
+    touch_driver_init();
+#else
+#error "No protocol defined for touch controller"
+#endif
 #else
 #endif
 }
@@ -254,7 +261,7 @@ size_t lvgl_get_display_buffer_size(void)
  * We could use the ESP_IDF_VERSION_VAL macro available in the "esp_idf_version.h"
  * header available since ESP-IDF v4.
  */
-bool lvgl_spi_driver_init(spi_host_device_t host,
+bool lvgl_spi_driver_init(int host,
     int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz,
     int dma_channel,
@@ -286,12 +293,9 @@ bool lvgl_spi_driver_init(spi_host_device_t host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    #if defined (CONFIG_IDF_TARGET_ESP32C3)
-    dma_channel = SPI_DMA_CH_AUTO;
-    #endif
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
-    esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
+    esp_err_t ret = spi_bus_initialize((spi_host_device_t) host, &buscfg, (spi_dma_chan_t)dma_channel);
 #else
     esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
 #endif
@@ -324,3 +328,20 @@ static int calculate_spi_max_transfer_size(const int display_buffer_size)
     
     return retval;
 }
+
+#if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
+static void init_ft81x(int dma_channel)
+{
+    size_t display_buffer_size = lvgl_get_display_buffer_size();
+    int spi_max_transfer_size = calculate_spi_max_transfer_size(display_buffer_size);
+
+    lvgl_spi_driver_init(TFT_SPI_HOST, DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
+        spi_max_transfer_size, dma_channel, DISP_SPI_IO2, DISP_SPI_IO3);
+
+    disp_spi_add_device(TFT_SPI_HOST);
+
+#if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
+    touch_driver_init();
+#endif
+}
+#endif

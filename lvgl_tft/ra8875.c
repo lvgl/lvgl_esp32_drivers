@@ -133,7 +133,7 @@ static void ra8875_configure_clocks(bool high_speed);
 static void ra8875_set_memory_write_cursor(unsigned int x, unsigned int y);
 static void ra8875_set_window(unsigned int xs, unsigned int xe, unsigned int ys, unsigned int ye);
 static void ra8875_send_buffer(uint8_t * data, size_t length, bool signal_flush);
-
+static void ra8875_reset(void);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -180,18 +180,7 @@ void ra8875_init(void)
 
     LV_LOG_INFO("Initializing RA8875...");
 
-    // Initialize non-SPI GPIOs
-
-#if RA8875_USE_RST
-    gpio_pad_select_gpio(RA8875_RST);
-    gpio_set_direction(RA8875_RST, GPIO_MODE_OUTPUT);
-
-    // Reset the RA8875
-    gpio_set_level(RA8875_RST, 0);
-    vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
-    gpio_set_level(RA8875_RST, 1);
-    vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
-#endif
+    ra8875_reset();
 
     // Initalize RA8875 clocks (SPI must be decelerated before initializing clocks)
     disp_spi_change_device_speed(SPI_CLOCK_SPEED_SLOW_HZ);
@@ -375,4 +364,14 @@ static void ra8875_send_buffer(uint8_t * data, size_t length, bool signal_flush)
                           | (RA8875_REG_MRWC << 8)             // Memory Read/Write Command (MRWC)
                           | (RA8875_MODE_DATA_WRITE);          // Data write mode
     disp_spi_transaction(data, length, flags, NULL, prefix, 0);
+}
+
+static void ra8875_reset(void)
+{
+#if RA8875_USE_RST
+    gpio_set_level(RA8875_RST, 0);
+    vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
+    gpio_set_level(RA8875_RST, 1);
+    vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
+#endif
 }

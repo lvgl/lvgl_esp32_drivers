@@ -417,8 +417,11 @@ void jd79653a_lv_rounder_cb(lv_disp_drv_t *disp_drv, lv_area_t *area)
 
 void jd79653a_lv_fb_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
+#if LV_USE_LOG
+    size_t len = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)) / 8;
     LV_LOG_INFO("x1: 0x%x, x2: 0x%x, y1: 0x%x, y2: 0x%x", area->x1, area->x2, area->y1, area->y2);
     LV_LOG_INFO("Writing LVGL fb with len: %u, partial counter: %u", len, partial_counter);
+#endif
 
     uint8_t *buf = (uint8_t *) color_map;
 
