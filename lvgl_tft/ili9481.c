@@ -35,6 +35,7 @@ static void ili9481_set_orientation(uint8_t orientation);
 static void ili9481_send_cmd(uint8_t cmd);
 static void ili9481_send_data(void * data, uint16_t length);
 static void ili9481_send_color(void * data, uint16_t length);
+static void ili9481_reset(void);
 
 /**********************
  *  STATIC VARIABLES
@@ -70,26 +71,9 @@ void ili9481_init(void)
         {0, {0}, 0xff},
     };
 
-    //Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(ILI9481_DC);
-    gpio_set_direction(ILI9481_DC, GPIO_MODE_OUTPUT);
-
-#if ILI9481_USE_RST
-    gpio_pad_select_gpio(ILI9481_RST);
-    gpio_set_direction(ILI9481_RST, GPIO_MODE_OUTPUT);
-
-    //Reset the display
-    gpio_set_level(ILI9481_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
-    gpio_set_level(ILI9481_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
-#endif
+    ili9481_reset();
 
     LV_LOG_INFO("Initialization.");
-
-    // Exit sleep
-    ili9481_send_cmd(0x01);	/* Software reset */
-    vTaskDelay(100 / portTICK_RATE_MS);
 
     //Send all the commands
     uint16_t cmd = 0;
@@ -108,7 +92,8 @@ void ili9481_init(void)
 // Flush function based on mvturnho repo
 void ili9481_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
-    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
+    /* 3 is number of bytes in lv_color_t */
+    uint32_t size = lv_area_get_width(area) * lv_area_get_height(area) * 3;
 
     lv_color16_t *buffer_16bit = (lv_color16_t *) color_map;
     uint8_t *mybuf;
@@ -159,7 +144,9 @@ void ili9481_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
     /*Memory write*/
     ili9481_send_cmd(ILI9481_CMD_MEMORY_WRITE);
 
-    ili9481_send_color((void *) mybuf, size * 3);
+    ili9481_send_color((void *) mybuf, size);
+
+    /* FIXME: Can we free the memory even when it's being transferred? */
     heap_caps_free(mybuf);
 }
 
@@ -202,4 +189,18 @@ static void ili9481_set_orientation(uint8_t orientation)
     uint8_t data[] = {0x48, 0x4B, 0x28, 0x2B};
     ili9481_send_cmd(ILI9481_CMD_MEMORY_ACCESS_CONTROL);
     ili9481_send_data((void *) &data[orientation], 1);
+}
+
+static void ili9481_reset(void)
+{
+#if ILI9481_USE_RST
+    gpio_set_level(ILI9481_RST, 0);
+    vTaskDelay(100 / portTICK_RATE_MS);
+    gpio_set_level(ILI9481_RST, 1);
+    vTaskDelay(100 / portTICK_RATE_MS);
+#else
+    // Exit sleep, software reset
+    ili9481_send_cmd(0x01);
+    vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 }

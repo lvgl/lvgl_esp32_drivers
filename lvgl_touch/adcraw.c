@@ -136,21 +136,21 @@ void adcraw_init(void)
 
 static void setup_axis(gpio_num_t plus, gpio_num_t minus, gpio_num_t measure, gpio_num_t ignore)
 {
-	// Set GPIOs:
-	// - Float "ignore" and "measure"
-	gpio_pad_select_gpio(ignore);
-	gpio_set_direction(ignore, GPIO_MODE_DISABLE);
-	gpio_set_pull_mode(ignore, GPIO_FLOATING);
-	gpio_pad_select_gpio(measure);
-	gpio_set_direction(measure, GPIO_MODE_DISABLE);
-	gpio_set_pull_mode(measure, GPIO_FLOATING);
-	// - Set "plus" to 1, "minus" to 0
-	gpio_config(&(gpio_config_t) {
-		.mode = GPIO_MODE_OUTPUT,
-		.pin_bit_mask = (1ULL << plus) | (1ULL << minus)
-	});
-	gpio_set_level(plus, 1);
-	gpio_set_level(minus, 0);
+    // Set GPIOs:
+    // - Float "ignore" and "measure"
+    gpio_pad_select_gpio(ignore);
+    gpio_set_direction(ignore, GPIO_MODE_DISABLE);
+    gpio_set_pull_mode(ignore, GPIO_FLOATING);
+    gpio_pad_select_gpio(measure);
+    gpio_set_direction(measure, GPIO_MODE_DISABLE);
+    gpio_set_pull_mode(measure, GPIO_FLOATING);
+    // - Set "plus" to 1, "minus" to 0
+    gpio_config(&(gpio_config_t) {
+	.mode = GPIO_MODE_OUTPUT,
+	.pin_bit_mask = (1ULL << plus) | (1ULL << minus)
+    });
+    gpio_set_level(plus, 1);
+    gpio_set_level(minus, 0);
 }
 
 static void setup_adc(gpio_num_t measure)

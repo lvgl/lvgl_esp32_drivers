@@ -34,6 +34,7 @@ typedef struct {
 static void sh1107_send_cmd(uint8_t cmd);
 static void sh1107_send_data(void * data, uint16_t length);
 static void sh1107_send_color(void * data, uint16_t length);
+static void sh1107_reset(void);
 
 static lv_coord_t get_display_ver_res(lv_disp_drv_t *disp_drv);
 static lv_coord_t get_display_hor_res(lv_disp_drv_t *disp_drv);
@@ -93,31 +94,18 @@ void sh1107_init(void)
         {0, {0}, 0xff},
 	};
 
-	//Initialize non-SPI GPIOs
-        gpio_pad_select_gpio(SH1107_DC);
-	gpio_set_direction(SH1107_DC, GPIO_MODE_OUTPUT);
+    sh1107_reset();
 
-#if SH1107_USE_RST
-        gpio_pad_select_gpio(SH1107_RST);
-	gpio_set_direction(SH1107_RST, GPIO_MODE_OUTPUT);
-
-	//Reset the display
-	gpio_set_level(SH1107_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
-	gpio_set_level(SH1107_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
-
-	//Send all the commands
-	uint16_t cmd = 0;
-	while (init_cmds[cmd].databytes!=0xff) {
-	    sh1107_send_cmd(init_cmds[cmd].cmd);
-	    sh1107_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes&0x1F);
-	    if (init_cmds[cmd].databytes & 0x80) {
-		vTaskDelay(100 / portTICK_RATE_MS);
-	    }
-	    cmd++;
-	}
+    //Send all the commands
+    uint16_t cmd = 0;
+    while (init_cmds[cmd].databytes!=0xff) {
+        sh1107_send_cmd(init_cmds[cmd].cmd);
+        sh1107_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes&0x1F);
+        if (init_cmds[cmd].databytes & 0x80) {
+            vTaskDelay(100 / portTICK_RATE_MS);
+        }
+        cmd++;
+    }
 }
 
 void sh1107_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
@@ -256,4 +244,14 @@ static lv_coord_t get_display_hor_res(lv_disp_drv_t *disp_drv)
 #endif
 
     return val;
+}
+
+static void sh1107_reset(void)
+{
+#if SH1107_USE_RST
+    gpio_set_level(SH1107_RST, 0);
+    vTaskDelay(100 / portTICK_RATE_MS);
+    gpio_set_level(SH1107_RST, 1);
+    vTaskDelay(100 / portTICK_RATE_MS);
+#endif
 }
