@@ -3,7 +3,7 @@ if(ESP_PLATFORM)
 file(GLOB SOURCES *.c)
 set(LVGL_INCLUDE_DIRS . lvgl_tft)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
-list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
+list(APPEND SOURCES "lv_port/esp_lcd_backlight.c")
 
 # This are the source files used for mcu abstraction
 set(LV_PORT_PATH "lv_port")
@@ -34,7 +34,7 @@ list(APPEND SOURCES "${LV_PORT_PATH}/lv_port_display_espressif.c")
     list(APPEND SOURCES "lvgl_tft/pcd8544.c")
 
 if(CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI)
-    list(APPEND SOURCES "lvgl_tft/disp_spi.c")
+    list(APPEND SOURCES "lv_port/disp_spi.c")
 endif()
 
 # Add touch driver to compilation only if it is selected in menuconfig
@@ -61,13 +61,15 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
     endif()
 
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
-        list(APPEND SOURCES "lvgl_touch/tp_spi.c")
+        list(APPEND SOURCES "lv_port/tp_spi.c")
     endif()
 endif()
 
 if(CONFIG_LV_I2C)
     list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
 endif()
+
+list(APPEND LVGL_INCLUDE_DIRS lv_port)
 
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
