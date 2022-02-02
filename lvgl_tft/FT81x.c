@@ -8,12 +8,6 @@
 #include "EVE.h"
 #include "EVE_commands.h"
 
-#include "esp_idf_version.h"
-
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
-#include "esp_rom_gpio.h"
-#endif
-
 /* some pre-definded colors */
 #define RED		0xff0000UL
 #define ORANGE	0xffa500UL
@@ -269,11 +263,7 @@ void TFT_bitmap_display(void)
 void FT81x_init(void)
 {
 #if EVE_USE_PDN
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
-        esp_rom_gpio_pad_select_gpio(EVE_PDN);
-#else
 	gpio_pad_select_gpio(EVE_PDN);
-#endif
 #endif
 
 	gpio_set_level(EVE_CS, 1);
