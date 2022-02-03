@@ -54,7 +54,8 @@ static void guiTask(void *pvParameter)
     /* Initialize the needed peripherals */
     lvgl_interface_init();
     /* Initialize needed GPIOs, e.g. backlight, reset GPIOs */
-    display_bsp_init_io();
+    lvgl_display_gpios_init();
+
     /* ToDo Initialize used display driver passing registered lv_disp_drv_t as parameter */
 
     size_t display_buffer_size = lvgl_get_display_buffer_size();

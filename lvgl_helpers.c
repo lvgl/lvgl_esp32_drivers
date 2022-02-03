@@ -153,7 +153,7 @@ void lvgl_interface_init(void)
 #endif
 }
 
-void display_bsp_init_io(void)
+void lvgl_display_gpios_init(void)
 {
     esp_err_t err = ESP_OK;
     gpio_config_t io_conf = {

@@ -12,6 +12,11 @@ For a ready to use ESP32 project take look at the [lv_port_esp32](https://github
 **NOTE:** You need to set the display horizontal and vertical size, color depth and
 swap of RGB565 color on the LVGL configuration menuconfig (it's not handled automatically).
 
+## MCU Configuration
+
+Example of SPI/I2C configuration peripherals is done with `lvgl_interface_init`.
+Example of display gpios configuration, such as the DC, RST, Backlight is done with `lvgl_display_gpios_init`
+
 
 ## Supported display controllers
 
