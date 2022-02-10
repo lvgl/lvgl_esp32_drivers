@@ -15,6 +15,16 @@ extern "C"
 #include <stdint.h>
 #include <stdbool.h>
 
+#define CMD_WITHOUT_ARGS    NULL
+
+enum {
+    CMD_WIDTH_8BITS,
+    CMD_WIDTH_16BITS,
+    CMD_WIDTH_INVALID,
+};
+
+typedef uint8_t cmd_width_t;
+
 /**
  * Busy wait delay port
  *
@@ -55,6 +65,28 @@ void display_port_gpio_rst(lv_disp_drv_t *drv, uint8_t state);
  * @retval Returns false when display is not busy, true otherwise.
  */
 bool display_port_gpio_is_busy(lv_disp_drv_t *drv);
+
+/**
+ * Send cmd to display
+ *
+ * @param drv Pointer to driver
+ * @param cmd Command to send
+ * @param cmd_width Width of the command (in bits) to be sent, see @ref cmd_width_t
+ * @param args Pointer to arguments, use CMD_WITHOUT_ARGS to send command without arguments
+ * @param args_len Arguments length (in bytes) to be sent
+ */
+void display_interface_send_cmd(lv_disp_drv_t *drv, uint32_t cmd, cmd_width_t cmd_width, void *args, size_t args_len);
+
+/**
+ * Send (image) data to display
+ *
+ * User must call lv_disp_flush after the image is sent
+ *
+ * @param drv Pointer to driver
+ * @param data Pointer to data to be sent
+ * @param len Data length (in bytes) to be sent
+ */
+void display_interface_send_data(lv_disp_drv_t *drv, void *data, size_t len);
 
 #ifdef __cplusplus
 } /* extern "C" */
