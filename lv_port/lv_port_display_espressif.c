@@ -17,7 +17,14 @@
 /* FIXME: Be able to get display driver I2C address from Kconfig */
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306)
 #define OLED_I2C_ADDRESS    0x3C
+#else
+#define OLED_I2C_ADDRESS    0x00
 #endif
+
+// Control byte
+#define OLED_CONTROL_BYTE_CMD_SINGLE        0x80
+#define OLED_CONTROL_BYTE_CMD_STREAM        0x00
+#define OLED_CONTROL_BYTE_DATA_STREAM       0x40
 
 #define LV_DISPLAY_DC_CMD_MODE    0
 #define LV_DISPLAY_DC_DATA_MODE   1
@@ -88,7 +95,8 @@ void display_interface_send_cmd(lv_disp_drv_t *drv, uint32_t cmd, cmd_width_t cm
         display_port_gpio_dc(drv, LV_DISPLAY_DC_CMD_MODE);
 
         if (CMD_WIDTH_8BITS == cmd_width) {
-            disp_spi_send_data(&cmd, 1);
+            uint8_t cmd_8bits = (uint8_t) cmd & 0xFFU;
+            disp_spi_send_data(&cmd_8bits, 1);
         }
         else if (CMD_WIDTH_16BITS == cmd_width) {
             /* Send 16bits cmd */
