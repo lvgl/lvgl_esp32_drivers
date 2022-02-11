@@ -60,3 +60,6 @@ build
 # Kconfig files
 sdkconfig
 sdkconfig.old
+
+# pre-commit configuration file
+.pre-commit-config.yaml
