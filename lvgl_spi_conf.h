@@ -162,10 +162,14 @@ extern "C" {
 
 #endif /* CONFIG_LV_TFT_USE_CUSTOM_SPI_CLK_DIVIDER */
 
+#if defined (CONFIG_LV_TFT_DISPLAY_USE_CUSTOM_SPI_MODE)
+#define SPI_TFT_SPI_MODE    (CONFIG_LV_TFT_DISPLAY_CUSTOM_SPI_MODE)
+#else
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
 #define SPI_TFT_SPI_MODE    (2U)
 #else
 #define SPI_TFT_SPI_MODE    (0U)
+#endif
 #endif
 
 /* Touch driver */
