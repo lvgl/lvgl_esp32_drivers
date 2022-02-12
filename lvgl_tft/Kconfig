@@ -353,8 +353,7 @@ menu "LVGL TFT Display controller"
 
     config LV_TFT_DISPLAY_BGR
         bool "use BGR color order" if LV_TFT_DISPLAY_CONTROLLER_HX8357
-        #depends on LV_TFT_DISPLAY_CONTROLLER_HX8357
-        default false
+        default n
         help
             use Blue-Gren_Red pixel order.
 
