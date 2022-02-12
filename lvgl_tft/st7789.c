@@ -33,7 +33,7 @@ static void st7789_send_data(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_send_color(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_reset(lv_disp_drv_t * drv);
 
-static void setup_initial_offsets(void);
+static void setup_initial_offsets(lv_disp_drv_t * drv);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -49,7 +49,7 @@ static uint16_t user_y_offset = 0u;
  **********************/
 void st7789_init(lv_disp_drv_t *drv)
 {
-    setup_initial_offsets();
+    setup_initial_offsets(drv);
 
     lcd_init_cmd_t st7789_init_cmds[] = {
         {0xCF, {0x00, 0x83, 0X30}, 3},
@@ -99,8 +99,8 @@ void st7789_init(lv_disp_drv_t *drv)
         cmd++;
     }
 
-    /* FIXME We're setting up the initial orientation in the cmd array */
-    st7789_set_orientation(drv, ST7789_INITIAL_ORIENTATION);
+    /* NOTE: Setting rotation from lv_disp_drv_t instead of menuconfig */
+    st7789_set_orientation(drv, lv_disp_get_rotation((lv_disp_t *) drv));
 }
 
 /* The ST7789 display controller can drive up to 320*240 displays, when using a 240*240 or 240*135
@@ -215,32 +215,37 @@ static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
     st7789_send_data(drv, (void *) &data[orientation], 1);
 }
 
-static void setup_initial_offsets(void)
+static void setup_initial_offsets(lv_disp_drv_t * drv)
 {
+    lv_disp_rot_t rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+
 #if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
     st7789_set_x_offset(CONFIG_LV_TFT_DISPLAY_X_OFFSET);
     st7789_set_y_offset(CONFIG_LV_TFT_DISPLAY_Y_OFFSET);
 
 #elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
+    if (LV_DISP_ROT_NONE == rotation)
+    {
         st7789_set_x_offset(80);
         st7789_set_y_offset(0);
-    #elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+    }
+    else if (LV_DISP_ROT_270 == rotation)
+    {
         st7789_set_x_offset(0);
         st7789_set_y_offset(80);
-    #endif
+    }
 #elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || \
-        (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+    if (LV_DISP_ROT_NONE == rotation || LV_DISP_ROT_180 == rotation)
+    {
         st7789_set_x_offset(40);
         st7789_set_y_offset(53);
-    #endif
+    }
 #elif (LV_HOR_RES_MAX == 135) && (LV_VER_RES_MAX == 240)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || \
-        (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+    if (LV_DISP_ROT_90 == rotation || LV_DISP_ROT_270 == rotation)
+    {
         st7789_set_x_offset(52);
         st7789_set_y_offset(40);
-    #endif
+    }
 #endif
 }
 
