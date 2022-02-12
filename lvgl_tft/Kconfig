@@ -351,6 +351,13 @@ menu "LVGL TFT Display controller"
             select LV_TFT_DISPLAY_MONOCHROME
     endchoice
 
+    config LV_TFT_DISPLAY_BGR
+        bool "use BGR color order" if LV_TFT_DISPLAY_CONTROLLER_HX8357
+        #depends on LV_TFT_DISPLAY_CONTROLLER_HX8357
+        default false
+        help
+            use Blue-Gren_Red pixel order.
+
     config CUSTOM_DISPLAY_BUFFER_SIZE
         bool "Use custom display buffer size (bytes)"
         help

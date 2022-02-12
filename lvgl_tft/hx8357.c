@@ -32,6 +32,12 @@
 #define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
 #define MADCTL_MH  0x04 ///< LCD refresh right to left
 
+#if HX8357_BGR
+#define MADCTL_RGB_OR_BGR MADCTL_BGR
+#else
+#define MADCTL_RGB_OR_BGR MADCTL_RGB
+#endif
+
 /**********************
  *      TYPEDEFS
  **********************/
@@ -229,16 +235,16 @@ void hx8357_set_rotation(uint8_t r)
 
 	switch(r) {
 		case 0:
-			r = MADCTL_MX | MADCTL_MY | MADCTL_RGB;
+			r = MADCTL_MX | MADCTL_MY | MADCTL_RGB_OR_BGR;
 			break;
 		case 1:
-			r = MADCTL_MV | MADCTL_MY | MADCTL_RGB;
+			r = MADCTL_MV | MADCTL_MY | MADCTL_RGB_OR_BGR;
       		break;
 		case 2:
-			r = MADCTL_RGB;
+			r = MADCTL_RGB_OR_BGR;
   			break;
 		case 3:
-			r = MADCTL_MX | MADCTL_MV | MADCTL_RGB;
+			r = MADCTL_MX | MADCTL_MV | MADCTL_RGB_OR_BGR;
 		break;
 	}
 

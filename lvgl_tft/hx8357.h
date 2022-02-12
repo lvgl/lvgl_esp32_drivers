@@ -39,6 +39,7 @@ extern "C" {
 #define HX8357_RST            CONFIG_LV_DISP_PIN_RST
 #define HX8357_USE_RST        CONFIG_LV_DISP_USE_RST
 #define HX8357_INVERT_COLORS  CONFIG_LV_INVERT_COLORS
+#define HX8357_BGR            CONFIG_LV_TFT_DISPLAY_BGR
 
 
 /*******************
