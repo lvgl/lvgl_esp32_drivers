@@ -110,6 +110,12 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 {
     uint8_t data[4] = {0};
 
+    /* On LVGLv7 we have to manually update the driver orientation,
+     * in LVGLv8 we use the driver update callback. */
+#if (LVGL_VERSION_MAJOR < 8)
+    st7789_set_orientation(drv, (uint8_t) lv_disp_get_rotation((lv_disp_t *) drv));
+#endif
+
     uint16_t offsetx1 = area->x1;
     uint16_t offsetx2 = area->x2;
     uint16_t offsety1 = area->y1;
@@ -253,5 +259,6 @@ static void setup_initial_offsets(lv_disp_drv_t * drv)
  * NOTE Available only for LVGL v8 */
 void st7789_update_cb(lv_disp_drv_t *drv)
 {
-    (void) drv;
+    lv_disp_rot_t orientation = lv_disp_get_rotation((lv_disp_t *) drv);
+    st7789_set_orientation(drv, (uint8_t) orientation);
 }
