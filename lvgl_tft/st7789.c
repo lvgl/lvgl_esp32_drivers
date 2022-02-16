@@ -110,17 +110,24 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 {
     uint8_t data[4] = {0};
 
-    /* On LVGLv7 we have to manually update the driver orientation,
-     * in LVGLv8 we use the driver update callback. */
-#if (LVGL_VERSION_MAJOR < 8)
-    st7789_set_orientation(drv, (uint8_t) lv_disp_get_rotation((lv_disp_t *) drv));
-#endif
-
     uint16_t offsetx1 = area->x1;
     uint16_t offsetx2 = area->x2;
     uint16_t offsety1 = area->y1;
     uint16_t offsety2 = area->y2;
     uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
+
+    /* On LVGLv7 we have to manually update the driver orientation,
+     * in LVGLv8 we use the driver update callback. */
+#if (LVGL_VERSION_MAJOR < 8)
+    static lv_disp_rot_t cached_rotation = LV_DISP_ROT_NONE;
+    lv_disp_rot_t rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+    if (cached_rotation != rotation) {
+        st7789_set_orientation(drv, (uint8_t) rotation);
+        /* Update offset values */
+        setup_initial_offsets(drv);
+        cached_rotation = rotation;
+    }
+#endif
 
     offsetx1 += st7789_x_offset();
     offsetx2 += st7789_x_offset();
@@ -233,6 +240,16 @@ static void setup_initial_offsets(lv_disp_drv_t * drv)
     if (LV_DISP_ROT_NONE == rotation)
     {
         st7789_set_x_offset(80);
+        st7789_set_y_offset(0);
+    }
+    else if (LV_DISP_ROT_90 == rotation)
+    {
+        st7789_set_x_offset(0);
+        st7789_set_y_offset(0);
+    }
+    else if (LV_DISP_ROT_180 == rotation)
+    {
+        st7789_set_x_offset(0);
         st7789_set_y_offset(0);
     }
     else if (LV_DISP_ROT_270 == rotation)
