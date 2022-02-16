@@ -289,8 +289,9 @@ static lv_coord_t get_display_hor_res(lv_disp_drv_t * drv)
     lv_coord_t retval = 0;
 
 #if (LVGL_VERSION_MAJOR >= 8)
-    retval = drv.hor_res;
+    retval = drv->hor_res;
 #else
+    (void) drv;
     retval = LV_HOR_RES_MAX;
 #endif
 
@@ -302,8 +303,9 @@ static lv_coord_t get_display_ver_res(lv_disp_drv_t * drv)
     lv_coord_t retval = 0;
 
 #if (LVGL_VERSION_MAJOR >= 8)
-    retval = drv.ver_res;
+    retval = drv->ver_res;
 #else
+    (void) drv;
     retval = LV_VER_RES_MAX;
 #endif
 
