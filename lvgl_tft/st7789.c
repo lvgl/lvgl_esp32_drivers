@@ -34,6 +34,8 @@ static void st7789_send_color(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_reset(lv_disp_drv_t * drv);
 
 static void setup_initial_offsets(lv_disp_drv_t * drv);
+static lv_coord_t get_display_hor_res(lv_disp_drv_t * drv);
+static lv_coord_t get_display_ver_res(lv_disp_drv_t * drv);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -235,28 +237,6 @@ static void setup_initial_offsets(lv_disp_drv_t * drv)
 #if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
     st7789_set_x_offset(CONFIG_LV_TFT_DISPLAY_X_OFFSET);
     st7789_set_y_offset(CONFIG_LV_TFT_DISPLAY_Y_OFFSET);
-
-#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
-    if (LV_DISP_ROT_NONE == rotation)
-    {
-        st7789_set_x_offset(80);
-        st7789_set_y_offset(0);
-    }
-    else if (LV_DISP_ROT_90 == rotation)
-    {
-        st7789_set_x_offset(0);
-        st7789_set_y_offset(0);
-    }
-    else if (LV_DISP_ROT_180 == rotation)
-    {
-        st7789_set_x_offset(0);
-        st7789_set_y_offset(0);
-    }
-    else if (LV_DISP_ROT_270 == rotation)
-    {
-        st7789_set_x_offset(0);
-        st7789_set_y_offset(80);
-    }
 #elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
     if (LV_DISP_ROT_NONE == rotation || LV_DISP_ROT_180 == rotation)
     {
@@ -269,6 +249,30 @@ static void setup_initial_offsets(lv_disp_drv_t * drv)
         st7789_set_x_offset(52);
         st7789_set_y_offset(40);
     }
+#else
+    if (240U == get_display_hor_res(drv) && 240U == get_display_ver_res(drv))
+    {
+        if (LV_DISP_ROT_NONE == rotation)
+        {
+            st7789_set_x_offset(80);
+            st7789_set_y_offset(0);
+        }
+        else if (LV_DISP_ROT_90 == rotation)
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(0);
+        }
+        else if (LV_DISP_ROT_180 == rotation)
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(0);
+        }
+        else if (LV_DISP_ROT_270 == rotation)
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(80);
+        }
+    }
 #endif
 }
 
@@ -278,4 +282,30 @@ void st7789_update_cb(lv_disp_drv_t *drv)
 {
     lv_disp_rot_t orientation = lv_disp_get_rotation((lv_disp_t *) drv);
     st7789_set_orientation(drv, (uint8_t) orientation);
+}
+
+static lv_coord_t get_display_hor_res(lv_disp_drv_t * drv)
+{
+    lv_coord_t retval = 0;
+
+#if (LVGL_VERSION_MAJOR >= 8)
+    retval = drv.hor_res;
+#else
+    retval = LV_HOR_RES_MAX;
+#endif
+
+    return retval;
+}
+
+static lv_coord_t get_display_ver_res(lv_disp_drv_t * drv)
+{
+    lv_coord_t retval = 0;
+
+#if (LVGL_VERSION_MAJOR >= 8)
+    retval = drv.ver_res;
+#else
+    retval = LV_VER_RES_MAX;
+#endif
+
+    return retval;
 }
