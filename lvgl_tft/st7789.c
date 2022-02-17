@@ -237,32 +237,41 @@ static void setup_initial_offsets(lv_disp_drv_t * drv)
 #if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
     st7789_set_x_offset(CONFIG_LV_TFT_DISPLAY_X_OFFSET);
     st7789_set_y_offset(CONFIG_LV_TFT_DISPLAY_Y_OFFSET);
-#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
-    if (LV_DISP_ROT_NONE == rotation || LV_DISP_ROT_180 == rotation)
-    {
-        st7789_set_x_offset(40);
-        st7789_set_y_offset(53);
-    }
-#elif (LV_HOR_RES_MAX == 135) && (LV_VER_RES_MAX == 240)
-    if (LV_DISP_ROT_90 == rotation || LV_DISP_ROT_270 == rotation)
-    {
-        st7789_set_x_offset(52);
-        st7789_set_y_offset(40);
-    }
 #else
-    if (240U == get_display_hor_res(drv) && 240U == get_display_ver_res(drv))
+    if (240U == get_display_hor_res(drv) && 135U == get_display_ver_res(drv))
+    {
+        if (LV_DISP_ROT_NONE == rotation || LV_DISP_ROT_180 == rotation)
+        {
+            st7789_set_x_offset(40);
+            st7789_set_y_offset(53);
+        }
+        else
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(0);
+        }
+    }
+    else if (135U == get_display_hor_res(drv) && 240U == get_display_ver_res(drv))
+    {
+        if (LV_DISP_ROT_90 == rotation || LV_DISP_ROT_270 == rotation)
+        {
+            st7789_set_x_offset(52);
+            st7789_set_y_offset(40);
+        }
+        else
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(0);
+        }
+    }
+    else if (240U == get_display_hor_res(drv) && 240U == get_display_ver_res(drv))
     {
         if (LV_DISP_ROT_NONE == rotation)
         {
             st7789_set_x_offset(80);
             st7789_set_y_offset(0);
         }
-        else if (LV_DISP_ROT_90 == rotation)
-        {
-            st7789_set_x_offset(0);
-            st7789_set_y_offset(0);
-        }
-        else if (LV_DISP_ROT_180 == rotation)
+        else if (LV_DISP_ROT_90 == rotation || LV_DISP_ROT_180 == rotation)
         {
             st7789_set_x_offset(0);
             st7789_set_y_offset(0);
