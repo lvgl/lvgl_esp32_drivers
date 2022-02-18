@@ -102,7 +102,14 @@ void st7789_init(lv_disp_drv_t *drv)
     }
 
     /* NOTE: Setting rotation from lv_disp_drv_t instead of menuconfig */
-    st7789_set_orientation(drv, lv_disp_get_rotation((lv_disp_t *) drv));
+    lv_disp_rot_t rotation;
+#if (LVGL_VERSION_MAJOR >= 8)
+    rotation = lv_disp_get_rotation((lv_disp_t *) &drv);
+#else
+    rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+#endif
+
+    st7789_set_orientation(drv, rotation);
 }
 
 /* The ST7789 display controller can drive up to 320*240 displays, when using a 240*240 or 240*135
@@ -232,7 +239,12 @@ static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
 
 static void setup_initial_offsets(lv_disp_drv_t * drv)
 {
-    lv_disp_rot_t rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+    lv_disp_rot_t rotation;
+#if (LVGL_VERSION_MAJOR >= 8)
+    rotation = lv_disp_get_rotation((lv_disp_t *) &drv);
+#else
+    rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+#endif
 
 #if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
     st7789_set_x_offset(CONFIG_LV_TFT_DISPLAY_X_OFFSET);
@@ -289,8 +301,15 @@ static void setup_initial_offsets(lv_disp_drv_t * drv)
  * NOTE Available only for LVGL v8 */
 void st7789_update_cb(lv_disp_drv_t *drv)
 {
-    lv_disp_rot_t orientation = lv_disp_get_rotation((lv_disp_t *) drv);
-    st7789_set_orientation(drv, (uint8_t) orientation);
+    lv_disp_rot_t rotation;
+#if (LVGL_VERSION_MAJOR >= 8)
+    rotation = lv_disp_get_rotation((lv_disp_t *) &drv);
+#else
+    rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+#endif
+
+    st7789_set_orientation(drv, (uint8_t) rotation);
+    setup_initial_offsets(drv);
 }
 
 static lv_coord_t get_display_hor_res(lv_disp_drv_t * drv)
