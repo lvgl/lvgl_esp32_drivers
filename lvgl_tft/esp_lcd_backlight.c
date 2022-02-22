@@ -11,6 +11,23 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "soc/ledc_periph.h" // to invert LEDC output on IDF version < v4.3
+#include "esp_idf_version.h"
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include "soc/gpio_sig_map.h" // 5.0
+#if defined (CONFIG_IDF_TARGET_ESP32)
+#include "esp32/rom/gpio.h"
+#endif
+#if defined (CONFIG_IDF_TARGET_ESP32S2)
+#include "esp32s2/rom/gpio.h"
+#endif
+#if defined (CONFIG_IDF_TARGET_ESP32S3)
+#include "esp32s3/rom/gpio.h"
+#endif
+#if defined (CONFIG_IDF_TARGET_ESP32C3)
+#include "esp32c3/rom/gpio.h"
+#endif
+#endif
 
 typedef struct {
     bool pwm_control; // true: LEDC is used, false: GPIO is used

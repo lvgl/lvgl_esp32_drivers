@@ -9,6 +9,7 @@
 #include "ili9341.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
+#include "esp32/rom/gpio.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -90,9 +91,9 @@ void ili9341_init(void)
 
 	//Reset the display
 	gpio_set_level(ILI9341_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(pdMS_TO_TICKS(100));
 	gpio_set_level(ILI9341_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(pdMS_TO_TICKS(100));
 #endif
 
 	ESP_LOGI(TAG, "Initialization.");
@@ -103,7 +104,7 @@ void ili9341_init(void)
 		ili9341_send_cmd(ili_init_cmds[cmd].cmd);
 		ili9341_send_data(ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes&0x1F);
 		if (ili_init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(pdMS_TO_TICKS(100));
 		}
 		cmd++;
 	}

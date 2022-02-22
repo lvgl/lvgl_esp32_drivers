@@ -64,9 +64,9 @@ void pcd8544_init(void){
 
     // Reset the display
     gpio_set_level(PCD8544_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(PCD8544_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
 
     pcd8544_send_cmd(0x21);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=1) */
     pcd8544_send_cmd(0x06);     /* temp. control: b10 = 2  */

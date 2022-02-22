@@ -97,9 +97,9 @@ void st7789_init(void)
     //Reset the display
 #if !defined(ST7789_SOFT_RST)
     gpio_set_level(ST7789_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(ST7789_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
 #else
     st7789_send_cmd(ST7789_SWRESET);
 #endif
@@ -112,7 +112,7 @@ void st7789_init(void)
         st7789_send_cmd(st7789_init_cmds[cmd].cmd);
         st7789_send_data(st7789_init_cmds[cmd].data, st7789_init_cmds[cmd].databytes&0x1F);
         if (st7789_init_cmds[cmd].databytes & 0x80) {
-                vTaskDelay(100 / portTICK_RATE_MS);
+                vTaskDelay(pdMS_TO_TICKS(100));
         }
         cmd++;
     }

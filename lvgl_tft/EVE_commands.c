@@ -141,7 +141,7 @@ uint8_t SPIDummyReadBits = 0;					// Dummy bits for reading in DIO/QIO modes
 
 void DELAY_MS(uint16_t ms)
 {
-	vTaskDelay(ms / portTICK_PERIOD_MS);
+	vTaskDelay(pdMS_TO_TICKS(ms));
 }
 
 #if EVE_USE_PDN
