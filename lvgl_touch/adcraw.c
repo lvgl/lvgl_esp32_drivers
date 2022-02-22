@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
+#include "rom/gpio.h"
 #include <stddef.h>
 
 #if CONFIG_LV_TOUCH_CONTROLLER_ADCRAW

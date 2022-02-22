@@ -18,6 +18,7 @@
 #include "hx8357.h"
 #include "disp_spi.h"
 #include "driver/gpio.h"
+#include "rom/gpio.h"
 #include <esp_log.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
