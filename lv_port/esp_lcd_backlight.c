@@ -9,8 +9,14 @@
 #include "esp_lcd_backlight.h"
 #include "driver/ledc.h"
 #include "driver/gpio.h"
+#include "rom/gpio.h"
 #include "esp_log.h"
 #include "soc/ledc_periph.h" // to invert LEDC output on IDF version < v4.3
+#include "esp_idf_version.h"
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include "soc/gpio_sig_map.h"
+#endif
 
 typedef struct {
     bool pwm_control; // true: LEDC is used, false: GPIO is used

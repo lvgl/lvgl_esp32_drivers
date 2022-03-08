@@ -121,7 +121,7 @@ void GC9A01_init(void)
 		GC9A01_send_cmd(GC_init_cmds[cmd].cmd);
 		GC9A01_send_data(GC_init_cmds[cmd].data, GC_init_cmds[cmd].databytes&0x1F);
 		if (GC_init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(pdMS_TO_TICKS(100));
 		}
 		cmd++;
 	}
@@ -235,8 +235,8 @@ static void GC9A01_reset(void)
 #if GC9A01_USE_RST
     //Reset the display
     gpio_set_level(GC9A01_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(GC9A01_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
 #endif
 }
