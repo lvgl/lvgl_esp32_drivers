@@ -241,7 +241,7 @@ static void ili9163c_reset(void)
     gpio_set_level(ILI9163C_RST, 0);
     vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(ILI9163C_RST, 1);
-    vTaskDelay(pdMS_TO_TICKS(150);
+    vTaskDelay(pdMS_TO_TICKS(150));
 #else
 #endif
 }
