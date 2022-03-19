@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "driver/gpio.h"
+#include "esp_idf_version.h"
 
 #include "FT81x.h"
 
