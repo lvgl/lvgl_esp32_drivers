@@ -280,6 +280,6 @@ static void hx8357_reset(void)
     gpio_set_level(HX8357_RST, 0);
     vTaskDelay(pdMS_TO_TICKS(10));
     gpio_set_level(HX8357_RST, 1);
-    vTaskDelaypdMS_TO_TICKS(120);
+    vTaskDelay(pdMS_TO_TICKS(120));
 #endif
 }

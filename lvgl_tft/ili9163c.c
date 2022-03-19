@@ -145,7 +145,7 @@ void ili9163c_init(void)
 		ili9163c_send_data(ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes & 0x1F);
 		if (ili_init_cmds[cmd].databytes & 0x80)
 		{
-			vTaskDelaypdMS_TO_TICKS(150);
+			vTaskDelay(pdMS_TO_TICKS(150));
 		}
 		cmd++;
 	}
@@ -242,7 +242,7 @@ static void ili9163c_reset(void)
     gpio_set_level(ILI9163C_RST, 0);
     vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(ILI9163C_RST, 1);
-    vTaskDelaypdMS_TO_TICKS(150);
+    vTaskDelay(pdMS_TO_TICKS(150);
 #else
 #endif
 }
