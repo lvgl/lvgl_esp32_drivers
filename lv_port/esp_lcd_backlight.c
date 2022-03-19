@@ -9,7 +9,6 @@
 #include "esp_lcd_backlight.h"
 #include "driver/ledc.h"
 #include "driver/gpio.h"
-#include "rom/gpio.h"
 #include "esp_log.h"
 #include "soc/ledc_periph.h" // to invert LEDC output on IDF version < v4.3
 #include "esp_idf_version.h"
@@ -62,15 +61,25 @@ disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config)
 
         ESP_ERROR_CHECK(ledc_timer_config(&LCD_backlight_timer));
         ESP_ERROR_CHECK(ledc_channel_config(&LCD_backlight_channel));
+
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        esp_rom_gpio_connect_out_signal(config->gpio_num, ledc_periph_signal[LEDC_LOW_SPEED_MODE].sig_out0_idx + config->channel_idx, config->output_invert, 0);
+        #else
         gpio_matrix_out(config->gpio_num, ledc_periph_signal[LEDC_LOW_SPEED_MODE].sig_out0_idx + config->channel_idx, config->output_invert, 0);
+        #endif
     }
     else
     {
         // Configure GPIO for output
         bckl_dev->index = config->gpio_num;
-        gpio_pad_select_gpio(config->gpio_num);
         ESP_ERROR_CHECK(gpio_set_direction(config->gpio_num, GPIO_MODE_OUTPUT));
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        esp_rom_gpio_pad_select_gpio(config->gpio_num);
+        esp_rom_gpio_connect_out_signal(config->gpio_num, SIG_GPIO_OUT_IDX, config->output_invert, false);
+        #else
+        gpio_pad_select_gpio(config->gpio_num);
         gpio_matrix_out(config->gpio_num, SIG_GPIO_OUT_IDX, config->output_invert, false);
+        #endif
     }
 
     return (disp_backlight_h)bckl_dev;

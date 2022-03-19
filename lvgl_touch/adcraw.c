@@ -138,10 +138,19 @@ static void setup_axis(gpio_num_t plus, gpio_num_t minus, gpio_num_t measure, gp
 {
     // Set GPIOs:
     // - Float "ignore" and "measure"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+	esp_rom_gpio_pad_select_gpio(ignore);
+#else
     gpio_pad_select_gpio(ignore);
+#endif
     gpio_set_direction(ignore, GPIO_MODE_DISABLE);
     gpio_set_pull_mode(ignore, GPIO_FLOATING);
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+	esp_rom_gpio_pad_select_gpio(ignore);
+#else
     gpio_pad_select_gpio(measure);
+#endif
     gpio_set_direction(measure, GPIO_MODE_DISABLE);
     gpio_set_pull_mode(measure, GPIO_FLOATING);
     // - Set "plus" to 1, "minus" to 0
