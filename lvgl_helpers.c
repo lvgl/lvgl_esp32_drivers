@@ -154,7 +154,11 @@ bool lvgl_spi_driver_init(int host,
     int dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
-    assert((0 <= host) && (SPI_HOST_MAX > host));
+#if defined (SPI_HOST_MAX)
+    assert((SPI1_HOST <= host) && (SPI_HOST_MAX > host));
+#else
+    assert((SPI1_HOST <= host) && ((SPI3_HOST + 1) > host));
+#endif
     const char *spi_names[] = {
         "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
     };
