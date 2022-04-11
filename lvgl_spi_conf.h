@@ -112,7 +112,11 @@ extern "C" {
  * If the user sets the same MOSI and CLK pins for both display and indev
  * controllers then we can assume the user is using the same SPI bus
  * If so verify the user specified the same SPI bus for both */
-#if !defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
+#if defined (CONFIG_LV_TOUCH_CONTROLLER_SPI2_HOST)
+#define TOUCH_SPI_HOST SPI2_HOST
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_SPI3_HOST)
+#define TOUCH_SPI_HOST SPI3_HOST
+#endif
 
 #if defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI) && \
             (CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI == 1) && \
@@ -169,7 +173,6 @@ extern "C" {
 #define SPI_TFT_SPI_MODE    (2U)
 #else
 #define SPI_TFT_SPI_MODE    (0U)
-#endif
 #endif
 
 /* Touch driver */
