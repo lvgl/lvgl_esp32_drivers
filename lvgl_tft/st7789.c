@@ -33,7 +33,9 @@ static void st7789_send_data(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_send_color(lv_disp_drv_t * drv, void *data, uint16_t length);
 static void st7789_reset(lv_disp_drv_t * drv);
 
-static void setup_initial_offsets(void);
+static void setup_initial_offsets(lv_disp_drv_t * drv);
+static lv_coord_t get_display_hor_res(lv_disp_drv_t * drv);
+static lv_coord_t get_display_ver_res(lv_disp_drv_t * drv);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -49,7 +51,7 @@ static uint16_t user_y_offset = 0u;
  **********************/
 void st7789_init(lv_disp_drv_t *drv)
 {
-    setup_initial_offsets();
+    setup_initial_offsets(drv);
 
     lcd_init_cmd_t st7789_init_cmds[] = {
         {0xCF, {0x00, 0x83, 0X30}, 3},
@@ -99,8 +101,15 @@ void st7789_init(lv_disp_drv_t *drv)
         cmd++;
     }
 
-    /* FIXME We're setting up the initial orientation in the cmd array */
-    st7789_set_orientation(drv, ST7789_INITIAL_ORIENTATION);
+    /* NOTE: Setting rotation from lv_disp_drv_t instead of menuconfig */
+    lv_disp_rot_t rotation;
+#if (LVGL_VERSION_MAJOR >= 8)
+    rotation = lv_disp_get_rotation((lv_disp_t *) &drv);
+#else
+    rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+#endif
+
+    st7789_set_orientation(drv, rotation);
 }
 
 /* The ST7789 display controller can drive up to 320*240 displays, when using a 240*240 or 240*135
@@ -115,6 +124,19 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
     uint16_t offsety1 = area->y1;
     uint16_t offsety2 = area->y2;
     uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
+
+    /* On LVGLv7 we have to manually update the driver orientation,
+     * in LVGLv8 we use the driver update callback. */
+#if (LVGL_VERSION_MAJOR < 8)
+    static lv_disp_rot_t cached_rotation = LV_DISP_ROT_NONE;
+    lv_disp_rot_t rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+    if (cached_rotation != rotation) {
+        st7789_set_orientation(drv, (uint8_t) rotation);
+        /* Update offset values */
+        setup_initial_offsets(drv);
+        cached_rotation = rotation;
+    }
+#endif
 
     offsetx1 += st7789_x_offset();
     offsetx2 += st7789_x_offset();
@@ -207,7 +229,7 @@ static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
 #if CONFIG_LV_PREDEFINED_DISPLAY_TTGO
 	0x60, 0xA0, 0x00, 0xC0
 #else
-	0xC0, 0x00, 0x60, 0xA0
+	0xC0, 0x60, 0x00, 0xA0
 #endif
     };
 
@@ -215,32 +237,63 @@ static void st7789_set_orientation(lv_disp_drv_t *drv, uint8_t orientation)
     st7789_send_data(drv, (void *) &data[orientation], 1);
 }
 
-static void setup_initial_offsets(void)
+static void setup_initial_offsets(lv_disp_drv_t * drv)
 {
+    lv_disp_rot_t rotation;
+#if (LVGL_VERSION_MAJOR >= 8)
+    rotation = lv_disp_get_rotation((lv_disp_t *) &drv);
+#else
+    rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+#endif
+
 #if (CONFIG_LV_TFT_DISPLAY_OFFSETS)
     st7789_set_x_offset(CONFIG_LV_TFT_DISPLAY_X_OFFSET);
     st7789_set_y_offset(CONFIG_LV_TFT_DISPLAY_Y_OFFSET);
-
-#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 240)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT)
-        st7789_set_x_offset(80);
-        st7789_set_y_offset(0);
-    #elif (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
-        st7789_set_x_offset(0);
-        st7789_set_y_offset(80);
-    #endif
-#elif (LV_HOR_RES_MAX == 240) && (LV_VER_RES_MAX == 135)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || \
-        (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
-        st7789_set_x_offset(40);
-        st7789_set_y_offset(53);
-    #endif
-#elif (LV_HOR_RES_MAX == 135) && (LV_VER_RES_MAX == 240)
-    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || \
-        (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
-        st7789_set_x_offset(52);
-        st7789_set_y_offset(40);
-    #endif
+#else
+    if (240U == get_display_hor_res(drv) && 135U == get_display_ver_res(drv))
+    {
+        if (LV_DISP_ROT_NONE == rotation || LV_DISP_ROT_180 == rotation)
+        {
+            st7789_set_x_offset(40);
+            st7789_set_y_offset(53);
+        }
+        else
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(0);
+        }
+    }
+    else if (135U == get_display_hor_res(drv) && 240U == get_display_ver_res(drv))
+    {
+        if (LV_DISP_ROT_90 == rotation || LV_DISP_ROT_270 == rotation)
+        {
+            st7789_set_x_offset(52);
+            st7789_set_y_offset(40);
+        }
+        else
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(0);
+        }
+    }
+    else if (240U == get_display_hor_res(drv) && 240U == get_display_ver_res(drv))
+    {
+        if (LV_DISP_ROT_NONE == rotation)
+        {
+            st7789_set_x_offset(80);
+            st7789_set_y_offset(0);
+        }
+        else if (LV_DISP_ROT_90 == rotation || LV_DISP_ROT_180 == rotation)
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(0);
+        }
+        else if (LV_DISP_ROT_270 == rotation)
+        {
+            st7789_set_x_offset(0);
+            st7789_set_y_offset(80);
+        }
+    }
 #endif
 }
 
@@ -248,5 +301,41 @@ static void setup_initial_offsets(void)
  * NOTE Available only for LVGL v8 */
 void st7789_update_cb(lv_disp_drv_t *drv)
 {
+    lv_disp_rot_t rotation;
+#if (LVGL_VERSION_MAJOR >= 8)
+    rotation = lv_disp_get_rotation((lv_disp_t *) &drv);
+#else
+    rotation = lv_disp_get_rotation((lv_disp_t *) drv);
+#endif
+
+    st7789_set_orientation(drv, (uint8_t) rotation);
+    setup_initial_offsets(drv);
+}
+
+static lv_coord_t get_display_hor_res(lv_disp_drv_t * drv)
+{
+    lv_coord_t retval = 0;
+
+#if (LVGL_VERSION_MAJOR >= 8)
+    retval = drv->hor_res;
+#else
     (void) drv;
+    retval = LV_HOR_RES_MAX;
+#endif
+
+    return retval;
+}
+
+static lv_coord_t get_display_ver_res(lv_disp_drv_t * drv)
+{
+    lv_coord_t retval = 0;
+
+#if (LVGL_VERSION_MAJOR >= 8)
+    retval = drv->ver_res;
+#else
+    (void) drv;
+    retval = LV_VER_RES_MAX;
+#endif
+
+    return retval;
 }
