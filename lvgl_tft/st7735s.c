@@ -109,7 +109,7 @@ void st7735s_init(void)
 		st7735s_send_cmd(init_cmds[cmd].cmd);
 		st7735s_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes&0x1F);
 		if (init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(pdMS_TO_TICKS(100));
 		}
 		cmd++;
 	}
@@ -219,9 +219,9 @@ static void st7735s_reset(void)
 {
 #if ST7735S_USE_RST
     gpio_set_level(ST7735S_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(ST7735S_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
 #endif
 }
 

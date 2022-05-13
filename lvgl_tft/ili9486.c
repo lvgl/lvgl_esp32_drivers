@@ -73,7 +73,7 @@ void ili9486_init(void)
         ili9486_send_cmd(ili_init_cmds[cmd].cmd);
         ili9486_send_data(ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes&0x1F);
         if (ili_init_cmds[cmd].databytes & 0x80) {
-                vTaskDelay(100 / portTICK_RATE_MS);
+                vTaskDelay(pdMS_TO_TICKS(100));
         }
         cmd++;
     }
@@ -169,8 +169,8 @@ static void ili9486_reset(void)
 {
 #if ILI9486_USE_RST
     gpio_set_level(ILI9486_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(ILI9486_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(100));
 #endif
 }

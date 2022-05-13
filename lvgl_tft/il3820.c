@@ -249,14 +249,14 @@ static void il3820_waitbusy(int wait_ms)
 {
     int i = 0;
 
-    vTaskDelay(10 / portTICK_RATE_MS); // 10ms delay
+    vTaskDelay(pdMS_TO_TICKS(10)); // 10ms delay
 
     for(i = 0; i < (wait_ms * 10); i++) {
 	if(gpio_get_level(IL3820_BUSY_PIN) != IL3820_BUSY_LEVEL) {
             return;
         }
 
-        vTaskDelay(10 / portTICK_RATE_MS);
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     LV_LOG_ERROR("Busy exceeded %dms", i*10 );
@@ -404,9 +404,9 @@ static void il3820_reset(void)
 #if IL3820_USE_RST
     /* Harware reset */
     gpio_set_level( IL3820_RST_PIN, 0);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(IL3820_RESET_DELAY));
     gpio_set_level( IL3820_RST_PIN, 1);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+    vTaskDelay(pdMS_TO_TICKS(IL3820_RESET_DELAY));
 #endif
 
     /* Software reset */
