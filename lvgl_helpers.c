@@ -240,8 +240,12 @@ size_t lvgl_get_display_buffer_size(void)
 #endif
 
 #else /* LVGL v8 */
-    /* ToDo: Implement display buffer size calculation with configuration values from the display driver */
-    disp_buffer_size = 320*40; // Reasonable for start
+    #if defined (CONFIG_CUSTOM_DISPLAY_BUFFER_SIZE)
+        disp_buffer_size = CONFIG_CUSTOM_DISPLAY_BUFFER_BYTES;
+    #else
+        /* ToDo: Implement display buffer size calculation with configuration values from the display driver */
+        disp_buffer_size = 320*40; // Reasonable for start
+    #endif
 #endif
 
     return disp_buffer_size;
