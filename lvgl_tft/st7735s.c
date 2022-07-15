@@ -196,11 +196,11 @@ static void st7735s_set_orientation(uint8_t orientation)
     assert(orientation < 4);
 
     /*
-        Portrait:  0xC8 = ST77XX_MADCTL_MX | ST77XX_MADCTL_MY | ST77XX_MADCTL_BGR
-        Landscape: 0xA8 = ST77XX_MADCTL_MY | ST77XX_MADCTL_MV | ST77XX_MADCTL_BGR
+        Portrait:  0xC8 = ST77XX_MADCTL_MX | ST77XX_MADCTL_MY | ST77XX_MADCTL_RGB
+        Landscape: 0xA8 = ST77XX_MADCTL_MY | ST77XX_MADCTL_MV | ST77XX_MADCTL_RGB
         Remark: "inverted" is ignored here
     */
-    uint8_t data[] = {0xC8, 0xC8, 0xA8, 0xA8};
+    uint8_t data[] = {0xC0, 0xC0, 0xA8, 0xA8};
 
 #if (LV_USE_LOG == 1)
     const char *orientation_str[] = {
