@@ -73,6 +73,8 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
         list(APPEND SOURCES "lvgl_touch/ra8875_touch.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
         list(APPEND SOURCES "lvgl_touch/gt911.c")
+    elseif(CONFIG_LV_TOUCH_CONTROLLER_CST816)
+        list(APPEND SOURCES "lvgl_touch/CST816.c")
     endif()
 
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
@@ -86,7 +88,7 @@ endif()
 
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
-                       REQUIRES lvgl)
+                       REQUIRES lvgl band_audio_hal)
 
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")
 
