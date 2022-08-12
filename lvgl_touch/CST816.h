@@ -33,15 +33,7 @@
 extern "C" {
 #endif
 
-#define CST816_I2C_SLAVE_ADDR   0x15<<1
-
-#define CST816_PRODUCT_ID_LEN   4
-
-
-typedef struct {
-    bool inited;
-    uint8_t i2c_dev_addr;
-} cst816_status_t;
+#define CST816_I2C_SLAVE_ADDR   0x15
 
 /**
   * @brief  Initialize for cst816 communication via I2C

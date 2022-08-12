@@ -27,23 +27,18 @@
 #include "CST816.h"
 
 #include "lvgl_i2c/i2c_manager.h"
-#include "band_es8388.h"
 
 #define TAG "CST816"
 
-cst816_status_t cst816_status;
+uint8_t CST816_addr;
 
-//[BJ] TODO: Below functions are ADF specific, if I am to contribute to main repo this needs to be resolved!
 static esp_err_t _cst816_i2c_read(uint8_t slave_addr, uint8_t register_addr, uint8_t *data_buf, uint8_t len) {
-    return band_i2c_read(slave_addr, register_addr, data_buf, len);
-    //return lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr | I2C_REG_16, data_buf, len);
+    return lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr, data_buf, len);
 }
 
-static esp_err_t _cst816_i2c_write8(uint8_t slave_addr, uint8_t register_addr, uint8_t data) {
-    //uint8_t buffer = data;
-    return band_i2c_write(slave_addr, register_addr, &data, 1);
-    //return lvgl_i2c_write(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr | I2C_REG_16, &buffer, 1);
-}
+// static esp_err_t _cst816_i2c_write8(uint8_t slave_addr, uint8_t register_addr, uint8_t data) {
+//     return lvgl_i2c_write(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr, &data, 1);
+// }
 
 /**
   * @brief  Initialize for cst816 communication via I2C
@@ -51,28 +46,24 @@ static esp_err_t _cst816_i2c_write8(uint8_t slave_addr, uint8_t register_addr, u
   * @retval None
   */
 void cst816_init(uint8_t dev_addr) {
-     if (!cst816_status.inited) 
-     {
-        cst816_status.i2c_dev_addr = dev_addr;
-        uint8_t version;
-        uint8_t versionInfo[3];
-        esp_err_t ret;
-        ESP_LOGI(TAG, "Initializing cst816 %d", dev_addr);
-        if ((ret = _cst816_i2c_read(dev_addr, 0x15, &version, 1) != ESP_OK))
-        {
-            ESP_LOGE(TAG, "Error reading version from device: %s",
-            esp_err_to_name(ret));    // Only show error the first time
-            return;
-        }
-        if ((ret = _cst816_i2c_read(dev_addr, 0xA7, versionInfo, 3) != ESP_OK))
-        {
-            ESP_LOGE(TAG, "Error reading versionInfo from device: %s",
-            esp_err_to_name(ret));    // Only show error the first time
-            return;
-        }
-        ESP_LOGI(TAG, "CST816 version %d, versionInfo: %d.%d.%d", version, versionInfo[0], versionInfo[1], versionInfo[2]);
-        cst816_status.inited = true;
+    CST816_addr = dev_addr;
+    uint8_t version;
+    uint8_t versionInfo[3];
+    esp_err_t ret;
+    ESP_LOGI(TAG, "Initializing cst816 %d", dev_addr);
+    if ((ret = _cst816_i2c_read(dev_addr, 0x15, &version, 1) != ESP_OK))
+    {
+        ESP_LOGE(TAG, "Error reading version from device: %s",
+        esp_err_to_name(ret));    // Only show error the first time
+        return;
     }
+    if ((ret = _cst816_i2c_read(dev_addr, 0xA7, versionInfo, 3) != ESP_OK))
+    {
+        ESP_LOGE(TAG, "Error reading versionInfo from device: %s",
+        esp_err_to_name(ret));    // Only show error the first time
+        return;
+    }
+    ESP_LOGI(TAG, "CST816 version %d, versionInfo: %d.%d.%d", version, versionInfo[0], versionInfo[1], versionInfo[2]);
 }
 
 /**
@@ -81,18 +72,12 @@ void cst816_init(uint8_t dev_addr) {
   * @param  data: Store data here
   * @retval Always false
   */
-#define SWAPXY 1
-#define INVERTX 1
-#define INVERTY 0
-
-
 
 bool cst816_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 
-    uint8_t data_raw[8];
-    _cst816_i2c_read(cst816_status.i2c_dev_addr, 0x01, data_raw, 6);
-    
 
+    uint8_t data_raw[8] ;
+    _cst816_i2c_read(CST816_addr, 0x01, data_raw, 6);
 
     uint8_t gestureID = data_raw[0];
     uint8_t points = data_raw[1];
