@@ -60,3 +60,6 @@ build
 # Kconfig files
 sdkconfig
 sdkconfig.old
+
+# VIM files
+*.sw[mnop]
