@@ -100,8 +100,15 @@ void lvgl_interface_init(void)
 #endif
 
     // We use DMA channel 1 for all cases
+    int dma_channel;
+#if defined CONFIG_IDF_TARGET_ESP32S3
+    dma_channel = 3;
+#else
+    dma_channel = 1;
+#endif
+
     lvgl_spi_driver_init(TFT_SPI_HOST, miso, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, 1, DISP_SPI_IO2, DISP_SPI_IO3);
+        spi_max_transfer_size, dma_channel, DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
 
