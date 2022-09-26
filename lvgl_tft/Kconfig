@@ -148,6 +148,14 @@ menu "LVGL TFT Display controller"
         bool
         help
             IL3820 epaper display controller.
+            
+    config LV_TFT_DISPLAY_CONTROLLER_SSD1680
+        bool
+        help
+            SSD1680 e-paper display controller for GoodDisplay GDEY029T94.
+            The resolution must be set as per a portrait mode:
+            LV_HOR_RES_MAX -> 128 and LV_VER_RES_MAX -> 296
+            And the actual use mode currently is Landskape only.
 
     config LV_TFT_DISPLAY_CONTROLLER_JD79653A
         bool
@@ -326,6 +334,12 @@ menu "LVGL TFT Display controller"
             select LV_TFT_DISPLAY_CONTROLLER_IL3820
             select LV_TFT_DISPLAY_PROTOCOL_SPI
             select LV_TFT_DISPLAY_MONOCHROME
+        config LV_TFT_DISPLAY_USER_CONTROLLER_SSD1680
+            bool "SSD1680"
+            select LV_TFT_DISPLAY_CONTROLLER_SSD1680
+            select LV_TFT_DISPLAY_PROTOCOL_SPI
+            select LV_TFT_DISPLAY_MONOCHROME
+            select LV_TFT_USE_CUSTOM_SPI_CLK_DIVIDER
         config LV_TFT_DISPLAY_USER_CONTROLLER_JD79653A
             bool "JD79653A"
             select LV_TFT_DISPLAY_CONTROLLER_JD79653A
@@ -521,7 +535,7 @@ menu "LVGL TFT Display controller"
         default LV_TFT_SPI_CLK_DIVIDER_5 if LV_TFT_DISPLAY_CONTROLLER_ILI9481
         default LV_TFT_SPI_CLK_DIVIDER_3 if LV_TFT_DISPLAY_CONTROLLER_HX8357
         default LV_TFT_SPI_CLK_DIVIDER_10 if LV_TFT_DISPLAY_CONTROLLER_SH1107
-        default LV_TFT_SPI_CLK_DIVIDER_16 if LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
+        default LV_TFT_SPI_CLK_DIVIDER_16 if LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D || LV_TFT_DISPLAY_CONTROLLER_SSD1680
         default LV_TFT_SPI_CLK_DIVIDER_2
 
         config LV_TFT_SPI_CLK_DIVIDER_1
@@ -907,8 +921,8 @@ menu "LVGL TFT Display controller"
                 Configure the display Reset pin here.
 
         config LV_DISP_PIN_BUSY
-            int "GPIO for Busy" if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
-            default 35 if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
+            int "GPIO for Busy" if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D || LV_TFT_DISPLAY_CONTROLLER_SSD1680
+            default 35 if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D || LV_TFT_DISPLAY_CONTROLLER_SSD1680
             default 35 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S2
             default 21 if IDF_TARGET_ESP32C3
 

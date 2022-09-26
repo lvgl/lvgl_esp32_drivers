@@ -42,6 +42,8 @@ extern "C" {
 #include "FT81x.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820
 #include "il3820.h"
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1680
+#include "ssd1680.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875
 #include "ra8875.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_GC9A01
