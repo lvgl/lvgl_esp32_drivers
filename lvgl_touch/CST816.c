@@ -78,6 +78,12 @@ bool cst816_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 
     uint8_t data_raw[8] ;
     _cst816_i2c_read(CST816_addr, 0x01, data_raw, 6);
+    // printf("Touch data:  ");
+    // for(int i = 0; i < 6; i++)
+    // {
+    //     printf("0x%02X  ", data_raw[i]);
+    // }
+    // printf("\r\n");
 
     uint8_t gestureID = data_raw[0];
     uint8_t points = data_raw[1];

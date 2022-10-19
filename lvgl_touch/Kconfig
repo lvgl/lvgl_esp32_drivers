@@ -463,12 +463,12 @@ menu "LVGL Touch controller"
         config LV_SWAPXY_CST816
             bool
             prompt "Swap X with Y coordinate."
-            default y
+            default n
 
         config LV_INVERT_X_CST816
             bool
             prompt "Invert X coordinate value."
-            default y
+            default n
 
         config LV_INVERT_Y_CST816
             bool
