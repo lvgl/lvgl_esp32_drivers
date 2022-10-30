@@ -208,7 +208,7 @@ void st7789_send_data(void * data, uint16_t length)
 
 static void st7789_send_color(void * data, size_t length)
 {
-    disp_wait_for_pending_transactions();
+    //disp_wait_for_pending_transactions(); [BJ] noticed that commenting this made the display slightly faster.
     gpio_set_level(ST7789_DC, 1);
     disp_spi_send_colors(data, length);
 }
