@@ -86,9 +86,9 @@ void st7789_init(void)
         {ST7789_TEON, {0}, 1}, //[BJ] turn on TE
     #endif
         //----------- 
-        //[BJ] Below I am trying to change refresh rate of the screen so the tearing is not prominent
+        //[BJ] Below I am trying to change refresh rate of the screen
         //{ST7789_FRCTR2,{0x1F},1}, //[BJ] set the refresh rate
-        {ST7789_FRCTRL1,{0x01, 0x0F, 0x0F},3}, //[BJ] divide the refresh by 2.
+        //{ST7789_FRCTRL1,{0x01, 0x0F, 0x0F},3}, //[BJ] divide the refresh by 2.
         // ----------------------------------------
         {0, {0}, 0xff},
     };
