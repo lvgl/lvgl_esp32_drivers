@@ -82,6 +82,14 @@ void st7789_init(void)
         {0xB6, {0x0A, 0x82, 0x27, 0x00}, 4},
         {ST7789_SLPOUT, {0}, 0x80},
         {ST7789_DISPON, {0}, 0x80},
+    #ifdef CONFIG_LV_DISPLAY_USE_TE_PIN
+        {ST7789_TEON, {0}, 1}, //[BJ] turn on TE
+    #endif
+        //----------- 
+        //[BJ] Below I am trying to change refresh rate of the screen so the tearing is not prominent
+        //{ST7789_FRCTR2,{0x1F},1}, //[BJ] set the refresh rate
+        {ST7789_FRCTRL1,{0x01, 0x0F, 0x0F},3}, //[BJ] divide the refresh by 2.
+        // ----------------------------------------
         {0, {0}, 0xff},
     };
 
@@ -92,6 +100,11 @@ void st7789_init(void)
 #if !defined(ST7789_SOFT_RST)
     gpio_pad_select_gpio(ST7789_RST);
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
+#endif
+
+#ifdef CONFIG_LV_DISPLAY_USE_TE_PIN
+    gpio_pad_select_gpio(ST7789_TE);
+    gpio_set_direction(ST7789_TE, GPIO_MODE_INPUT);
 #endif
 
     //Reset the display
@@ -208,7 +221,7 @@ void st7789_send_data(void * data, uint16_t length)
 
 static void st7789_send_color(void * data, size_t length)
 {
-    //disp_wait_for_pending_transactions(); [BJ] noticed that commenting this made the display slightly faster.
+    // disp_wait_for_pending_transactions();
     gpio_set_level(ST7789_DC, 1);
     disp_spi_send_colors(data, length);
 }
