@@ -10,6 +10,7 @@ menu "LVGL Touch controller"
         default 5 if LV_TOUCH_CONTROLLER_FT81X
         default 6 if LV_TOUCH_CONTROLLER_RA8875
         default 7 if LV_TOUCH_CONTROLLER_GT911
+        default 8 if LV_TOUCH_CONTROLLER_CST816
 
     choice
         prompt "Select a touch panel controller model."
@@ -40,6 +41,9 @@ menu "LVGL Touch controller"
         config LV_TOUCH_CONTROLLER_GT911
             select LV_I2C_TOUCH
             bool "GT911"
+        config LV_TOUCH_CONTROLLER_CST816
+            select LV_I2C_TOUCH
+            bool "CST816"
     endchoice
 
     config LV_TOUCH_DRIVER_PROTOCOL_SPI
@@ -438,6 +442,38 @@ menu "LVGL Touch controller"
             bool
             prompt "De-bounce Circuit Enable for Touch Panel Interrupt"
             default y
+
+    endmenu
+
+    menu "Touchpanel Configuration (CST816)"
+        depends on LV_TOUCH_CONTROLLER_CST816
+        
+    config LV_TOUCH_X_MAX_CST816
+        int
+        prompt "Maximum X coordinate ADC value"
+        range 0 1023
+        default 320
+
+        config LV_TOUCH_Y_MAX_CST816
+            int
+            prompt "Maximum Y coordinate ADC value"
+            range 0 1023
+            default 240
+
+        config LV_SWAPXY_CST816
+            bool
+            prompt "Swap X with Y coordinate."
+            default n
+
+        config LV_INVERT_X_CST816
+            bool
+            prompt "Invert X coordinate value."
+            default n
+
+        config LV_INVERT_Y_CST816
+            bool
+            prompt "Invert Y coordinate value."
+            default n
 
     endmenu
 
