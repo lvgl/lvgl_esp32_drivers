@@ -13,6 +13,7 @@ extern "C" {
 #include <stdbool.h>
 #include "driver/gpio.h"
 #include "driver/adc.h"
+#include "soc/adc_channel.h"
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
