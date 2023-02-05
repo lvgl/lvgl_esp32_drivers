@@ -82,6 +82,13 @@ void lvgl_interface_init(void)
 
     ESP_LOGI(TAG, "Display buffer size: %d", display_buffer_size);
 
+    int dma_channel;
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 4)
+    dma_channel = SPI_DMA_CH_AUTO;
+#else
+    dma_channel = 1;
+#endif
+
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
     init_ft81x(dma_channel);
     return;
@@ -99,9 +106,8 @@ void lvgl_interface_init(void)
     miso = TP_SPI_MISO;
 #endif
 
-    // We use DMA channel 1 for all cases
     lvgl_spi_driver_init(TFT_SPI_HOST, miso, DISP_SPI_MOSI, DISP_SPI_CLK,
-        spi_max_transfer_size, 1, DISP_SPI_IO2, DISP_SPI_IO3);
+        spi_max_transfer_size, dma_channel, DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
 
@@ -124,7 +130,11 @@ void lvgl_interface_init(void)
     ESP_LOGI(TAG, "Initializing SPI master for touch");
 
 #if defined (CONFIG_IDF_TARGET_ESP32)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 4)
+    dma_channel = SPI_DMA_CH_AUTO;
+#else
     dma_channel = 2;
+#endif
 #endif
 
     lvgl_spi_driver_init(TOUCH_SPI_HOST, TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
