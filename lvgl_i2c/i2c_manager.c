@@ -186,7 +186,8 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
     // May seem weird, but init starts with a check if it's needed, no need for that check twice.
 	I2C_FN(_init)(port);
 
-   	ESP_LOGV(TAG, "Reading port %d, addr 0x%03"PRIx16", reg 0x%04"PRIx32"", (int) port, addr, reg);
+    ESP_LOGV(TAG, "Reading port %d, addr 0x%03x, reg 0x%04x",
+             (int) port, (unsigned int) addr, (unsigned int) reg);
 
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
@@ -239,7 +240,8 @@ esp_err_t I2C_FN(_write)(i2c_port_t port, uint16_t addr, uint32_t reg, const uin
     // May seem weird, but init starts with a check if it's needed, no need for that check twice.
 	I2C_FN(_init)(port);
 
-    ESP_LOGV(TAG, "Writing port %d, addr 0x%03"PRIx16", reg 0x%04"PRIx32"", (int) port, addr, reg);
+    ESP_LOGV(TAG, "Writing port %d, addr 0x%03x, reg 0x%04x",
+             (int) port, (unsigned int) addr, (unsigned int) reg);
 
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
