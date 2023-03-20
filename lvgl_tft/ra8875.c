@@ -159,18 +159,18 @@ void ra8875_init(void)
 #endif
 
     // Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(RA8875_RST);
+    //gpio_pad_select_gpio(RA8875_RST);
     gpio_set_direction(RA8875_RST, GPIO_MODE_OUTPUT);
 #ifdef CONFIG_LV_DISP_PIN_BCKL
-    gpio_pad_select_gpio(CONFIG_LV_DISP_PIN_BCKL);
+    //gpio_pad_select_gpio(CONFIG_LV_DISP_PIN_BCKL);
     gpio_set_direction(CONFIG_LV_DISP_PIN_BCKL, GPIO_MODE_OUTPUT);
 #endif
 
     // Reset the RA8875
     gpio_set_level(RA8875_RST, 0);
-    vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
+    vTaskDelay(DIV_ROUND_UP(100, portTICK_PERIOD_MS));
     gpio_set_level(RA8875_RST, 1);
-    vTaskDelay(DIV_ROUND_UP(100, portTICK_RATE_MS));
+    vTaskDelay(DIV_ROUND_UP(100, portTICK_PERIOD_MS));
 
     // Initalize RA8875 clocks (SPI must be decelerated before initializing clocks)
     disp_spi_change_device_speed(SPI_CLOCK_SPEED_SLOW_HZ);
@@ -282,21 +282,21 @@ void ra8875_sleep_in(void)
     ra8875_configure_clocks(false);
 
     ra8875_write_cmd(RA8875_REG_PWRR, 0x00);           // Power and Display Control Register (PWRR)
-    vTaskDelay(DIV_ROUND_UP(20, portTICK_RATE_MS));
+    vTaskDelay(DIV_ROUND_UP(20, portTICK_PERIOD_MS));
     ra8875_write_cmd(RA8875_REG_PWRR, 0x02);           // Power and Display Control Register (PWRR)
 }
 
 void ra8875_sleep_out(void)
 {
     ra8875_write_cmd(RA8875_REG_PWRR, 0x00);           // Power and Display Control Register (PWRR)
-    vTaskDelay(DIV_ROUND_UP(20, portTICK_RATE_MS));
+    vTaskDelay(DIV_ROUND_UP(20, portTICK_PERIOD_MS));
 
     ra8875_configure_clocks(true);
 
     disp_spi_change_device_speed(-1);
 
     ra8875_write_cmd(RA8875_REG_PWRR, 0x80);           // Power and Display Control Register (PWRR)
-    vTaskDelay(DIV_ROUND_UP(20, portTICK_RATE_MS));
+    vTaskDelay(DIV_ROUND_UP(20, portTICK_PERIOD_MS));
 }
 
 uint8_t ra8875_read_cmd(uint8_t cmd)
@@ -329,7 +329,7 @@ void ra8875_configure_clocks(bool high_speed)
     vTaskDelay(1);
 
     ra8875_write_cmd(RA8875_REG_PCSR, PCSR_VAL);            // Pixel Clock Setting Register (PCSR)
-    vTaskDelay(DIV_ROUND_UP(20, portTICK_RATE_MS));
+    vTaskDelay(DIV_ROUND_UP(20, portTICK_PERIOD_MS));
 }
 
 static void ra8875_set_window(unsigned int xs, unsigned int xe, unsigned int ys, unsigned int ye)

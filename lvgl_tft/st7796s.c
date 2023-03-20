@@ -92,20 +92,20 @@ void st7796s_init(void)
 #endif
 
 	//Initialize non-SPI GPIOs
-	gpio_pad_select_gpio(ST7796S_DC);
+	//gpio_pad_select_gpio(ST7796S_DC);
 	gpio_set_direction(ST7796S_DC, GPIO_MODE_OUTPUT);
-	gpio_pad_select_gpio(ST7796S_RST);
+	//gpio_pad_select_gpio(ST7796S_RST);
 	gpio_set_direction(ST7796S_RST, GPIO_MODE_OUTPUT);
 
 #if ST7796S_ENABLE_BACKLIGHT_CONTROL
-	gpio_pad_select_gpio(ST7796S_BCKL);
+	//gpio_pad_select_gpio(ST7796S_BCKL);
 	gpio_set_direction(ST7796S_BCKL, GPIO_MODE_OUTPUT);
 #endif
 	//Reset the display
 	gpio_set_level(ST7796S_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(ST7796S_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 
 	ESP_LOGI(TAG, "Initialization.");
 
@@ -117,7 +117,7 @@ void st7796s_init(void)
 		st7796s_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes & 0x1F);
 		if (init_cmds[cmd].databytes & 0x80)
 		{
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		cmd++;
 	}

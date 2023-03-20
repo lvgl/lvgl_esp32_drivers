@@ -196,18 +196,18 @@ void il3820_init(void)
     uint8_t tmp[3] = {0};
 
     /* Initialize non-SPI GPIOs */
-    gpio_pad_select_gpio(IL3820_DC_PIN);
+    //gpio_pad_select_gpio(IL3820_DC_PIN);
     gpio_set_direction(IL3820_DC_PIN, GPIO_MODE_OUTPUT);
-    gpio_pad_select_gpio(IL3820_RST_PIN);
+    //gpio_pad_select_gpio(IL3820_RST_PIN);
     gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
-    gpio_pad_select_gpio(IL3820_BUSY_PIN);
+    //gpio_pad_select_gpio(IL3820_BUSY_PIN);
     gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
 
     /* Harware reset */
     gpio_set_level( IL3820_RST_PIN, 0);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+    vTaskDelay(IL3820_RESET_DELAY / portTICK_PERIOD_MS);
     gpio_set_level( IL3820_RST_PIN, 1);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+    vTaskDelay(IL3820_RESET_DELAY / portTICK_PERIOD_MS);
 
     /* Software reset */
     il3820_write_cmd(IL3820_CMD_SW_RESET, NULL, 0);
@@ -263,14 +263,14 @@ static void il3820_waitbusy(int wait_ms)
 {
     int i = 0;
 
-    vTaskDelay(10 / portTICK_RATE_MS); // 10ms delay
+    vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay
     
     for(i = 0; i < (wait_ms * 10); i++) {
 	if(gpio_get_level(IL3820_BUSY_PIN) != IL3820_BUSY_LEVEL) {
             return;
         }
 	
-        vTaskDelay(10 / portTICK_RATE_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
     
     ESP_LOGE( TAG, "busy exceeded %dms", i*10 );

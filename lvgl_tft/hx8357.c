@@ -160,21 +160,21 @@ static uint8_t displayType = HX8357D;
 void hx8357_init(void)
 {
 	//Initialize non-SPI GPIOs
-        gpio_pad_select_gpio(HX8357_DC);
+        //gpio_pad_select_gpio(HX8357_DC);
 	gpio_set_direction(HX8357_DC, GPIO_MODE_OUTPUT);
-        gpio_pad_select_gpio(HX8357_RST);
+        //gpio_pad_select_gpio(HX8357_RST);
 	gpio_set_direction(HX8357_RST, GPIO_MODE_OUTPUT);
 
 #if HX8357_ENABLE_BACKLIGHT_CONTROL
-        gpio_pad_select_gpio(HX8357_BCKL);
+        //gpio_pad_select_gpio(HX8357_BCKL);
 	gpio_set_direction(HX8357_BCKL, GPIO_MODE_OUTPUT);
 #endif
 
 	//Reset the display
 	gpio_set_level(HX8357_RST, 0);
-	vTaskDelay(10 / portTICK_RATE_MS);
+	vTaskDelay(10 / portTICK_PERIOD_MS);
 	gpio_set_level(HX8357_RST, 1);
-	vTaskDelay(120 / portTICK_RATE_MS);
+	vTaskDelay(120 / portTICK_PERIOD_MS);
 
 	ESP_LOGI(TAG, "Initialization.");
 
@@ -194,7 +194,7 @@ void hx8357_init(void)
 			}
 		}
 		if (x & 0x80) {       // If high bit set...
-			vTaskDelay(numArgs * 5 / portTICK_RATE_MS); // numArgs is actually a delay time (5ms units)
+			vTaskDelay(numArgs * 5 / portTICK_PERIOD_MS); // numArgs is actually a delay time (5ms units)
 		}
 	}
 

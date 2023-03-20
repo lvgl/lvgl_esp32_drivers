@@ -74,27 +74,27 @@ void ili9481_init(void)
     };
 
     //Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(ILI9481_DC);
+    //gpio_pad_select_gpio(ILI9481_DC);
     gpio_set_direction(ILI9481_DC, GPIO_MODE_OUTPUT);
-    gpio_pad_select_gpio(ILI9481_RST);
+    //gpio_pad_select_gpio(ILI9481_RST);
     gpio_set_direction(ILI9481_RST, GPIO_MODE_OUTPUT);
 
 #if ILI9481_ENABLE_BACKLIGHT_CONTROL
-    gpio_pad_select_gpio(ILI9481_BCKL);
+    //gpio_pad_select_gpio(ILI9481_BCKL);
     gpio_set_direction(ILI9481_BCKL, GPIO_MODE_OUTPUT);
 #endif
 
     //Reset the display
     gpio_set_level(ILI9481_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(ILI9481_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 
     ESP_LOGI(TAG, "ILI9481 initialization.");
 
     // Exit sleep
     ili9481_send_cmd(0x01);	/* Software reset */
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 
     //Send all the commands
     uint16_t cmd = 0;
@@ -102,7 +102,7 @@ void ili9481_init(void)
         ili9481_send_cmd(ili_init_cmds[cmd].cmd);
         ili9481_send_data(ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes&0x1F);
         if (ili_init_cmds[cmd].databytes & 0x80) {
-            vTaskDelay(100 / portTICK_RATE_MS);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
         }
         cmd++;
     }
