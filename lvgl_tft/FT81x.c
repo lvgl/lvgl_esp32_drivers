@@ -262,7 +262,7 @@ void TFT_bitmap_display(void)
 
 void FT81x_init(void)
 {
-	//gpio_pad_select_gpio(EVE_PDN);
+	gpio_reset_pin(EVE_PDN);
 	gpio_set_level(EVE_CS, 1);
 	gpio_set_direction(EVE_PDN, GPIO_MODE_OUTPUT);
 
