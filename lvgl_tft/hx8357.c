@@ -10,6 +10,9 @@
  * Adafruit TFT FeatherWing - 3.5" 480x320 Touchscreen for Feathers
  *    https://www.adafruit.com/product/3651
  *
+ * Adafruit PyPortal Titano - 3.5" 480x320 Touchscreen
+ *    https://www.adafruit.com/product/4444
+ *
  */
 
 /*********************
