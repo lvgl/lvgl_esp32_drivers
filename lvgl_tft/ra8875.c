@@ -151,7 +151,7 @@ void ra8875_init(void)
     // Initialize non-SPI GPIOs
 
 #if RA8875_USE_RST
-    gpio_reset_pin(RA8875_RST);
+    esp_rom_gpio_pad_select_gpio(RA8875_RST);
     gpio_set_direction(RA8875_RST, GPIO_MODE_OUTPUT);
 
     // Reset the RA8875

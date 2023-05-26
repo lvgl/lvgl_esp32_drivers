@@ -57,9 +57,9 @@ void pcd8544_init(void){
     // TODO: orientation
 
     // Initialize non-SPI GPIOs
-    gpio_reset_pin(PCD8544_DC);
+    esp_rom_gpio_pad_select_gpio(PCD8544_DC);
     gpio_set_direction(PCD8544_DC, GPIO_MODE_OUTPUT);
-    gpio_reset_pin(PCD8544_RST);
+    esp_rom_gpio_pad_select_gpio(PCD8544_RST);
     gpio_set_direction(PCD8544_RST, GPIO_MODE_OUTPUT);
 
     // Reset the display

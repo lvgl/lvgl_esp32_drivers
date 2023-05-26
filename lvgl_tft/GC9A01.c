@@ -112,11 +112,11 @@ void GC9A01_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-    gpio_reset_pin(GC9A01_DC);
+    esp_rom_gpio_pad_select_gpio(GC9A01_DC);
 	gpio_set_direction(GC9A01_DC, GPIO_MODE_OUTPUT);
 
 #if GC9A01_USE_RST
-    gpio_reset_pin(GC9A01_RST);
+    esp_rom_gpio_pad_select_gpio(GC9A01_RST);
 	gpio_set_direction(GC9A01_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display

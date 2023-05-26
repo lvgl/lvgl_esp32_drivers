@@ -82,11 +82,11 @@ void st7796s_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-	gpio_reset_pin(ST7796S_DC);
+	esp_rom_gpio_pad_select_gpio(ST7796S_DC);
 	gpio_set_direction(ST7796S_DC, GPIO_MODE_OUTPUT);
 
 #if ST7796S_USE_RST
-	gpio_reset_pin(ST7796S_RST);
+	esp_rom_gpio_pad_select_gpio(ST7796S_RST);
 	gpio_set_direction(ST7796S_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display

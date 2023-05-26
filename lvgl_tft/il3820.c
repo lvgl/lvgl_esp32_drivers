@@ -196,14 +196,14 @@ void il3820_init(void)
     uint8_t tmp[3] = {0};
 
     /* Initialize non-SPI GPIOs */
-    gpio_reset_pin(IL3820_DC_PIN);
+    esp_rom_gpio_pad_select_gpio(IL3820_DC_PIN);
     gpio_set_direction(IL3820_DC_PIN, GPIO_MODE_OUTPUT);
 
-    gpio_reset_pin(IL3820_BUSY_PIN);
+    esp_rom_gpio_pad_select_gpio(IL3820_BUSY_PIN);
     gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
 
 #if IL3820_USE_RST
-    gpio_reset_pin(IL3820_RST_PIN);
+    esp_rom_gpio_pad_select_gpio(IL3820_RST_PIN);
     gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
 
     /* Harware reset */

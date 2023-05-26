@@ -86,11 +86,11 @@ void st7789_init(void)
     };
 
     //Initialize non-SPI GPIOs
-    gpio_reset_pin(ST7789_DC);
+    esp_rom_gpio_pad_select_gpio(ST7789_DC);
     gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
 
 #if !defined(ST7789_SOFT_RST)
-    gpio_reset_pin(ST7789_RST);
+    esp_rom_gpio_pad_select_gpio(ST7789_RST);
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
 

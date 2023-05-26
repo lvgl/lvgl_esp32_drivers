@@ -63,7 +63,7 @@ disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config)
     {
         // Configure GPIO for output
         bckl_dev->index = config->gpio_num;
-        gpio_reset_pin(config->gpio_num);
+        esp_rom_gpio_pad_select_gpio(config->gpio_num);
         ESP_ERROR_CHECK(gpio_set_direction(config->gpio_num, GPIO_MODE_OUTPUT));
         gpio_iomux_out(config->gpio_num, SIG_GPIO_OUT_IDX, config->output_invert);
     }
@@ -102,7 +102,7 @@ void disp_backlight_delete(disp_backlight_h bckl)
     if (bckl_dev->pwm_control) {
         ledc_stop(LEDC_LOW_SPEED_MODE, bckl_dev->index, 0);
     } else {
-        gpio_reset_pin(bckl_dev->index);
+        esp_rom_gpio_pad_select_gpio(bckl_dev->index);
     }
     free (bckl);
 }

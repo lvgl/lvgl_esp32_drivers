@@ -66,11 +66,11 @@ void ili9486_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-    gpio_reset_pin(ILI9486_DC);
+    esp_rom_gpio_pad_select_gpio(ILI9486_DC);
 	gpio_set_direction(ILI9486_DC, GPIO_MODE_OUTPUT);
 
 #if ILI9486_USE_RST
-    gpio_reset_pin(ILI9486_RST);
+    esp_rom_gpio_pad_select_gpio(ILI9486_RST);
 	gpio_set_direction(ILI9486_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
