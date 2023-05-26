@@ -57,16 +57,16 @@ void pcd8544_init(void){
     // TODO: orientation
 
     // Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(PCD8544_DC);
+    gpio_reset_pin(PCD8544_DC);
     gpio_set_direction(PCD8544_DC, GPIO_MODE_OUTPUT);
-    gpio_pad_select_gpio(PCD8544_RST);
+    gpio_reset_pin(PCD8544_RST);
     gpio_set_direction(PCD8544_RST, GPIO_MODE_OUTPUT);
 
     // Reset the display
     gpio_set_level(PCD8544_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(PCD8544_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 
     pcd8544_send_cmd(0x21);     /* activate chip (PD=0), horizontal increment (V=0), enter extended command set (H=1) */
     pcd8544_send_cmd(0x06);     /* temp. control: b10 = 2  */

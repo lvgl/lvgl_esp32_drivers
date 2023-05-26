@@ -112,18 +112,18 @@ void GC9A01_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(GC9A01_DC);
+    gpio_reset_pin(GC9A01_DC);
 	gpio_set_direction(GC9A01_DC, GPIO_MODE_OUTPUT);
 
 #if GC9A01_USE_RST
-    gpio_pad_select_gpio(GC9A01_RST);
+    gpio_reset_pin(GC9A01_RST);
 	gpio_set_direction(GC9A01_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
 	gpio_set_level(GC9A01_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(GC9A01_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 #endif
 
 	ESP_LOGI(TAG, "Initialization.");
@@ -134,7 +134,7 @@ void GC9A01_init(void)
 		GC9A01_send_cmd(GC_init_cmds[cmd].cmd);
 		GC9A01_send_data(GC_init_cmds[cmd].data, GC_init_cmds[cmd].databytes&0x1F);
 		if (GC_init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		cmd++;
 	}
