@@ -41,7 +41,7 @@ extern "C" {
 // TODO: this should be config option
 #if CONFIG_LV_HOR_RES_MAX==128 && CONFIG_LV_VER_RES_MAX==128
 #define COLSTART            2
-#define ROWSTART            1
+#define ROWSTART            3
 #elif CONFIG_LV_HOR_RES_MAX==128 && CONFIG_LV_VER_RES_MAX==80
 #define COLSTART            26
 #define ROWSTART            1
