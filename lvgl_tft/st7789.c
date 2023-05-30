@@ -162,8 +162,17 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
         offsety1 += 40;
         offsety2 += 40;
     #endif
+#elif (LV_HOR_RES_MAX == 320) && (LV_VER_RES_MAX == 170) // 1.9 inch 170×320 LCD, physically landscape
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+        offsety1 += 35;
+        offsety2 += 35;
+    #endif
+#elif (LV_HOR_RES_MAX == 170) && (LV_VER_RES_MAX == 320) // 1.9 inch 170×320 LCD, physically vertical
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        offsetx1 += 35;
+        offsetx2 += 35;
+    #endif
 #endif
-
     /*Column addresses*/
     st7789_send_cmd(ST7789_CASET);
     data[0] = (offsetx1 >> 8) & 0xFF;
