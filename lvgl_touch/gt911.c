@@ -138,7 +138,7 @@ bool gt911_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     data->point.x = last_x;
     data->point.y = last_y;
     data->state = LV_INDEV_STATE_PR;
-    ESP_LOGI(TAG, "X=%u Y=%u", data->point.x, data->point.y);
+    ESP_LOGV(TAG, "X=%u Y=%u", data->point.x, data->point.y);
     ESP_LOGV(TAG, "X=%u Y=%u", data->point.x, data->point.y);
     return false;
 }

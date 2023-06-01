@@ -16,7 +16,7 @@
 #include "../lvgl_tft/ra8875.h"
 
 #ifndef CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875
-    #error "Display controller must be RA8875"
+#error "Display controller must be RA8875"
 #endif
 
 /*********************
@@ -31,23 +31,23 @@
 
 #define TPCR0_ADC_TIMING ((CONFIG_LV_TOUCH_RA8875_SAMPLE_TIME << 4) | CONFIG_LV_TOUCH_RA8875_ADC_CLOCK)
 #if LVGL_TOUCH_RA8875_WAKEUP_ENABLE
-    #define TPCR0_VAL (0x08 | TPCR0_ADC_TIMING)
+#define TPCR0_VAL (0x08 | TPCR0_ADC_TIMING)
 #else
-    #define TPCR0_VAL (TPCR0_ADC_TIMING)
+#define TPCR0_VAL (TPCR0_ADC_TIMING)
 #endif
 
 #if LVGL_TOUCH_RA8875_EXTERNAL_VREF
-    #if LVGL_TOUCH_RA8875_DEBOUNCE_ENABLE
-        #define TPCR1_VAL (0x24)
-    #else
-        #define TPCR1_VAL (0x20)
-    #endif
+#if LVGL_TOUCH_RA8875_DEBOUNCE_ENABLE
+#define TPCR1_VAL (0x24)
 #else
-    #if LVGL_TOUCH_RA8875_DEBOUNCE_ENABLE
-        #define TPCR1_VAL (0x04)
-    #else
-        #define TPCR1_VAL (0x00)
-    #endif
+#define TPCR1_VAL (0x20)
+#endif
+#else
+#if LVGL_TOUCH_RA8875_DEBOUNCE_ENABLE
+#define TPCR1_VAL (0x04)
+#else
+#define TPCR1_VAL (0x00)
+#endif
 #endif
 
 /**********************
@@ -58,7 +58,7 @@
  *  STATIC PROTOTYPES
  **********************/
 
-static void ra8875_corr(int * x, int * y);
+static void ra8875_corr(int *x, int *y);
 
 /**********************
  *  STATIC VARIABLES
@@ -72,16 +72,15 @@ static void ra8875_corr(int * x, int * y);
  *   GLOBAL FUNCTIONS
  **********************/
 
-void ra8875_touch_init(void)
-{
+void ra8875_touch_init(void) {
     struct {
         uint8_t cmd;                                       // Register address of command
         uint8_t data;                                      // Value to write to register
     } init_cmds[] = {
-        {RA8875_REG_TPCR0, TPCR0_VAL},                     // Touch Panel Control Register 0 (TPCR0)
-        {RA8875_REG_TPCR1, TPCR1_VAL},                     // Touch Panel Control Register 1 (TPCR1)
+            {RA8875_REG_TPCR0, TPCR0_VAL},                     // Touch Panel Control Register 0 (TPCR0)
+            {RA8875_REG_TPCR1, TPCR1_VAL},                     // Touch Panel Control Register 1 (TPCR1)
     };
-    #define INIT_CMDS_SIZE (sizeof(init_cmds)/sizeof(init_cmds[0]))
+#define INIT_CMDS_SIZE (sizeof(init_cmds)/sizeof(init_cmds[0]))
 
     ESP_LOGI(TAG, "Initializing RA8875 Touch...");
 
@@ -92,8 +91,7 @@ void ra8875_touch_init(void)
     ra8875_touch_enable(true);
 }
 
-void ra8875_touch_enable(bool enable)
-{
+void ra8875_touch_enable(bool enable) {
     ESP_LOGI(TAG, "%s touch.", enable ? "Enabling" : "Disabling");
     uint8_t val = enable ? (0x80 | TPCR0_VAL) : (TPCR0_VAL);
     ra8875_write_cmd(RA8875_REG_TPCR0, val);
@@ -104,8 +102,7 @@ void ra8875_touch_enable(bool enable)
  * @param data store the read data here
  * @return false: because no more data to be read
  */
-bool ra8875_touch_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
-{
+bool ra8875_touch_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     static int x = 0;
     static int y = 0;
 
@@ -121,9 +118,9 @@ bool ra8875_touch_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
         x = (x << 2) | (xy & 0x03);
         y = (y << 2) | ((xy >> 2) & 0x03);
 
-#if DEBUG
-        ESP_LOGI(TAG, "Touch Poll Raw: %d,%d", x, y);
-#endif
+
+        ESP_LOGV(TAG, "Touch Poll Raw: %d,%d", x, y);
+
 
         // Convert to display coordinates
         ra8875_corr(&x, &y);
@@ -135,9 +132,8 @@ bool ra8875_touch_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
     data->point.x = x;
     data->point.y = y;
 
-#if DEBUG
-        ESP_LOGI(TAG, "Touch Poll - Event: %d; %d,%d", data->state, data->point.x, data->point.y);
-#endif
+    ESP_LOGV(TAG, "Touch Poll - Event: %d; %d,%d", data->state, data->point.x, data->point.y);
+
 
     return false;
 }
@@ -147,8 +143,7 @@ bool ra8875_touch_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
  *   STATIC FUNCTIONS
  **********************/
 
-static void ra8875_corr(int * x, int * y)
-{
+static void ra8875_corr(int *x, int *y) {
 #if RA8875_XY_SWAP != 0
     int tmp = *x;
     *x = *y;
@@ -158,17 +153,17 @@ static void ra8875_corr(int * x, int * y)
     if ((*x) <= RA8875_X_MIN) {
         (*x) = 0;
     } else if ((*x) >= RA8875_X_MAX) {
-        (*x) = LV_HOR_RES-1;
+        (*x) = LV_HOR_RES - 1;
     } else {
-        (*x) = (((*x) - RA8875_X_MIN) * (LV_HOR_RES-1)) / (RA8875_X_MAX - RA8875_X_MIN);
+        (*x) = (((*x) - RA8875_X_MIN) * (LV_HOR_RES - 1)) / (RA8875_X_MAX - RA8875_X_MIN);
     }
 
     if ((*y) <= RA8875_Y_MIN) {
         (*y) = 0;
     } else if ((*y) >= RA8875_Y_MAX) {
-        (*y) = LV_VER_RES-1;
+        (*y) = LV_VER_RES - 1;
     } else {
-        (*y) = (((*y) - RA8875_Y_MIN) * (LV_VER_RES-1)) / (RA8875_Y_MAX - RA8875_Y_MIN);
+        (*y) = (((*y) - RA8875_Y_MIN) * (LV_VER_RES - 1)) / (RA8875_Y_MAX - RA8875_Y_MIN);
     }
 
 #if RA8875_X_INV != 0
