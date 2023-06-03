@@ -21,7 +21,10 @@
 #include <esp_log.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 /*********************
  *      DEFINES
  *********************/
@@ -160,18 +163,26 @@ static uint8_t displayType = HX8357D;
 void hx8357_init(void)
 {
 	//Initialize non-SPI GPIOs
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(HX8357_DC);
+#else
+    esp_rom_gpio_pad_select_gpio(HX8357_DC);
+#endif
 	gpio_set_direction(HX8357_DC, GPIO_MODE_OUTPUT);
 
 #if HX8357_USE_RST
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(HX8357_RST);
+#else
+    esp_rom_gpio_pad_select_gpio(HX8357_RST);
+#endif
 	gpio_set_direction(HX8357_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
 	gpio_set_level(HX8357_RST, 0);
-	vTaskDelay(10 / portTICK_RATE_MS);
+	vTaskDelay(10 / portTICK_PERIOD_MS);
 	gpio_set_level(HX8357_RST, 1);
-	vTaskDelay(120 / portTICK_RATE_MS);
+	vTaskDelay(120 / portTICK_PERIOD_MS);
 #endif
 
 	ESP_LOGI(TAG, "Initialization.");
@@ -192,7 +203,7 @@ void hx8357_init(void)
 			}
 		}
 		if (x & 0x80) {       // If high bit set...
-			vTaskDelay(numArgs * 5 / portTICK_RATE_MS); // numArgs is actually a delay time (5ms units)
+			vTaskDelay(numArgs * 5 / portTICK_PERIOD_MS); // numArgs is actually a delay time (5ms units)
 		}
 	}
 

@@ -12,6 +12,10 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -92,18 +96,26 @@ void sh1107_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-        gpio_pad_select_gpio(SH1107_DC);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(SH1107_DC);
+#else
+    esp_rom_gpio_pad_select_gpio(SH1107_DC);
+#endif
 	gpio_set_direction(SH1107_DC, GPIO_MODE_OUTPUT);
 
 #if SH1107_USE_RST
-        gpio_pad_select_gpio(SH1107_RST);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(SH1107_RST);
+#else
+    esp_rom_gpio_pad_select_gpio(SH1107_RST);
+#endif
 	gpio_set_direction(SH1107_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
 	gpio_set_level(SH1107_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(SH1107_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 #endif
 
 	//Send all the commands
@@ -112,7 +124,7 @@ void sh1107_init(void)
 	    sh1107_send_cmd(init_cmds[cmd].cmd);
 	    sh1107_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes&0x1F);
 	    if (init_cmds[cmd].databytes & 0x80) {
-		vTaskDelay(100 / portTICK_RATE_MS);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
 	    }
 	    cmd++;
 	}

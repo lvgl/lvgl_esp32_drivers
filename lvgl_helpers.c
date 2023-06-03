@@ -16,6 +16,7 @@
 #include "lvgl_spi_conf.h"
 
 #include "lvgl_i2c/i2c_manager.h"
+#include "esp_idf_version.h"
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
@@ -23,6 +24,9 @@
 #include "lvgl/lvgl.h"
 #endif
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+#define SPI_HOST_MAX SOC_SPI_PERIPH_NUM
+#endif
 /*********************
  *      DEFINES
  *********************/
@@ -175,10 +179,14 @@ bool lvgl_spi_driver_init(int host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    #if defined (CONFIG_IDF_TARGET_ESP32C3)
+    #if defined (CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S3)
     dma_channel = SPI_DMA_CH_AUTO;
     #endif
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4,3,0)
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, dma_channel);
+#else
     esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
+#endif
     assert(ret == ESP_OK);
 
     return ESP_OK != ret;

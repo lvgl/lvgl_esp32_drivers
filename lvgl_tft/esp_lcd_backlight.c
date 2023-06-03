@@ -6,12 +6,16 @@
 /*********************
  *      INCLUDES
  *********************/
+#include <soc/gpio_sig_map.h>
 #include "esp_lcd_backlight.h"
 #include "driver/ledc.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "soc/ledc_periph.h" // to invert LEDC output on IDF version < v4.3
-
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 typedef struct {
     bool pwm_control; // true: LEDC is used, false: GPIO is used
     int index;        // Either GPIO or LEDC channel
@@ -49,22 +53,26 @@ disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config)
         };
         const ledc_timer_config_t LCD_backlight_timer = {
             .speed_mode = LEDC_LOW_SPEED_MODE,
-            .bit_num = LEDC_TIMER_10_BIT,
+            .duty_resolution = LEDC_TIMER_10_BIT,
             .timer_num = config->timer_idx,
             .freq_hz = 5000,
             .clk_cfg = LEDC_AUTO_CLK};
 
         ESP_ERROR_CHECK(ledc_timer_config(&LCD_backlight_timer));
         ESP_ERROR_CHECK(ledc_channel_config(&LCD_backlight_channel));
-        gpio_matrix_out(config->gpio_num, ledc_periph_signal[LEDC_LOW_SPEED_MODE].sig_out0_idx + config->channel_idx, config->output_invert, 0);
+        gpio_iomux_out(config->gpio_num, ledc_periph_signal[LEDC_LOW_SPEED_MODE].sig_out0_idx + config->channel_idx, config->output_invert);
     }
     else
     {
         // Configure GPIO for output
         bckl_dev->index = config->gpio_num;
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
         gpio_pad_select_gpio(config->gpio_num);
+#else
+        esp_rom_gpio_pad_select_gpio(config->gpio_num);
+#endif
         ESP_ERROR_CHECK(gpio_set_direction(config->gpio_num, GPIO_MODE_OUTPUT));
-        gpio_matrix_out(config->gpio_num, SIG_GPIO_OUT_IDX, config->output_invert, false);
+        gpio_iomux_out(config->gpio_num, SIG_GPIO_OUT_IDX, config->output_invert);
     }
 
     return (disp_backlight_h)bckl_dev;
@@ -101,7 +109,11 @@ void disp_backlight_delete(disp_backlight_h bckl)
     if (bckl_dev->pwm_control) {
         ledc_stop(LEDC_LOW_SPEED_MODE, bckl_dev->index, 0);
     } else {
-        gpio_reset_pin(bckl_dev->index);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+        gpio_pad_select_gpio(bckl_dev->index);
+#else
+        esp_rom_gpio_pad_select_gpio(bckl_dev->index);
+#endif
     }
     free (bckl);
 }

@@ -12,6 +12,10 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -66,18 +70,26 @@ void ili9486_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(ILI9486_DC);
+#else
+    esp_rom_gpio_pad_select_gpio(ILI9486_DC);
+#endif
 	gpio_set_direction(ILI9486_DC, GPIO_MODE_OUTPUT);
 
 #if ILI9486_USE_RST
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(ILI9486_RST);
+#else
+    esp_rom_gpio_pad_select_gpio(ILI9486_RST);
+#endif
 	gpio_set_direction(ILI9486_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
 	gpio_set_level(ILI9486_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(ILI9486_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 #endif
 
 	ESP_LOGI(TAG, "ILI9486 Initialization.");
@@ -88,7 +100,7 @@ void ili9486_init(void)
 		ili9486_send_cmd(ili_init_cmds[cmd].cmd);
 		ili9486_send_data(ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes&0x1F);
 		if (ili_init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		cmd++;
 	}
