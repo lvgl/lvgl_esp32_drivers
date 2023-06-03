@@ -12,6 +12,10 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -81,11 +85,19 @@ void ili9341_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ILI9341_DC);
+#else
     esp_rom_gpio_pad_select_gpio(ILI9341_DC);
+#endif
 	gpio_set_direction(ILI9341_DC, GPIO_MODE_OUTPUT);
 
 #if ILI9341_USE_RST
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ILI9341_RST);
+#else
     esp_rom_gpio_pad_select_gpio(ILI9341_RST);
+#endif
 	gpio_set_direction(ILI9341_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display

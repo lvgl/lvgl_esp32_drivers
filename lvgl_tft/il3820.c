@@ -33,6 +33,10 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 #include "il3820.h"
 
@@ -196,14 +200,26 @@ void il3820_init(void)
     uint8_t tmp[3] = {0};
 
     /* Initialize non-SPI GPIOs */
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(IL3820_DC_PIN);
+#else
     esp_rom_gpio_pad_select_gpio(IL3820_DC_PIN);
+#endif
     gpio_set_direction(IL3820_DC_PIN, GPIO_MODE_OUTPUT);
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(IL3820_BUSY_PIN);
+#else
     esp_rom_gpio_pad_select_gpio(IL3820_BUSY_PIN);
+#endif
     gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
 
 #if IL3820_USE_RST
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(IL3820_RST_PIN);
+#else
     esp_rom_gpio_pad_select_gpio(IL3820_RST_PIN);
+#endif
     gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
 
     /* Harware reset */

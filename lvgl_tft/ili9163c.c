@@ -13,6 +13,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "assert.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -138,9 +142,17 @@ void ili9163c_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-	esp_rom_gpio_pad_select_gpio(ILI9163C_DC);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ILI9163C_DC);
+#else
+    esp_rom_gpio_pad_select_gpio(ILI9163C_DC);
+#endif
 	gpio_set_direction(ILI9163C_DC, GPIO_MODE_OUTPUT);
-	esp_rom_gpio_pad_select_gpio(ILI9163C_RST);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ILI9163C_RST);
+#else
+    esp_rom_gpio_pad_select_gpio(ILI9163C_RST);
+#endif
 	gpio_set_direction(ILI9163C_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display

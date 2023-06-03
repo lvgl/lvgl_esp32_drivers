@@ -14,7 +14,10 @@
 #include "freertos/task.h"
 
 #include "pcd8544.h"
-
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 #define TAG "lv_pcd8544"
 
 /**********************
@@ -57,9 +60,17 @@ void pcd8544_init(void){
     // TODO: orientation
 
     // Initialize non-SPI GPIOs
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(PCD8544_DC);
+#else
     esp_rom_gpio_pad_select_gpio(PCD8544_DC);
+#endif
     gpio_set_direction(PCD8544_DC, GPIO_MODE_OUTPUT);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(PCD8544_RST);
+#else
     esp_rom_gpio_pad_select_gpio(PCD8544_RST);
+#endif
     gpio_set_direction(PCD8544_RST, GPIO_MODE_OUTPUT);
 
     // Reset the display

@@ -12,6 +12,10 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -151,7 +155,11 @@ void ra8875_init(void)
     // Initialize non-SPI GPIOs
 
 #if RA8875_USE_RST
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(RA8875_RST);
+#else
     esp_rom_gpio_pad_select_gpio(RA8875_RST);
+#endif
     gpio_set_direction(RA8875_RST, GPIO_MODE_OUTPUT);
 
     // Reset the RA8875

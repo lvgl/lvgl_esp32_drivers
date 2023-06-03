@@ -23,6 +23,9 @@
 #include "lvgl/lvgl.h"
 #endif
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+#define SPI_HOST_MAX SOC_SPI_PERIPH_NUM
+#endif
 /*********************
  *      DEFINES
  *********************/

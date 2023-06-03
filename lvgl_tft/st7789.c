@@ -14,6 +14,10 @@
 
 #include "disp_spi.h"
 #include "driver/gpio.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -86,11 +90,19 @@ void st7789_init(void)
     };
 
     //Initialize non-SPI GPIOs
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ST7789_DC);
+#else
     esp_rom_gpio_pad_select_gpio(ST7789_DC);
+#endif
     gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
 
 #if !defined(ST7789_SOFT_RST)
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ST7789_RST);
+#else
     esp_rom_gpio_pad_select_gpio(ST7789_RST);
+#endif
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
 
