@@ -145,9 +145,9 @@ void ili9163c_init(void)
 
 	//Reset the display
 	gpio_set_level(ILI9163C_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(ILI9163C_RST, 1);
-	vTaskDelay(150 / portTICK_RATE_MS);
+	vTaskDelay(150 / portTICK_PERIOD_MS);
 
 	//Send all the commands
 	uint16_t cmd = 0;
@@ -157,7 +157,7 @@ void ili9163c_init(void)
 		ili9163c_send_data(ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes & 0x1F);
 		if (ili_init_cmds[cmd].databytes & 0x80)
 		{
-			vTaskDelay(150 / portTICK_RATE_MS);
+			vTaskDelay(150 / portTICK_PERIOD_MS);
 		}
 		cmd++;
 	}

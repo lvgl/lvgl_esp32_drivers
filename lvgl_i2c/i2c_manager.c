@@ -66,8 +66,8 @@ static const uint8_t ACK_CHECK_EN = 1;
 		#define I2C_MANAGER_0_PULLUPS 	false
 	#endif
 
-	#define I2C_MANAGER_0_TIMEOUT 		( CONFIG_I2C_MANAGER_0_TIMEOUT / portTICK_RATE_MS )
-	#define I2C_MANAGER_0_LOCK_TIMEOUT	( CONFIG_I2C_MANAGER_0_LOCK_TIMEOUT / portTICK_RATE_MS )
+	#define I2C_MANAGER_0_TIMEOUT 		( CONFIG_I2C_MANAGER_0_TIMEOUT / portTICK_PERIOD_MS )
+	#define I2C_MANAGER_0_LOCK_TIMEOUT	( CONFIG_I2C_MANAGER_0_LOCK_TIMEOUT / portTICK_PERIOD_MS )
 #endif
 
 
@@ -79,8 +79,8 @@ static const uint8_t ACK_CHECK_EN = 1;
 		#define I2C_MANAGER_1_PULLUPS 	false
 	#endif
 
-	#define I2C_MANAGER_1_TIMEOUT 		( CONFIG_I2C_MANAGER_1_TIMEOUT / portTICK_RATE_MS )
-	#define I2C_MANAGER_1_LOCK_TIMEOUT	( CONFIG_I2C_MANAGER_1_LOCK_TIMEOUT / portTICK_RATE_MS )
+	#define I2C_MANAGER_1_TIMEOUT 		( CONFIG_I2C_MANAGER_1_TIMEOUT / portTICK_PERIOD_MS )
+	#define I2C_MANAGER_1_LOCK_TIMEOUT	( CONFIG_I2C_MANAGER_1_LOCK_TIMEOUT / portTICK_PERIOD_MS )
 #endif
 
 #define ERROR_PORT(port, fail) { \
@@ -244,12 +244,12 @@ esp_err_t I2C_FN(_write)(i2c_port_t port, uint16_t addr, uint32_t reg, const uin
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
 		if (port == I2C_NUM_0) {
-			timeout = (CONFIG_I2C_MANAGER_0_TIMEOUT) / portTICK_RATE_MS;
+			timeout = (CONFIG_I2C_MANAGER_0_TIMEOUT) / portTICK_PERIOD_MS;
 		}
 	#endif
 	#if defined (I2C_ONE)
 		if (port == I2C_NUM_1) {
-			timeout = (CONFIG_I2C_MANAGER_1_TIMEOUT) / portTICK_RATE_MS;
+			timeout = (CONFIG_I2C_MANAGER_1_TIMEOUT) / portTICK_PERIOD_MS;
 		}
 	#endif
 
@@ -294,12 +294,12 @@ esp_err_t I2C_FN(_lock)(i2c_port_t port) {
 	TickType_t timeout;
 	#if defined (I2C_ZERO)
 		if (port == I2C_NUM_0) {
-			timeout = (CONFIG_I2C_MANAGER_0_LOCK_TIMEOUT) / portTICK_RATE_MS;
+			timeout = (CONFIG_I2C_MANAGER_0_LOCK_TIMEOUT) / portTICK_PERIOD_MS;
 		}
 	#endif
 	#if defined (I2C_ONE)
 		if (port == I2C_NUM_1) {
-			timeout = (CONFIG_I2C_MANAGER_1_LOCK_TIMEOUT) / portTICK_RATE_MS;
+			timeout = (CONFIG_I2C_MANAGER_1_LOCK_TIMEOUT) / portTICK_PERIOD_MS;
 		}
 	#endif
 
