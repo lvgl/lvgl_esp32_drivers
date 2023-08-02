@@ -50,6 +50,10 @@ extern "C" {
 #include "jd79653a.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_UC8151D
 #include "uc8151d.h"
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C
+#include "ili9163c.h"
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544
+#include "pcd8544.h"
 #endif
 
 /*********************
@@ -65,7 +69,7 @@ extern "C" {
  **********************/
 
 /* Initialize display */
-void disp_driver_init(void);
+void *disp_driver_init(void);
 
 /* Display flush callback */
 void disp_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);

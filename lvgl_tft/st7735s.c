@@ -8,11 +8,14 @@
  *********************/
 #include "st7735s.h"
 #include "disp_spi.h"
-#include "driver/i2c.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
+    #include "lvgl_i2c/i2c_manager.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -38,7 +41,6 @@ static void st7735s_send_cmd(uint8_t cmd);
 static void st7735s_send_data(void * data, uint16_t length);
 static void st7735s_send_color(void * data, uint16_t length);
 static void st7735s_set_orientation(uint8_t orientation);
-static void i2c_master_init();
 static void axp192_write_byte(uint8_t addr, uint8_t data);
 static void axp192_init();
 static void axp192_sleep_in();
@@ -60,7 +62,6 @@ uint8_t st7735s_portrait_mode = 0;
 void st7735s_init(void)
 {
 #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
-    i2c_master_init();
     axp192_init();
 #endif
 
@@ -99,7 +100,9 @@ void st7735s_init(void)
 	//Initialize non-SPI GPIOs
         gpio_reset_pin(ST7735S_DC);
 	gpio_set_direction(ST7735S_DC, GPIO_MODE_OUTPUT);
-        gpio_reset_pin(ST7735S_RST);
+
+#if ST7735S_USE_RST
+    gpio_reset_pin(ST7735S_RST);
 	gpio_set_direction(ST7735S_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
@@ -107,6 +110,7 @@ void st7735s_init(void)
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(ST7735S_RST, 1);
 	vTaskDelay(100 / portTICK_PERIOD_MS);
+#endif
 
 	ESP_LOGI(TAG, "ST7735S initialization.");
 
@@ -160,12 +164,16 @@ void st7735s_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 void st7735s_sleep_in()
 {
 	st7735s_send_cmd(0x10);
-	axp192_sleep_in();
+    #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
+    	axp192_sleep_in();
+    #endif
 }
 
 void st7735s_sleep_out()
 {
-	axp192_sleep_out();
+    #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
+    	axp192_sleep_out();
+    #endif
 	st7735s_send_cmd(0x11);
 }
 
@@ -215,55 +223,35 @@ static void st7735s_set_orientation(uint8_t orientation)
     st7735s_send_data((void *) &data[orientation], 1);
 }
 
-static void i2c_master_init()
-{
-	i2c_config_t i2c_config = {
-		.mode               = I2C_MODE_MASTER,
-		.sda_io_num         = AXP192_SDA,
-		.scl_io_num         = AXP192_SCL,
-		.sda_pullup_en      = GPIO_PULLUP_ENABLE,
-		.scl_pullup_en      = GPIO_PULLUP_ENABLE,
-		.master.clk_speed   = 400000
-	};
-	i2c_param_config(I2C_NUM_0, &i2c_config);
-	i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
-}
+#ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
 
-static void axp192_write_byte(uint8_t addr, uint8_t data)
-{
-	esp_err_t ret;
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    static void axp192_write_byte(uint8_t addr, uint8_t data)
+    {
+        err = lvgl_i2c_write(CONFIG_LV_I2C_DISPLAY_PORT, AXP192_I2C_ADDRESS, addr, &data, 1);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "AXP192 send failed. code: 0x%.2X", ret);
+        }
+    }
 
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (AXP192_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-	i2c_master_write_byte(cmd, addr, true);
-	i2c_master_write_byte(cmd, data, true);
-	i2c_master_stop(cmd);
+    static void axp192_init()
+    {
+        // information on how to init and use AXP192 ifor M5StickC taken from
+        // 	https://forum.m5stack.com/topic/1025/m5stickc-turn-off-screen-completely
 
-	ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
-	if (ret != ESP_OK) {
-		ESP_LOGE(TAG, "AXP192 send failed. code: 0x%.2X", ret);
-	}
-	i2c_cmd_link_delete(cmd);
-}
+        axp192_write_byte(0x10, 0xFF);			// OLED_VPP Enable
+        axp192_write_byte(0x28, 0xCC);			// Enable LDO2&LDO3, LED&TFT 3.0V
+        axp192_sleep_out();
+        ESP_LOGI(TAG, "AXP192 initialized, power enabled for LDO2 and LDO3");
+    }
 
-static void axp192_init()
-{
-	// information on how to init and use AXP192 ifor M5StickC taken from
-	// 	https://forum.m5stack.com/topic/1025/m5stickc-turn-off-screen-completely
+    static void axp192_sleep_in()
+    {
+        axp192_write_byte(0x12, 0x4b);
+    }
 
-	axp192_write_byte(0x10, 0xFF);			// OLED_VPP Enable
-	axp192_write_byte(0x28, 0xCC);			// Enable LDO2&LDO3, LED&TFT 3.0V
-	axp192_sleep_out();
-	ESP_LOGI(TAG, "AXP192 initialized, power enabled for LDO2 and LDO3");
-}
+    static void axp192_sleep_out()
+    {
+        axp192_write_byte(0x12, 0x4d);
+    }
 
-static void axp192_sleep_in()
-{
-	axp192_write_byte(0x12, 0x4b);
-}
-
-static void axp192_sleep_out()
-{
-	axp192_write_byte(0x12, 0x4d);
-}
+#endif

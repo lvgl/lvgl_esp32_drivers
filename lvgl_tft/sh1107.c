@@ -94,7 +94,9 @@ void sh1107_init(void)
 	//Initialize non-SPI GPIOs
         gpio_reset_pin(SH1107_DC);
 	gpio_set_direction(SH1107_DC, GPIO_MODE_OUTPUT);
-        gpio_reset_pin(SH1107_RST);
+
+#if SH1107_USE_RST
+    gpio_reset_pin(SH1107_RST);
 	gpio_set_direction(SH1107_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
@@ -102,6 +104,7 @@ void sh1107_init(void)
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(SH1107_RST, 1);
 	vTaskDelay(100 / portTICK_PERIOD_MS);
+#endif
 
 	//Send all the commands
 	uint16_t cmd = 0;
