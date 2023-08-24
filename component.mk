@@ -1,7 +1,7 @@
 # LVGL ESP32 drivers
 
 # Define sources and include dirs
-COMPONENT_SRCDIRS := . lvgl_tft lvgl_touch lvgl_i2c
+COMPONENT_SRCDIRS := . lvgl_tft lvgl_touch
 COMPONENT_ADD_INCLUDEDIRS := .
 
 # LVGL is supposed to be used as a ESP-IDF component
@@ -44,6 +44,4 @@ $(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_CON
 $(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_CONTROLLER_RA8875)), lvgl_touch/ra8875_touch.o)
 
 $(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)), lvgl_touch/tp_spi.o)
-
-# I2C Manager
-$(call compile_only_if,$(CONFIG_LV_I2C), lvgl_i2c/i2c_manager.o)
+$(call compile_only_if,$(and $(CONFIG_LV_TOUCH_CONTROLLER),$(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)), lvgl_touch/tp_i2c.o)

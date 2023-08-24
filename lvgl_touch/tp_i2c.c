@@ -1,5 +1,6 @@
 /*
-* Copyright © 2020 Martin Fasani
+* Copyright © 2020 Wolfgang Christl
+
 * Permission is hereby granted, free of charge, to any person obtaining a copy of this 
 * software and associated documentation files (the “Software”), to deal in the Software 
 * without restriction, including without limitation the rights to use, copy, modify, merge, 
@@ -17,46 +18,26 @@
 * SOFTWARE.
 */
 
-#include <esp_log.h>
 #include <driver/i2c.h>
-#ifdef LV_LVGL_H_INCLUDE_SIMPLE
-#include <lvgl.h>
-#else
-#include <lvgl/lvgl.h>
-#endif
-#include "l58.h"
-#include "../lvgl_i2c_conf.h"
-// Cale touch implementation
-#include "L58Touch.h"
-L58Touch Touch(CONFIG_LV_TOUCH_INT);
-#define TAG "L58"
+#include <esp_log.h>
 
-TPoint point;
+#define I2C_MASTER_FREQ_HZ 100000                             /* 100kHz*/
+#define I2C_MASTER_TX_BUF_DISABLE 0                           /* I2C master doesn't need buffer */
+#define I2C_MASTER_RX_BUF_DISABLE 0                           /* I2C master doesn't need buffer */
 
 /**
-  * @brief  Initialize for FT6x36 communication via I2C
-  * @param  dev_addr: Device address on communication Bus (I2C slave address of FT6X36).
-  * @retval None
-  */
-void l58_init() {
-  ESP_LOGI(TAG, "l58_init() Touch initialized");
-  Touch.begin(960, 540);
-}
-
-/**
-  * @brief  Get the touch screen X and Y positions values. Ignores multi touch
-  * @param  drv:
-  * @param  data: Store data here
-  * @retval Always false
-  */
-bool l58_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
-    point = Touch.loop();
-    data->point.x = point.x;
-    data->point.y = point.y;
-    if (point.event == 3) {
-      data->state = LV_INDEV_STATE_PR;
-    } else {
-      data->state = LV_INDEV_STATE_REL;
-    }
-    return false;
+ * @brief ESP32 I2C init as master
+ * @ret ESP32 error code
+ */
+esp_err_t i2c_master_init(void) {
+    int i2c_master_port = I2C_NUM_0;
+    i2c_config_t conf;
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = CONFIG_LV_TOUCH_I2C_SDA;
+    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.scl_io_num = CONFIG_LV_TOUCH_I2C_SCL;
+    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
+    i2c_param_config(i2c_master_port, &conf);
+    return i2c_driver_install(i2c_master_port, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }

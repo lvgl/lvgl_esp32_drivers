@@ -73,9 +73,9 @@ static uint8_t il3820_lut_initial[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 static uint8_t il3820_lut_default[] = {
-    0x10, 0x18, 0x18, 0x08, 0x18, 0x18,
-    0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x10, 0x18, 0x18, 0x08, 0x18, 0x18, 
+    0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x13, 0x14, 0x44, 0x12,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
@@ -113,7 +113,7 @@ void il3820_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_m
     uint8_t *buffer = (uint8_t*) color_map;
     uint16_t x_addr_counter = 0;
     uint16_t y_addr_counter = 0;
-
+    
     /* Configure entry mode  */
     il3820_write_cmd(IL3820_CMD_ENTRY_MODE, &il3820_scan_mode, 1);
 
@@ -131,7 +131,7 @@ void il3820_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_m
     il3820_set_cursor(x_addr_counter, y_addr_counter);
 
     il3820_send_cmd(IL3820_CMD_WRITE_RAM);
-
+    
     /* Write the pixel data to graphic RAM, linelen bytes at the time. */
     for(size_t row = 0; row <= (EPD_PANEL_HEIGHT - 1); row++){
 	il3820_send_data(buffer, linelen);
@@ -139,7 +139,7 @@ void il3820_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_m
     }
 
     il3820_set_window(0, EPD_PANEL_WIDTH - 1, 0, EPD_PANEL_HEIGHT - 1);
-
+    
     il3820_update_display();
 
     /* IMPORTANT!!!
@@ -152,7 +152,7 @@ void il3820_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_m
  * BIT_SET(byte_index, bit_index) clears the bit_index pixel at byte_index of
  * the display buffer.
  * BIT_CLEAR(byte_index, bit_index) sets the bit_index pixel at the byte_index
- * of the display buffer. */
+ * of the display buffer. */ 		
 void il3820_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
     lv_coord_t buf_w, lv_coord_t x, lv_coord_t y,
     lv_color_t color, lv_opa_t opa)
@@ -198,24 +198,20 @@ void il3820_init(void)
     /* Initialize non-SPI GPIOs */
     gpio_pad_select_gpio(IL3820_DC_PIN);
     gpio_set_direction(IL3820_DC_PIN, GPIO_MODE_OUTPUT);
-
-    gpio_pad_select_gpio(IL3820_BUSY_PIN);
-    gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
-
-#if IL3820_USE_RST
     gpio_pad_select_gpio(IL3820_RST_PIN);
     gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
+    gpio_pad_select_gpio(IL3820_BUSY_PIN);
+    gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
 
     /* Harware reset */
     gpio_set_level( IL3820_RST_PIN, 0);
     vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
     gpio_set_level( IL3820_RST_PIN, 1);
     vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
-#endif
 
     /* Software reset */
     il3820_write_cmd(IL3820_CMD_SW_RESET, NULL, 0);
-
+    
     /* Busy wait for the BUSY signal to go low */
     il3820_waitbusy(IL3820_WAIT);
 
@@ -243,10 +239,10 @@ void il3820_init(void)
 
     // allow partial updates now
     il3820_partial = true;
-
+    
     /* Update LUT */
     il3820_write_cmd(IL3820_CMD_UPDATE_LUT, il3820_lut_default, sizeof(il3820_lut_default));
-
+    
     /* Clear control memory and update */
     il3820_clear_cntlr_mem(IL3820_CMD_WRITE_RAM, true);
 }
@@ -255,10 +251,10 @@ void il3820_init(void)
 void il3820_sleep_in(void)
 {
     uint8_t data[] = {0x01};
-
+    
     /* Wait for the BUSY signal to go low */
     il3820_waitbusy(IL3820_WAIT);
-
+    
     il3820_write_cmd(IL3820_CMD_SLEEP_MODE, data, 1);
 }
 
@@ -268,15 +264,15 @@ static void il3820_waitbusy(int wait_ms)
     int i = 0;
 
     vTaskDelay(10 / portTICK_RATE_MS); // 10ms delay
-
+    
     for(i = 0; i < (wait_ms * 10); i++) {
 	if(gpio_get_level(IL3820_BUSY_PIN) != IL3820_BUSY_LEVEL) {
             return;
         }
-
+	
         vTaskDelay(10 / portTICK_RATE_MS);
     }
-
+    
     ESP_LOGE( TAG, "busy exceeded %dms", i*10 );
 }
 
@@ -292,10 +288,10 @@ static inline void il3820_data_mode(void)
     gpio_set_level(IL3820_DC_PIN, 1);
 }
 
-static inline void il3820_write_cmd(uint8_t cmd, uint8_t *data, size_t len)
+static inline void il3820_write_cmd(uint8_t cmd, uint8_t *data, size_t len) 
 {
     disp_wait_for_pending_transactions();
-
+    
     il3820_command_mode();
     disp_spi_send_data(&cmd, 1);
 
@@ -306,10 +302,10 @@ static inline void il3820_write_cmd(uint8_t cmd, uint8_t *data, size_t len)
 }
 
 /* Send cmd to the display */
-static inline void il3820_send_cmd(uint8_t cmd)
+static inline void il3820_send_cmd(uint8_t cmd) 
 {
     disp_wait_for_pending_transactions();
-
+    
     il3820_command_mode();
     disp_spi_send_data(&cmd, 1);
 }
@@ -318,14 +314,14 @@ static inline void il3820_send_cmd(uint8_t cmd)
 static void il3820_send_data(uint8_t *data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
-
+    
     il3820_data_mode();
     disp_spi_send_colors(data, length);
 }
 
 /* Specify the start/end positions of the window address in the X and Y
  * directions by an address unit.
- *
+ * 
  * @param sx: X Start position.
  * @param ex: X End position.
  * @param ys: Y Start position.
@@ -334,7 +330,7 @@ static void il3820_send_data(uint8_t *data, uint16_t length)
 static inline void il3820_set_window( uint16_t sx, uint16_t ex, uint16_t ys, uint16_t ye)
 {
     uint8_t tmp[4] = {0};
-
+	
     tmp[0] = sx / 8;
     tmp[1] = ex / 8;
 
@@ -382,7 +378,7 @@ static void il3820_update_display(void)
     } else {
 	tmp =  (IL3820_CTRL2_ENABLE_CLK | IL3820_CTRL2_ENABLE_ANALOG | IL3820_CTRL2_TO_PATTERN);
     }
-
+    
     il3820_write_cmd(IL3820_CMD_UPDATE_CTRL2, &tmp, 1);
 
     il3820_write_cmd(IL3820_CMD_MASTER_ACTIVATION, NULL, 0);
@@ -398,10 +394,10 @@ static void il3820_clear_cntlr_mem(uint8_t ram_cmd, bool update)
     /* Arrays used by SPI must be word alligned */
     WORD_ALIGNED_ATTR uint8_t clear_page[IL3820_COLUMNS];
     memset(clear_page, 0xff, sizeof clear_page);
-
+    
     /* Configure entry mode */
     il3820_write_cmd(IL3820_CMD_ENTRY_MODE, &il3820_scan_mode, 1);
-
+    
     /* Configure the window */
     il3820_set_window(0, EPD_PANEL_WIDTH - 1, 0, EPD_PANEL_HEIGHT - 1);
 

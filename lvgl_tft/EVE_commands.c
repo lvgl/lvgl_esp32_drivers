@@ -144,7 +144,7 @@ void DELAY_MS(uint16_t ms)
 	vTaskDelay(ms / portTICK_PERIOD_MS);
 }
 
-#if EVE_USE_PDN
+
 void EVE_pdn_set(void)
 {
 	gpio_set_level(EVE_PDN, 0);	/* Power-Down low */
@@ -155,7 +155,7 @@ void EVE_pdn_clear(void)
 {
 	gpio_set_level(EVE_PDN, 1);	/* Power-Down high */
 }
-#endif
+
 
 void spi_acquire()
 {
@@ -841,13 +841,11 @@ uint8_t EVE_init(void)
 	uint8_t chipid = 0;
 	uint16_t timeout = 0;
 
-#if EVE_USE_PDN
 	EVE_pdn_set();
 	DELAY_MS(6); /* minimum time for power-down is 5ms */
 
 	EVE_pdn_clear();
 	DELAY_MS(21); /* minimum time to allow from rising PD_N to first access is 20ms */
-#endif
 
 	/*	EVE_cmdWrite(EVE_CORERST,0); */ /* reset, only required for warm-start if PowerDown line is not used */
 

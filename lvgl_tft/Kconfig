@@ -21,10 +21,6 @@ menu "LVGL TFT/Epaper Display controller"
             bool "M5Stack"
             select LV_TFT_DISPLAY_CONTROLLER_ILI9341
             select LV_TFT_DISPLAY_PROTOCOL_SPI
-        config LV_PREDEFINED_DISPLAY_M5CORE2
-            bool "M5Core2"
-            select LV_TFT_DISPLAY_CONTROLLER_ILI9341
-            select LV_TFT_DISPLAY_PROTOCOL_SPI
         config LV_PREDEFINED_DISPLAY_M5STICK
             bool "M5Stick"
             select LV_TFT_DISPLAY_CONTROLLER_SH1107
@@ -50,7 +46,7 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_PREDEFINED_DISPLAY_WEMOS_LOLIN
             bool "Wemos Lolin OLED"
             select LV_TFT_DISPLAY_CONTROLLER_SSD1306
-            select LV_I2C_DISPLAY
+            select LV_TFT_DISPLAY_PROTOCOL_I2C
             select LV_TFT_DISPLAY_MONOCHROME
             select LV_THEME_MONO
         config LV_PREDEFINED_DISPLAY_ATAG
@@ -93,7 +89,14 @@ menu "LVGL TFT/Epaper Display controller"
         bool
         help
             EPDIY parallel epaper controller.
-
+    config LV_EPAPER_CALEPD_DISPLAY_CONTROLLER
+        bool
+        help
+            CalEPD SPI epaper controller.
+    config LV_SHARP_DISPLAY_CONTROLLER
+        bool
+        help
+            SHARP memory LCD controller.
     config LV_TFT_DISPLAY_CONTROLLER_ILI9341
         bool
         help
@@ -174,15 +177,6 @@ menu "LVGL TFT/Epaper Display controller"
         help
             ST7796S display controller.
 
-    config LV_TFT_DISPLAY_CONTROLLER_ILI9163C
-        bool
-        help
-            ILI9163C display controller.
-
-    config LV_TFT_DISPLAY_CONTROLLER_PCD8544
-        bool
-        help
-            PCD8544 display controller (Nokia 3110/5110)
     # Display controller communication protocol
     #
     # This symbols define the communication protocol used by the
@@ -201,7 +195,7 @@ menu "LVGL TFT/Epaper Display controller"
         help
             Display controller protocol SPI
 
-    config LV_I2C_DISPLAY
+    config LV_TFT_DISPLAY_PROTOCOL_I2C
         bool
         help
             Display controller protocol I2C
@@ -209,24 +203,24 @@ menu "LVGL TFT/Epaper Display controller"
     # Used in display init function to send display orientation commands
     choice DISPLAY_ORIENTATION
         prompt "Display orientation"
-        default LV_DISPLAY_ORIENTATION_PORTRAIT if !LV_TFT_DISPLAY_CONTROLLER_SSD1306
-        default LV_DISPLAY_ORIENTATION_LANDSCAPE if LV_TFT_DISPLAY_CONTROLLER_SSD1306
-        config LV_DISPLAY_ORIENTATION_PORTRAIT
+        default DISPLAY_ORIENTATION_PORTRAIT if !LV_TFT_DISPLAY_CONTROLLER_SSD1306
+        default DISPLAY_ORIENTATION_LANDSCAPE if LV_TFT_DISPLAY_CONTROLLER_SSD1306
+        config DISPLAY_ORIENTATION_PORTRAIT
             bool "Portrait" if !LV_TFT_DISPLAY_CONTROLLER_SSD1306
-        config LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED
+        config DISPLAY_ORIENTATION_PORTRAIT_INVERTED
             bool "Portrait inverted" if !LV_TFT_DISPLAY_CONTROLLER_SSD1306
-        config LV_DISPLAY_ORIENTATION_LANDSCAPE
+        config DISPLAY_ORIENTATION_LANDSCAPE
             bool "Landscape"
-        config LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
+        config DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
             bool "Landscape inverted"
     endchoice
 
     config LV_DISPLAY_ORIENTATION
         int
-        default 0 if LV_DISPLAY_ORIENTATION_PORTRAIT
-        default 1 if LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED
-        default 2 if LV_DISPLAY_ORIENTATION_LANDSCAPE
-        default 3 if LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
+        default 0 if DISPLAY_ORIENTATION_PORTRAIT
+        default 1 if DISPLAY_ORIENTATION_PORTRAIT_INVERTED
+        default 2 if DISPLAY_ORIENTATION_LANDSCAPE
+        default 3 if DISPLAY_ORIENTATION_LANDSCAPE_INVERTED
 
     config LV_TFT_DISPLAY_OFFSETS
         bool
@@ -235,14 +229,14 @@ menu "LVGL TFT/Epaper Display controller"
 
     config LV_TFT_DISPLAY_X_OFFSET
         depends on LV_TFT_DISPLAY_OFFSETS
-        int "X offset"
+        int
         default 40 if LV_PREDEFINED_DISPLAY_TTGO && (LV_DISPLAY_ORIENTATION_LANDSCAPE || LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
         default 53 if LV_PREDEFINED_DISPLAY_TTGO && (LV_DISPLAY_ORIENTATION_PORTRAIT  || LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
         default 0
 
     config LV_TFT_DISPLAY_Y_OFFSET
         depends on LV_TFT_DISPLAY_OFFSETS
-        int "Y offset"
+        int
         default 53  if LV_PREDEFINED_DISPLAY_TTGO && (LV_DISPLAY_ORIENTATION_LANDSCAPE || LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
         default 40 if LV_PREDEFINED_DISPLAY_TTGO && (LV_DISPLAY_ORIENTATION_PORTRAIT  || LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
         default 0
@@ -284,6 +278,18 @@ menu "LVGL TFT/Epaper Display controller"
         bool "EPDIY_GENERIC"
             select LV_EPAPER_EPDIY_DISPLAY_CONTROLLER
             select LV_EPAPER_DISPLAY_PROTOCOL_PARALLEL
+        
+    config LV_EPAPER_DISPLAY_USER_CONTROLLER_CALEPD
+        bool "CALEPD_GENERIC"
+        # Use also Parallel to avoid LGVL SPI instantiation
+            select LV_EPAPER_CALEPD_DISPLAY_CONTROLLER
+            select LV_EPAPER_DISPLAY_PROTOCOL_PARALLEL
+    config LV_SHARP_USER_CONTROLLER
+        bool "SHARP_LCD"
+        # Use also Parallel to avoid LGVL SPI instantiation
+            select LV_SHARP_DISPLAY_CONTROLLER
+            select LV_EPAPER_DISPLAY_PROTOCOL_PARALLEL
+
     config LV_TFT_DISPLAY_USER_CONTROLLER_ILI9341
         bool "ILI9341"
             select LV_TFT_DISPLAY_CONTROLLER_ILI9341
@@ -328,7 +334,7 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_TFT_DISPLAY_USER_CONTROLLER_SSD1306
             bool "SSD1306"
             select LV_TFT_DISPLAY_CONTROLLER_SSD1306
-            select LV_I2C_DISPLAY
+            select LV_TFT_DISPLAY_PROTOCOL_I2C
             select LV_TFT_DISPLAY_MONOCHROME
         config LV_TFT_DISPLAY_USER_CONTROLLER_FT81X
             bool "FT81X"
@@ -353,15 +359,6 @@ menu "LVGL TFT/Epaper Display controller"
             bool "RA8875"
             select LV_TFT_DISPLAY_CONTROLLER_RA8875
             select LV_TFT_DISPLAY_PROTOCOL_SPI
-        config LV_TFT_DISPLAY_USER_CONTROLLER_ILI9163C
-            bool "ILI9163C"
-            select LV_TFT_DISPLAY_CONTROLLER_ILI9163C
-            select LV_TFT_DISPLAY_PROTOCOL_SPI
-        config LV_TFT_DISPLAY_USER_CONTROLLER_PCD8544
-            bool "PCD8544"
-            select LV_TFT_DISPLAY_CONTROLLER_PCD8544
-            select LV_TFT_DISPLAY_PROTOCOL_SPI
-            select LV_TFT_DISPLAY_MONOCHROME
     endchoice
 
     config CUSTOM_DISPLAY_BUFFER_SIZE
@@ -481,15 +478,20 @@ menu "LVGL TFT/Epaper Display controller"
     endchoice
 
     choice
-        prompt "TFT SPI Bus." if LV_TFT_DISPLAY_PROTOCOL_SPI
-        default LV_TFT_DISPLAY_SPI2_HOST
+        prompt "TFT SPI Bus." if LV_TFT_DISPLAY_PROTOCOL_SPI && \
+            !LV_PREDEFINED_DISPLAY_TTGO
+        default LV_TFT_DISPLAY_SPI_VSPI if LV_PREDEFINED_DISPLAY_TTGO && \
+            !IDF_TARGET_ESP32S2
+        default LV_TFT_DISPLAY_SPI_FSPI if IDF_TARGET_ESP32S2
         help
               Select the SPI Bus the TFT Display is attached to.
 
-        config LV_TFT_DISPLAY_SPI2_HOST
-            bool "SPI2_HOST"
-        config LV_TFT_DISPLAY_SPI3_HOST
-            bool "SPI3_HOST"
+        config LV_TFT_DISPLAY_SPI_HSPI
+            bool "HSPI"
+        config LV_TFT_DISPLAY_SPI_VSPI
+            bool "VSPI" if !IDF_TARGET_ESP32S2
+        config LV_TFT_DISPLAY_SPI_FSPI
+            bool "FSPI" if IDF_TARGET_ESP32S2
     endchoice
 
     choice
@@ -518,6 +520,18 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_TFT_DISPLAY_SPI_FULL_DUPLEX
             bool "FULL DUPLEX"
             depends on LV_TFT_DISPLAY_SPI_TRANS_MODE_SIO
+    endchoice
+
+    choice
+        prompt "Display I2C port" if LV_TFT_DISPLAY_PROTOCOL_I2C
+        default LV_DISPLAY_I2C_PORT_0
+        help
+            Select the I2C port used by the display controller.
+
+        config LV_DISPLAY_I2C_PORT_0
+            bool "I2C PORT 0"
+        config LV_DISPLAY_I2C_PORT_1
+            bool "I2C PORT 1"
     endchoice
 
     config LV_TFT_USE_CUSTOM_SPI_CLK_DIVIDER
@@ -597,16 +611,6 @@ menu "LVGL TFT/Epaper Display controller"
         default 80 if LV_TFT_SPI_CLK_DIVIDER_80
         default 2
 
-    config LV_M5STICKC_HANDLE_AXP192
-        bool "Handle Backlight and TFT power for M5StickC using AXP192." if LV_PREDEFINED_DISPLAY_M5STICKC || LV_TFT_DISPLAY_CONTROLLER_ST7735S
-        default y if LV_PREDEFINED_DISPLAY_M5STICKC
-        select LV_I2C_DISPLAY
-        help
-            Display and TFT power supply on M5StickC is controlled using an
-            AXP192 Power Mangerment IC. Select yes if you want to enable TFT IC
-            (LDO3) and backlight power using AXP192 by LVGL, or select no if you
-            want to take care of power management in your own code.
-
     config LV_INVERT_DISPLAY
         bool "IN DEPRECATION - Invert display." if LV_TFT_DISPLAY_CONTROLLER_RA8875
         default n
@@ -614,12 +618,37 @@ menu "LVGL TFT/Epaper Display controller"
             If text is backwards on your display, try enabling this.
 
     config LV_INVERT_COLORS
-        bool "Invert colors in display" if LV_TFT_DISPLAY_CONTROLLER_ILI9341 || LV_TFT_DISPLAY_CONTROLLER_ST7735S || LV_TFT_DISPLAY_CONTROLLER_ILI9481 || LV_TFT_DISPLAY_CONTROLLER_ST7789 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 || LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_HX8357 || LV_TFT_DISPLAY_CONTROLLER_GC9A01 || LV_TFT_DISPLAY_CONTROLLER_ILI9163C
+        bool "Invert colors in display" if LV_TFT_DISPLAY_CONTROLLER_ILI9341 || LV_TFT_DISPLAY_CONTROLLER_ST7735S || LV_TFT_DISPLAY_CONTROLLER_ILI9481 || LV_TFT_DISPLAY_CONTROLLER_ST7789 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 || LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_HX8357
         default y if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICKC
         help
             If the colors look inverted on your display, try enabling this.
             If it didn't help try LVGL configuration -> Swap the 2 bytes of RGB565 color.
 
+    config LV_M5STICKC_HANDLE_AXP192
+        bool "Handle Backlight and TFT power for M5StickC using AXP192." if LV_PREDEFINED_DISPLAY_M5STICKC || LV_TFT_DISPLAY_CONTROLLER_ST7735S
+        default y if LV_PREDEFINED_DISPLAY_M5STICKC
+        help
+            Display and TFT power supply on M5StickC is controlled using an AXP192 Power Mangerment IC.
+            Select yes if you want to enable TFT IC (LDO3) and backlight power using AXP192 by LVGL, or select no if you want to take care of
+            power management in your own code.
+
+    config LV_AXP192_PIN_SDA
+        int "GPIO for AXP192 I2C SDA"
+        depends on LV_M5STICKC_HANDLE_AXP192
+        range 0 39
+        default 21 if LV_PREDEFINED_DISPLAY_M5STICKC
+        default 21
+        help
+            Configure the AXP192 I2C SDA pin here.
+
+    config LV_AXP192_PIN_SCL
+        int "GPIO for AXP192 I2C SCL"
+        depends on LV_M5STICKC_HANDLE_AXP192
+        range 0 39
+        default 22 if LV_PREDEFINED_DISPLAY_M5STICKC
+        default 22
+        help
+            Configure the AXP192 I2C SDA pin here.
 
     # menu will be visible only when LV_PREDEFINED_DISPLAY_NONE is y
     menu "Display RA8875 Configuration"
@@ -747,11 +776,11 @@ menu "LVGL TFT/Epaper Display controller"
 
         config LV_DISP_ST7789_SOFT_RESET
             bool "Soft reset - use software reset instead of reset pin"
-            depends on LV_TFT_DISPLAY_CONTROLLER_ST7789
+            depends on LV_TFT_DISPLAY_CONTROLLER_ST7789            
             default n
             help
                 Use software reset and ignores configured reset pin (some hardware does not use a reset pin).
-
+    
     endmenu
 
     # menu will be visible only when LV_PREDEFINED_DISPLAY_NONE is y
@@ -760,10 +789,12 @@ menu "LVGL TFT/Epaper Display controller"
 
         config LV_DISP_SPI_MOSI
             int "GPIO for MOSI (Master Out Slave In)" if LV_TFT_DISPLAY_PROTOCOL_SPI
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
             default 23 if LV_PREDEFINED_DISPLAY_WROVER4
             default 23 if LV_PREDEFINED_DISPLAY_ATAG
             default 23 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
-            default 23 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 15 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 18 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
             default 23 if LV_PREDEFINED_PINS_TKOALA
@@ -771,13 +802,13 @@ menu "LVGL TFT/Epaper Display controller"
             default 19 if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
             default 13 if LV_PREDEFINED_DISPLAY_WT32_SC01
             default 13
+
             help
                 Configure the display MOSI pin here.
 
         config LV_DISPLAY_USE_SPI_MISO
             bool "GPIO for MISO (Master In Slave Out)" if LV_TFT_DISPLAY_PROTOCOL_SPI
             default y if LV_PREDEFINED_PINS_TKOALA
-            default y if LV_PREDEFINED_DISPLAY_M5CORE2
             help
                 Enable the MISO signal to control the display. You can disable
                 it when the display does not need MISO signal to be controlled.
@@ -785,8 +816,10 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_DISP_SPI_MISO
             int "GPIO for MISO (Master In Slave Out)" if LV_TFT_DISPLAY_PROTOCOL_SPI
             depends on LV_DISPLAY_USE_SPI_MISO
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
             default 19 if LV_PREDEFINED_PINS_TKOALA
-            default 38 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 0
 
             help
@@ -804,6 +837,9 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_DISP_SPI_IO2
             int "GPIO for Quad SPI IO2/WP" if LV_TFT_DISPLAY_PROTOCOL_SPI
             depends on LV_TFT_DISPLAY_SPI_TRANS_MODE_QIO
+            range -1 39 if IDF_TARGET_ESP32
+            range -1 43 if IDF_TARGET_ESP32S2
+
             default 22 if LV_PREDEFINED_PINS_TKOALA && LV_TFT_DISPLAY_SPI_TRANS_MODE_QIO
             default -1
             help
@@ -812,6 +848,9 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_DISP_SPI_IO3
             int "GPIO for Quad SPI IO3/HD" if LV_TFT_DISPLAY_PROTOCOL_SPI
             depends on LV_TFT_DISPLAY_SPI_TRANS_MODE_QIO
+            range -1 39 if IDF_TARGET_ESP32
+            range -1 43 if IDF_TARGET_ESP32S2
+
             default 21 if LV_PREDEFINED_PINS_TKOALA && LV_TFT_DISPLAY_SPI_TRANS_MODE_QIO
             default -1
             help
@@ -819,8 +858,10 @@ menu "LVGL TFT/Epaper Display controller"
 
         config LV_DISP_SPI_CLK
             int "GPIO for CLK (SCK / Serial Clock)" if LV_TFT_DISPLAY_PROTOCOL_SPI
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
             default 18 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
-            default 18 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 13 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 18 if LV_PREDEFINED_DISPLAY_ATAG
             default 19 if LV_PREDEFINED_DISPLAY_WROVER4
@@ -844,9 +885,11 @@ menu "LVGL TFT/Epaper Display controller"
         config LV_DISP_SPI_CS
             int "GPIO for CS (Slave Select)" if LV_TFT_DISPLAY_PROTOCOL_SPI
             depends on LV_DISPLAY_USE_SPI_CS
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
             default 5 if LV_PREDEFINED_PINS_38V1
             default 14 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
-            default 5 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 5 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 22 if LV_PREDEFINED_DISPLAY_WROVER4
             default 15 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
@@ -869,11 +912,13 @@ menu "LVGL TFT/Epaper Display controller"
 
         config LV_DISP_PIN_DC
             int "GPIO for DC (Data / Command)" if LV_TFT_DISPLAY_PROTOCOL_SPI
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
             depends on LV_DISPLAY_USE_DC
             default 19 if LV_PREDEFINED_PINS_38V1
             default 17 if LV_PREDEFINED_PINS_38V4
             default 27 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
-            default 15 if LV_PREDEFINED_DISPLAY_M5CORE2
             default 23 if LV_PREDEFINED_DISPLAY_M5STICKC
             default 21 if LV_PREDEFINED_DISPLAY_WROVER4
             default 21 if LV_PREDEFINED_DISPLAY_WT32_SC01
@@ -887,22 +932,11 @@ menu "LVGL TFT/Epaper Display controller"
             help
                 Configure the display DC pin here.
 
-        config LV_DISP_USE_RST
-            bool "Use a GPIO for resetting the display" if LV_TFT_DISPLAY_PROTOCOL_SPI
-            default n if LV_PREDEFINED_DISPLAY_M5CORE2
-            default y
-            help
-                Enable display reset control. Set this if the reset pin of the
-                display is connected to the host. If this is not set, then it is
-                the user's responsibility to ensure that the display is reset
-                before initialisation.
-                You may want to disable this option because the reset pin is not
-                connected, or is connected to an external component such as the
-                power management IC.
-
         config LV_DISP_PIN_RST
             int "GPIO for Reset" if LV_TFT_DISPLAY_PROTOCOL_SPI && !LV_DISP_ST7789_SOFT_RESET
-            depends on LV_DISP_USE_RST
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
             default 18 if LV_PREDEFINED_PINS_38V1
             default 25 if LV_PREDEFINED_PINS_38V4
             default 33 if LV_PREDEFINED_DISPLAY_M5STACK || LV_PREDEFINED_DISPLAY_M5STICK
@@ -921,103 +955,84 @@ menu "LVGL TFT/Epaper Display controller"
 
         config LV_DISP_PIN_BUSY
             int "GPIO for Busy" if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
             default 35 if LV_TFT_DISPLAY_CONTROLLER_IL3820 || LV_TFT_DISPLAY_CONTROLLER_JD79653A || LV_TFT_DISPLAY_CONTROLLER_UC8151D
-            default 35 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S2
-            default 21 if IDF_TARGET_ESP32C3
+            default 35
 
             help
                 Configure the display Busy pin here.
 
+        config LV_ENABLE_BACKLIGHT_CONTROL
+            bool "Enable control of the display backlight by using an GPIO." if \
+                ( LV_PREDEFINED_DISPLAY_NONE && ! ( LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 ) ) \
+                || LV_PREDEFINED_DISPLAY_RPI_MPI3501
+            default y if LV_PREDEFINED_DISPLAY_M5STACK
+            default y if LV_PREDEFINED_DISPLAY_WROVER4
+            default y if LV_PREDEFINED_DISPLAY_ERTFT0356
+            default y if LV_PREDEFINED_DISPLAY_TTGO
+            default y if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
+            default y if LV_PREDEFINED_DISPLAY_WT32_SC01
+            help
+                Enable controlling the display backlight using an GPIO
+
+        config LV_BACKLIGHT_ACTIVE_LVL
+            bool "Is backlight turn on with a HIGH (1) logic level?"
+            depends on LV_ENABLE_BACKLIGHT_CONTROL
+            default y if LV_PREDEFINED_DISPLAY_M5STACK
+            default y if LV_PREDEFINED_DISPLAY_ERTFT0356
+            default y if LV_PREDEFINED_DISPLAY_TTGO
+            default y if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
+            default y if LV_PREDEFINED_DISPLAY_WT32_SC01
+            help
+                Some backlights are turned on with a high signal, others held low.
+                If enabled, a value of 1 will be sent to the display to enable the backlight,
+                otherwise a 0 will be expected to enable it.
+
+        config LV_DISP_PIN_BCKL
+            int "GPIO for Backlight Control"
+            depends on LV_ENABLE_BACKLIGHT_CONTROL
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
+            default 23 if LV_PREDEFINED_PINS_38V1
+            default 26 if LV_PREDEFINED_PINS_38V4
+            default 32 if LV_PREDEFINED_DISPLAY_M5STACK
+            default 5 if LV_PREDEFINED_DISPLAY_WROVER4
+            default 2 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
+            default 27 if LV_PREDEFINED_DISPLAY_ERTFT0356
+            default 0  if LV_PREDEFINED_PINS_TKOALA
+            default 4 if LV_PREDEFINED_DISPLAY_TTGO
+            default 2 if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
+            default 23 if LV_PREDEFINED_DISPLAY_WT32_SC01
+            default 27
+
+            help
+                Configure the display BCLK (LED) pin here.
+
+        config LV_DISP_PIN_SDA
+            int "GPIO for I2C SDA" if LV_TFT_DISPLAY_PROTOCOL_I2C
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
+            default 5 if LV_PREDEFINED_DISPLAY_WEMOS_LOLIN
+            default 5
+
+            help
+            Configure the I2C SDA pin here.
+
+        config LV_DISP_PIN_SCL
+            int "GPIO for I2C SCL" if LV_TFT_DISPLAY_PROTOCOL_I2C
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S2
+
+            default 4 if LV_PREDEFINED_DISPLAY_WEMOS_LOLIN
+            default 4
+
+            help
+            Configure the I2C SCL pin here.
+
     endmenu
-
-    choice
-        prompt "Select an I2C port for the display"
-        default LV_I2C_DISPLAY_PORT_0
-        depends on LV_I2C_DISPLAY
-
-        config LV_I2C_DISPLAY_PORT_0
-            bool
-            prompt "I2C port 0"
-            help
-                I2C is shared peripheral managed by I2C Manager. In order to configure I2C Manager (pinout, etc.) see menu
-                Component config->I2C Port Settings.
-
-        config LV_I2C_DISPLAY_PORT_1
-            bool
-            prompt "I2C port 1"
-            help
-                I2C is shared peripheral managed by I2C Manager. In order to configure I2C Manager (pinout, etc.) see menu
-                Component config->I2C Port Settings.
-
-    endchoice
-
-    choice
-        default LV_DISP_BACKLIGHT_SWITCH
-        prompt "Backlight Control" if \
-            (! ( LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 ) )
-
-        config LV_DISP_BACKLIGHT_OFF
-            bool
-            prompt "Not Used"
-            help
-                Display backlight is not controlled by this driver, must be hardwired in hardware.
-
-        config LV_DISP_BACKLIGHT_SWITCH
-            bool
-            prompt "Switch control"
-            help
-                Display backlight can be switched on or off.
-
-        config LV_DISP_BACKLIGHT_PWM
-            bool
-            prompt "PWM control"
-            help
-                Display backlight is controlled by pulse-width modulation, allowing brightness settings.
-
-    endchoice
-
-    config LV_BACKLIGHT_ACTIVE_LVL
-        bool "Is backlight turn on with a HIGH (1) logic level?" if \
-            ( LV_PREDEFINED_DISPLAY_NONE && ! ( LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 ) ) \
-            || LV_PREDEFINED_DISPLAY_RPI_MPI3501
-        depends on !LV_DISP_BACKLIGHT_OFF
-        default y if LV_PREDEFINED_DISPLAY_M5STACK
-        default y if LV_PREDEFINED_DISPLAY_ERTFT0356
-        default y if LV_PREDEFINED_DISPLAY_TTGO
-        default y if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
-        default y if LV_PREDEFINED_DISPLAY_WT32_SC01
-        help
-            Some backlights are turned on with a high signal, others held low.
-            If enabled, a value of 1 will be sent to the display to enable the backlight,
-            otherwise a 0 will be expected to enable it.
-
-    config LV_DISP_PIN_BCKL
-        int "GPIO for Backlight Control" if \
-            ( LV_PREDEFINED_DISPLAY_NONE && ! ( LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 ) ) \
-            || LV_PREDEFINED_DISPLAY_RPI_MPI3501
-        depends on !LV_DISP_BACKLIGHT_OFF
-        default 23 if LV_PREDEFINED_PINS_38V1
-        default 26 if LV_PREDEFINED_PINS_38V4
-        default 32 if LV_PREDEFINED_DISPLAY_M5STACK
-        default 5 if LV_PREDEFINED_DISPLAY_WROVER4
-        default 2 if LV_PREDEFINED_DISPLAY_ADA_FEATHERWING
-        default 27 if LV_PREDEFINED_DISPLAY_ERTFT0356
-        default 0  if LV_PREDEFINED_PINS_TKOALA
-        default 4 if LV_PREDEFINED_DISPLAY_TTGO
-        default 2 if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
-        default 23 if LV_PREDEFINED_DISPLAY_WT32_SC01
-        default -1
-
-        help
-            Configure the display BCLK (LED) pin here.
-
-    config LV_I2C
-        bool
-        default y if LV_I2C_DISPLAY
-
-    config LV_I2C_DISPLAY_PORT
-        int
-        default 1 if LV_I2C_DISPLAY_PORT_1
-        default 0
 
 endmenu
