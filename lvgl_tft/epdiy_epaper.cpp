@@ -3,7 +3,6 @@
 #include "freertos/task.h"
 #include "epdiy_epaper.h"
 #include "epdiy.h"
-//#include "epd_highlevel.h"
 
 EpdiyHighlevelState hl;
 uint16_t flushcalls = 0;
@@ -21,17 +20,16 @@ void epdiy_init(void)
   // This will print an error if unsupported. In this case,
   // set VCOM using the hardware potentiometer and delete this line.
     epd_set_vcom(1760);
-
-    // Only for older versions epdiy
-    //epd_init(EPD_OPTIONS_DEFAULT);
     hl = epd_hl_init(EPD_BUILTIN_WAVEFORM);
     framebuffer = epd_hl_get_framebuffer(&hl);    
     epd_poweron();
-    //Clear all always in init:
+    //Clear all display in initialization to remove any ghosts
     epd_fullclear(&hl, temperature);
 }
 
-/* Suggested by @kisvegabor https://forum.lvgl.io/t/lvgl-port-to-be-used-with-epaper-displays/5630/26 */
+/* Suggested by @kisvegabor https://forum.lvgl.io/t/lvgl-port-to-be-used-with-epaper-displays/5630/26 
+ * @deprecated 
+*/
 void buf_area_to_framebuffer(const lv_area_t *area, const uint8_t *image_data) {
   assert(framebuffer != NULL);
   uint8_t *fb_ptr = &framebuffer[area->y1 * epd_width() / 2 + area->x1 / 2];
@@ -48,8 +46,7 @@ void buf_copy_to_framebuffer(EpdRect image_area, const uint8_t *image_data) {
   assert(framebuffer != NULL);
 
   for (uint32_t i = 0; i < image_area.width * image_area.height; i++) {
-    uint8_t val = (i % 2) ? (image_data[i / 2] & 0xF0) >> 4
-                                    : image_data[i / 2] & 0x0F;
+    uint8_t val = (i % 2) ? (image_data[i / 2] & 0xF0) >> 4 : image_data[i / 2] & 0x0F;
     int xx = image_area.x + i % image_area.width;
     if (xx < 0 || xx >= epd_width()) {
       continue;
@@ -83,17 +80,14 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
 
     uint8_t* buf = (uint8_t *) color_map;
     // Buffer debug
-    /* 
-    for (int index=0; index<400; index++) {
+    /* for (int index=0; index<400; index++) {
         printf("%x ", buf[index]);
     } */
-
-    // UNCOMMENT only one of this options
-    // SAFE Option with EPDiy copy of epd_copy_to_framebuffer
-    buf_copy_to_framebuffer(update_area, buf);
+    // This is the slower version that works good without leaving any white line
+    //buf_copy_to_framebuffer(update_area, buf);
 
     //Faster mode suggested in LVGL forum (Leaves ghosting&prints bad sections / experimental) NOTE: Do NOT use in production
-    //buf_area_to_framebuffer(area, buf);
+    buf_area_to_framebuffer(area, buf);
 
     epd_hl_update_area(&hl, updateMode, temperature, update_area); //update_area
 

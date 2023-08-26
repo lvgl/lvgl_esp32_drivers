@@ -1,3 +1,12 @@
+/**************************************************************************************************
+ *      NOTE: This file is the first version that writes directly on the set_px callback
+ *            each pixel into the epaper display buffer. The second version is epdiy_epaper.cpp
+ *            It writes *buf and then it comes as *color_map on the flush callback.
+ *            Feel free to experiment with this 2. epdiy_epaper.cpp works better to make a small UX
+ * 
+ * BOTH are oriented to latest version of epdiy driver that uses LCD module for parallel communication
+ * BRANCH: s3_lcd
+ **************************************************************************************************/
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

@@ -42,7 +42,7 @@ extern "C" {
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7796S
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * LV_VER_RES_MAX/3)
-// IMPORTANT: This will render the screen in 8 times (Max more and it skips lines)
+// IMPORTANT: This will render the screen in 8 times (more and it skips lines, supposedly limited by PSRAM speed)
 #elif defined (CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER)
   #define DISP_BUF_SIZE LV_HOR_RES_MAX*(LV_VER_RES_MAX/ 8)
 
