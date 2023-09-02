@@ -2,14 +2,15 @@ menu "LVGL Touch controller"
 
     config LV_TOUCH_CONTROLLER
 	int
-	default 0 if LV_TOUCH_CONTROLLER_NONE
-	default 1 if LV_TOUCH_CONTROLLER_XPT2046
-	default 2 if LV_TOUCH_CONTROLLER_FT6X06
-	default 3 if LV_TOUCH_CONTROLLER_STMPE610
+        default 0 if LV_TOUCH_CONTROLLER_NONE
+        default 1 if LV_TOUCH_CONTROLLER_XPT2046
+        default 2 if LV_TOUCH_CONTROLLER_FT6X06
+        default 3 if LV_TOUCH_CONTROLLER_STMPE610
         default 4 if LV_TOUCH_CONTROLLER_ADCRAW
         default 5 if LV_TOUCH_CONTROLLER_FT81X
         default 6 if LV_TOUCH_CONTROLLER_RA8875
         default 7 if LV_TOUCH_CONTROLLER_L58
+        default 8 if LV_TOUCH_CONTROLLER_GT911
     choice
 	prompt "Select a touch panel controller model."
 	default LV_TOUCH_CONTROLLER_NONE
@@ -29,7 +30,9 @@ menu "LVGL Touch controller"
     # Start only touch without protocol:
             select CONFIG_LV_TOUCH_DRIVER_DISPLAY
             bool "L58"
-
+	config LV_TOUCH_CONTROLLER_GT911
+            select LV_TOUCH_DRIVER_PROTOCOL_I2C
+            bool "GT911"
         config LV_TOUCH_CONTROLLER_STMPE610
             select LV_TOUCH_DRIVER_PROTOCOL_SPI
             bool "STMPE610"
@@ -522,7 +525,27 @@ menu "LVGL Touch controller"
             bool
             prompt "De-bounce Circuit Enable for Touch Panel Interrupt"
             default y
-
     endmenu
+    menu "Touchpanel GT911 Pin Assignments"
+        depends on LV_TOUCH_CONTROLLER_GT911
 
+        config LV_TOUCH_I2C_SDA
+            int
+            prompt "GPIO for SDA (I2C)"
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S3
+
+            default 39
+            help
+            Configure the I2C touchpanel SDA pin here.
+
+        config LV_TOUCH_I2C_SCL
+            int "GPIO for clock signal SCL (I2C)"
+            range 0 39 if IDF_TARGET_ESP32
+            range 0 43 if IDF_TARGET_ESP32S3
+            
+            default 40
+            help
+            Configure the I2C touchpanel SCL pin here.
+    endmenu
 endmenu

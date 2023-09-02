@@ -69,6 +69,8 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
         list(APPEND SOURCES "lvgl_touch/ft6x36.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_L58)
         list(APPEND SOURCES "lvgl_touch/l58.cpp")
+    elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
+        list(APPEND SOURCES "lvgl_touch/gt911.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
         list(APPEND SOURCES "lvgl_touch/stmpe610.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
@@ -89,7 +91,7 @@ endif()
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
                        REQUIRES epdiy
-                       lvgl CalEPD sharp-lcd
+                       lvgl CalEPD sharp-lcd espressif__esp_lcd_touch_gt911
                        )
                        
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")

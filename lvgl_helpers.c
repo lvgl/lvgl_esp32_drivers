@@ -148,9 +148,7 @@ void lvgl_driver_init(void)
         touch_driver_init();
     #elif defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)
         ESP_LOGI(TAG, "Initializing I2C master for touch");
-        lvgl_i2c_driver_init(TOUCH_I2C_PORT,
-            TOUCH_I2C_SDA, TOUCH_I2C_SCL,
-            TOUCH_I2C_SPEED_HZ); 
+        //lvgl_i2c_driver_init(TOUCH_I2C_PORT, TOUCH_I2C_SDA, TOUCH_I2C_SCL, TOUCH_I2C_SPEED_HZ); 
         
         touch_driver_init();
     #elif defined (CONFIG_LV_TOUCH_DRIVER_ADC)
@@ -197,7 +195,7 @@ bool lvgl_i2c_driver_init(int port, int sda_pin, int scl_pin, int speed_hz)
         I2C_MODE_MASTER,
         0, 0 /*I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE */,
         0 /* intr_alloc_flags */);
-    assert(ESP_OK == err);
+    //assert(ESP_OK == err);
 
     return ESP_OK != err;
 }

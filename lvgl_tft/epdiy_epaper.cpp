@@ -84,10 +84,10 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
         printf("%x ", buf[index]);
     } */
     // This is the slower version that works good without leaving any white line
-    //buf_copy_to_framebuffer(update_area, buf);
+    buf_copy_to_framebuffer(update_area, buf);
 
     //Faster mode suggested in LVGL forum (Leaves ghosting&prints bad sections / experimental) NOTE: Do NOT use in production
-    buf_area_to_framebuffer(area, buf);
+    //buf_area_to_framebuffer(area, buf);
 
     epd_hl_update_area(&hl, updateMode, temperature, update_area); //update_area
 

@@ -16,6 +16,8 @@ void touch_driver_init(void)
     ft6x06_init(FT6236_I2C_SLAVE_ADDR);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_L58)
     l58_init();
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_GT911)
+    gt911_init(0x5d);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
     stmpe610_init();
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
@@ -37,7 +39,8 @@ bool touch_driver_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
     res = ft6x36_read(drv, data);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_L58)
     res = l58_read(drv, data);
-
+#elif defined (CONFIG_LV_TOUCH_CONTROLLER_GT911)
+    res = gt911_read(drv, data);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
     res = stmpe610_read(drv, data);
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
