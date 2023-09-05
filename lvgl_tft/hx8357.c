@@ -169,9 +169,9 @@ void hx8357_init(void)
 
 	//Reset the display
 	gpio_set_level(HX8357_RST, 0);
-	vTaskDelay(10 / portTICK_RATE_MS);
+	vTaskDelay(10 / portTICK_DELAY_MS);
 	gpio_set_level(HX8357_RST, 1);
-	vTaskDelay(120 / portTICK_RATE_MS);
+	vTaskDelay(120 / portTICK_DELAY_MS);
 #endif
 
 	ESP_LOGI(TAG, "Initialization.");
@@ -192,7 +192,7 @@ void hx8357_init(void)
 			}
 		}
 		if (x & 0x80) {       // If high bit set...
-			vTaskDelay(numArgs * 5 / portTICK_RATE_MS); // numArgs is actually a delay time (5ms units)
+			vTaskDelay(numArgs * 5 / portTICK_DELAY_MS); // numArgs is actually a delay time (5ms units)
 		}
 	}
 
