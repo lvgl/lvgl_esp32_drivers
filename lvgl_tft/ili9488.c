@@ -58,7 +58,7 @@ void ili9488_init(void)
 	lcd_init_cmd_t ili_init_cmds[]={
                 {ILI9488_CMD_SLEEP_OUT, {0x00}, 0x80},
 		{ILI9488_CMD_POSITIVE_GAMMA_CORRECTION, {0x0F, 0x1F, 0x1C, 0x0C, 0x0F, 0x08, 0x48, 0x98, 0x37, 0x0A, 0x13, 0x04, 0x11, 0x0D, 0x00}, 15},
-        {ILI9488_CMD_NEGATIVE_GAMMA_CORRECTION, {0x0F, 0x32, 0x2E, 0x0B, 0x0D, 0x05, 0x47, 0x75, 0x37, 0x06, 0x10, 0x03, 0x24, 0x20, 0x00}, 15}
+        {ILI9488_CMD_NEGATIVE_GAMMA_CORRECTION, {0x0F, 0x32, 0x2E, 0x0B, 0x0D, 0x05, 0x47, 0x75, 0x37, 0x06, 0x10, 0x03, 0x24, 0x20, 0x00}, 15},
 		{ILI9488_CMD_POWER_CONTROL_1, {0x17, 0x15}, 2},
 		{ILI9488_CMD_POWER_CONTROL_2, {0x41}, 1},
 		{ILI9488_CMD_POWER_CONTROL_NORMAL_3, {0x44}, 1}, 
@@ -78,7 +78,7 @@ void ili9488_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-	#ifdef ESP_IDF_VERSION_MAJOR >= 5
+	#if ESP_IDF_VERSION_MAJOR >= 5
 	esp_rom_gpio_pad_select_gpio(ILI9488_DC);
 	#else
 	gpio_pad_select_gpio(ILI9488_DC);
@@ -86,7 +86,7 @@ void ili9488_init(void)
 	gpio_set_direction(ILI9488_DC, GPIO_MODE_OUTPUT);
 
 #if ILI9488_USE_RST
-	#ifdef ESP_IDF_VERSION_MAJOR >= 5
+	#if ESP_IDF_VERSION_MAJOR >= 5
 	esp_rom_gpio_pad_select_gpio(ILI9488_RST);
 	#else
 	gpio_pad_select_gpio(ILI9488_RST);
