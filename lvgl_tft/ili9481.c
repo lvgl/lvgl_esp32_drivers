@@ -83,16 +83,16 @@ void ili9481_init(void)
 
     //Reset the display
     gpio_set_level(ILI9481_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_DELAY_MS);
     gpio_set_level(ILI9481_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_DELAY_MS);
 #endif
 
     ESP_LOGI(TAG, "ILI9481 initialization.");
 
     // Exit sleep
     ili9481_send_cmd(0x01);	/* Software reset */
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_DELAY_MS);
 
     //Send all the commands
     uint16_t cmd = 0;
@@ -100,7 +100,7 @@ void ili9481_init(void)
         ili9481_send_cmd(ili_init_cmds[cmd].cmd);
         ili9481_send_data(ili_init_cmds[cmd].data, ili_init_cmds[cmd].databytes&0x1F);
         if (ili_init_cmds[cmd].databytes & 0x80) {
-            vTaskDelay(100 / portTICK_RATE_MS);
+            vTaskDelay(100 / portTICK_DELAY_MS);
         }
         cmd++;
     }
