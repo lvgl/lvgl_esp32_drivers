@@ -16,5 +16,5 @@ jobs:
         with:
           name: "lvgl_esp32_drivers"
           version: ${{ github.ref_name }}
-          namespace: "espressif"
+          namespace: "vitoralho"
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
