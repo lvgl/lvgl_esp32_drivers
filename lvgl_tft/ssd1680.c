@@ -213,13 +213,16 @@ void ssd1680_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
         BIT_CLEAR(buf[mirrored_idx], 7 - bit_index);
     }
 #elif defined (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE)
-    byte_index = y + ((x >> 3) * EPD_PANEL_HEIGHT);
-    bit_index  = x & 0x7;
-
-    if (color.full) {
-        BIT_SET(buf[byte_index], 7 - bit_index);
+    /* mirrored index */
+    uint16_t mirrored_idx = (EPD_PANEL_HEIGHT - x) + ((y >> 3) * EPD_PANEL_HEIGHT);
+    byte_index = x + ((y >> 3) * EPD_PANEL_HEIGHT);
+    bit_index  = y & 0x7;
+    /* 1 means white, 0 means black */
+    /* note that the bit index is inverted in place */
+    if (color.full == 0) {
+        BIT_SET(buf[mirrored_idx - 1], 7 - bit_index);
     } else {
-        BIT_CLEAR(buf[byte_index], 7 - bit_index);
+        BIT_CLEAR(buf[mirrored_idx - 1], 7 - bit_index);
     }
 #else
 #error "Unsupported orientation used"
