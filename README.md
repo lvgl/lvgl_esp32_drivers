@@ -34,6 +34,7 @@ swap of RGB565 color on the LVGL configuration menuconfig (it's not handled auto
 | IL3820                                      | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | UC8151D/ GoodDisplay GDEW0154M10 DES        | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 | FitiPower JD79653A/ GoodDisplay GDEW0154M09 | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
+| SSD1680 / GoodDisplay GDEY029T94            | e-Paper    | SPI                    | 1: 1byte per pixel           | No                                     |
 
 ## Supported indev controllers
 
