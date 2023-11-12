@@ -3,7 +3,7 @@ if(ESP_PLATFORM)
 file(GLOB SOURCES *.c)
 set(LVGL_INCLUDE_DIRS . lvgl_tft)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
-list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
+# list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
 
 # Include only the source file of the selected
 # display controller.

@@ -16,7 +16,7 @@ extern "C" {
 
 #include "lvgl_spi_conf.h"
 #include "lvgl_tft/disp_driver.h"
-#include "lvgl_tft/esp_lcd_backlight.h"
+// #include "lvgl_tft/esp_lcd_backlight.h" // 与IDF 5不兼容
 #include "lvgl_touch/touch_driver.h"
 
 /*********************

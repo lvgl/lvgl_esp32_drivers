@@ -66,7 +66,7 @@ void st7735s_init(void)
 #endif
 
     lcd_init_cmd_t init_cmds[]={
-		{ST7735_SWRESET, {0}, 0x80},         		// Software reset, 0 args, w/delay 150
+		{ST7735_SWRESET, {0}, 0x80},         		// Soft ware reset, 0 args, w/delay 150
 		{ST7735_SLPOUT, {0}, 0x80},                 // Out of sleep mode, 0 args, w/delay 500
 		{ST7735_FRMCTR1, {0x01, 0x2C, 0x2D}, 3},    // Frame rate ctrl - normal mode, 3 args: Rate = fosc/(1x2+40) * (LINE+2C+2D)
 		{ST7735_FRMCTR2, {0x01, 0x2C, 0x2D}, 3},    // Frame rate control - idle mode, 3 args:Rate = fosc/(1x2+40) * (LINE+2C+2D)
@@ -98,18 +98,18 @@ void st7735s_init(void)
     };
 
 	//Initialize non-SPI GPIOs
-        gpio_pad_select_gpio(ST7735S_DC);
+        esp_rom_gpio_pad_select_gpio(ST7735S_DC);
 	gpio_set_direction(ST7735S_DC, GPIO_MODE_OUTPUT);
 
 #if ST7735S_USE_RST
-        gpio_pad_select_gpio(ST7735S_RST);
+        esp_rom_gpio_pad_select_gpio(ST7735S_RST);
 	gpio_set_direction(ST7735S_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
 	gpio_set_level(ST7735S_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(ST7735S_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 #endif
 
 	ESP_LOGI(TAG, "ST7735S initialization.");
@@ -120,7 +120,7 @@ void st7735s_init(void)
 		st7735s_send_cmd(init_cmds[cmd].cmd);
 		st7735s_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes&0x1F);
 		if (init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		cmd++;
 	}

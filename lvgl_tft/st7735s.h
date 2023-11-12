@@ -37,8 +37,8 @@ extern "C" {
 //      https://github.com/adafruit/Adafruit-ST7735-Library
 //
 #define ST7735_GREENTAB160x80 // For 160 x 80 display (BGR, inverted, 26 / 1 offset)
-#define COLSTART            26
-#define ROWSTART            1
+#define COLSTART            24  // ST7735s是为128 x 160屏幕设计的，我们是160 x 80的屏幕，需要偏移一部分像素。
+#define ROWSTART            0   // ST7735s是为128 x 160屏幕设计的，我们是160 x 80的屏幕，需要偏移一部分像素。
 
 // Delay between some initialisation commands
 #define TFT_INIT_DELAY      0x80
