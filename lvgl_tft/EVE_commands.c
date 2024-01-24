@@ -991,6 +991,11 @@ uint8_t EVE_init(void)
 	EVE_memWrite8(REG_GPIO, 0x80); /* enable the DISP signal to the LCD panel, it is set to output in REG_GPIO_DIR by default */
 	EVE_memWrite8(REG_PCLK, EVE_PCLK); /* now start clocking data to the LCD panel */
 
+	/*NHD 4.3 display requires the PWM frequency between 800 to 10Khz. Default value for FT81x is 250. This has to be set or backlight won't turn on.*/
+#if defined (EVE_NHD_43) || defined (EVE_NHD_35) || defined (EVE_NHD_) || defined (EVE_NHD_43) 
+	EVE_memWrite16(REG_PWM_HZ,0x352);
+#endif
+
 #if defined (EVE_ADAM101)
 	EVE_memWrite8(REG_PWM_DUTY, 0x60); /* turn on backlight to 25% for Glyn ADAM101 module, it uses inverted values */
 #else
