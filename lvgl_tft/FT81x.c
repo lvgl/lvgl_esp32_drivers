@@ -250,7 +250,7 @@ void TFT_bitmap_display(void)
 		EVE_cmd_dl(TAG(0));
 
 		EVE_cmd_dl(DL_DISPLAY);	/* instruct the graphics processor to show the list */
-
+		
 		EVE_cmd_dl(CMD_SWAP); /* make this list active */
 
 		EVE_end_cmd_burst(); /* stop writing to the cmd-fifo */
@@ -262,18 +262,12 @@ void TFT_bitmap_display(void)
 
 void FT81x_init(void)
 {
-#if EVE_USE_PDN
 	gpio_pad_select_gpio(EVE_PDN);
-#endif
-
 	gpio_set_level(EVE_CS, 1);
-
-#if EVE_USE_PDN
 	gpio_set_direction(EVE_PDN, GPIO_MODE_OUTPUT);
-#endif
 
 	spi_acquire();
-
+	
 	if(EVE_init())
 	{
 		tft_active = 1;
@@ -284,7 +278,7 @@ void FT81x_init(void)
 
 		EVE_cmd_memset(SCREEN_BITMAP_ADDR, BLACK, SCREEN_BUFFER_SIZE);		// clear screen buffer
 		EVE_cmd_execute();
-
+		
 		TFT_bitmap_display();	// set DL for fullscreen bitmap display
 	}
 

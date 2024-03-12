@@ -39,12 +39,8 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #define BLOCK_TRANSFER_SIZE 3840		// block transfer size when write data to CMD buffer
 
 void DELAY_MS(uint16_t ms);
-
-#if EVE_USE_PDN
 void EVE_pdn_set(void);
 void EVE_pdn_clear(void);
-#endif
-
 void spi_acquire();
 void spi_release();
 
@@ -68,7 +64,7 @@ void EVE_get_cmdoffset(void);
 /* commands to operate on memory: */
 void EVE_cmd_memzero(uint32_t ptr, uint32_t num);
 void EVE_cmd_memset(uint32_t ptr, uint8_t value, uint32_t num);
-void EVE_cmd_memwrite(uint32_t dest, uint32_t num, const uint8_t *data);
+void EVE_cmd_memwrite(uint32_t dest, uint32_t num, const uint8_t *data); 
 void EVE_cmd_memcpy(uint32_t dest, uint32_t src, uint32_t num);
 
 #if FT81X_FULL

@@ -81,20 +81,31 @@ void st7796s_init(void)
 		{0, {0}, 0xff},
 	};
 
+#if ST7796S_BCKL == 15
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+	io_conf.mode = GPIO_MODE_OUTPUT;
+	io_conf.pin_bit_mask = GPIO_SEL_15;
+	io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+	io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+	gpio_config(&io_conf);
+#endif
+
 	//Initialize non-SPI GPIOs
 	gpio_pad_select_gpio(ST7796S_DC);
 	gpio_set_direction(ST7796S_DC, GPIO_MODE_OUTPUT);
-
-#if ST7796S_USE_RST
 	gpio_pad_select_gpio(ST7796S_RST);
 	gpio_set_direction(ST7796S_RST, GPIO_MODE_OUTPUT);
 
+#if ST7796S_ENABLE_BACKLIGHT_CONTROL
+	gpio_pad_select_gpio(ST7796S_BCKL);
+	gpio_set_direction(ST7796S_BCKL, GPIO_MODE_OUTPUT);
+#endif
 	//Reset the display
 	gpio_set_level(ST7796S_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(ST7796S_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
 
 	ESP_LOGI(TAG, "Initialization.");
 
@@ -110,6 +121,8 @@ void st7796s_init(void)
 		}
 		cmd++;
 	}
+
+	st7796s_enable_backlight(true);
 
 	st7796s_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
 
@@ -146,6 +159,22 @@ void st7796s_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_
 	uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
 
 	st7796s_send_color((void *)color_map, size * 2);
+}
+
+void st7796s_enable_backlight(bool backlight)
+{
+#if ST7796S_ENABLE_BACKLIGHT_CONTROL
+	ESP_LOGI(TAG, "%s backlight.", backlight ? "Enabling" : "Disabling");
+	uint32_t tmp = 0;
+
+#if (ST7796S_BCKL_ACTIVE_LVL == 1)
+	tmp = backlight ? 1 : 0;
+#else
+	tmp = backlight ? 0 : 1;
+#endif
+
+	gpio_set_level(ST7796S_BCKL, tmp);
+#endif
 }
 
 void st7796s_sleep_in()

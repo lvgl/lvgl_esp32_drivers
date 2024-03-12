@@ -1,7 +1,7 @@
-#ifndef __GT911_H
+#ifndef __L58_H
 /*
-* Copyright © 2021 Sturnus Inc.
-
+* Copyright © 2020 Martin Fasani. Refectored from original driver in https://github.com/martinberlin/FT6X36-IDF (C++)
+*
 * Permission is hereby granted, free of charge, to any person obtaining a copy of this 
 * software and associated documentation files (the “Software”), to deal in the Software 
 * without restriction, including without limitation the rights to use, copy, modify, merge, 
@@ -19,9 +19,14 @@
 * SOFTWARE.
 */
 
-#define __GT911_H
+#define __L58_H
 
 #include <stdint.h>
+#include <stdbool.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
@@ -33,11 +38,10 @@ extern "C" {
 #endif
 
 /**
-  * @brief  Initialize for GT911 communication via I2C
-  * @param  dev_addr: Device address on communication Bus (I2C slave address of GT911).
+  * @brief  Initialize for FT6x36 communication via I2C
   * @retval None
   */
-void gt911_init(uint8_t dev_addr);
+void l58_init();
 
 /**
   * @brief  Get the touch screen X and Y positions values. Ignores multi touch
@@ -45,9 +49,9 @@ void gt911_init(uint8_t dev_addr);
   * @param  data: Store data here
   * @retval Always false
   */
-bool gt911_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
+bool l58_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* __GT911_H */
+#endif /* __FT6X06_H */

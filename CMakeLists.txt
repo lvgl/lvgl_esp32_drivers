@@ -3,12 +3,20 @@ if(ESP_PLATFORM)
 file(GLOB SOURCES *.c)
 set(LVGL_INCLUDE_DIRS . lvgl_tft)
 list(APPEND SOURCES "lvgl_tft/disp_driver.c")
-list(APPEND SOURCES "lvgl_tft/esp_lcd_backlight.c")
+
+#@todo add SimleInclude macro here
 
 # Include only the source file of the selected
 # display controller.
 if(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341)
     list(APPEND SOURCES "lvgl_tft/ili9341.c")
+elseif(CONFIG_LV_EPAPER_EPDIY_DISPLAY_CONTROLLER)
+    list(APPEND SOURCES "lvgl_tft/epdiy_epaper.cpp")
+elseif(CONFIG_LV_EPAPER_CALEPD_DISPLAY_CONTROLLER)
+    list(APPEND SOURCES "lvgl_tft/calepd_epaper.cpp")
+elseif(CONFIG_LV_SHARP_DISPLAY_CONTROLLER)
+    list(APPEND SOURCES "lvgl_tft/sharp_mip.cpp")   
+
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481)
     list(APPEND SOURCES "lvgl_tft/ili9481.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9486)
@@ -40,10 +48,6 @@ elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_RA8875)
     list(APPEND SOURCES "lvgl_tft/ra8875.c")
 elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_GC9A01)
     list(APPEND SOURCES "lvgl_tft/GC9A01.c")
-elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9163C)
-    list(APPEND SOURCES "lvgl_tft/ili9163c.c")
-elseif(CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544)
-    list(APPEND SOURCES "lvgl_tft/pcd8544.c")
 else()
     message(WARNING "LVGL ESP32 drivers: Display controller not defined.")
 endif()
@@ -63,6 +67,10 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
         list(APPEND SOURCES "lvgl_touch/xpt2046.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
         list(APPEND SOURCES "lvgl_touch/ft6x36.c")
+    elseif(CONFIG_LV_TOUCH_CONTROLLER_L58)
+        list(APPEND SOURCES "lvgl_touch/l58.cpp")
+    elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
+        list(APPEND SOURCES "lvgl_touch/gt911.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_STMPE610)
         list(APPEND SOURCES "lvgl_touch/stmpe610.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
@@ -71,23 +79,24 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
         list(APPEND SOURCES "lvgl_touch/FT81x.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_RA8875)
         list(APPEND SOURCES "lvgl_touch/ra8875_touch.c")
-    elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
-        list(APPEND SOURCES "lvgl_touch/gt911.c")
     endif()
 
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         list(APPEND SOURCES "lvgl_touch/tp_spi.c")
+    elseif(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_I2C)
+        list(APPEND SOURCES "lvgl_touch/tp_i2c.c")
     endif()
-endif()
-
-if(CONFIG_LV_I2C)
-    list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
 endif()
 
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
-                       REQUIRES lvgl)
-
+                       REQUIRES epdiy
+                       lvgl 
+		       #CalEPD
+		       #sharp-lcd
+		       #espressif__esp_lcd_touch_gt911
+                       )
+                       
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")
 
 else()

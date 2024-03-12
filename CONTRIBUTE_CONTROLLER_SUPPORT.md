@@ -27,6 +27,12 @@ For more information on the function callbacks check LVGL documentation: (Displa
 
 Add your display functions on `disp_driver_init`, `disp_driver_flush`, `disp_driver_rounder` and `disp_driver_set_px` on the `disp_driver.c` file.
 
+**Additional notes**
+
+New drivers should be also have some defines added in: 
+lvgl_helpers.h
+(follow existing ones to add yours)
+
 ## Input device driver.
 
 To enable LVGL to work with your touch controller you would need to implement an initialization function and one function to get the data out from your touch controller.

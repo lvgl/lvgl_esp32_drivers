@@ -1,6 +1,5 @@
-#ifndef __GT911_H
 /*
-* Copyright © 2021 Sturnus Inc.
+* Copyright © 2020 Wolfgang Christl
 
 * Permission is hereby granted, free of charge, to any person obtaining a copy of this 
 * software and associated documentation files (the “Software”), to deal in the Software 
@@ -19,35 +18,26 @@
 * SOFTWARE.
 */
 
-#define __GT911_H
+#include <driver/i2c.h>
+#include <esp_log.h>
 
-#include <stdint.h>
-#ifdef LV_LVGL_H_INCLUDE_SIMPLE
-#include "lvgl.h"
-#else
-#include "lvgl/lvgl.h"
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define I2C_MASTER_FREQ_HZ 100000                             /* 100kHz*/
+#define I2C_MASTER_TX_BUF_DISABLE 0                           /* I2C master doesn't need buffer */
+#define I2C_MASTER_RX_BUF_DISABLE 0                           /* I2C master doesn't need buffer */
 
 /**
-  * @brief  Initialize for GT911 communication via I2C
-  * @param  dev_addr: Device address on communication Bus (I2C slave address of GT911).
-  * @retval None
-  */
-void gt911_init(uint8_t dev_addr);
-
-/**
-  * @brief  Get the touch screen X and Y positions values. Ignores multi touch
-  * @param  drv:
-  * @param  data: Store data here
-  * @retval Always false
-  */
-bool gt911_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
-
-#ifdef __cplusplus
+ * @brief ESP32 I2C init as master
+ * @ret ESP32 error code
+ */
+esp_err_t i2c_master_init(void) {
+    int i2c_master_port = I2C_NUM_0;
+    i2c_config_t conf;
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = CONFIG_LV_TOUCH_I2C_SDA;
+    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.scl_io_num = CONFIG_LV_TOUCH_I2C_SCL;
+    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
+    i2c_param_config(i2c_master_port, &conf);
+    return i2c_driver_install(i2c_master_port, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
-#endif
-#endif /* __GT911_H */
