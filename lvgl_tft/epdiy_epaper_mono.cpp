@@ -1,18 +1,8 @@
-/**************************************************************************************************
- *      NOTE: This file is the first version that writes directly on the set_px callback
- *            each pixel into the epaper display buffer. The second version is epdiy_epaper.cpp
- *            It writes *buf and then it comes as *color_map on the flush callback.
- *            Feel free to experiment with this 2. epdiy_epaper.cpp works better to make a small UX
- * 
- * BOTH are oriented to latest version of epdiy driver that uses LCD module for parallel communication
- * BRANCH: s3_lcd
- **************************************************************************************************/
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "epdiy_epaper.h"
-#include "epd_driver.h"
-#include "epd_highlevel.h"
+#include "epdiy.h"
 
 EpdiyHighlevelState hl;
 uint16_t flushcalls = 0;
@@ -25,22 +15,28 @@ enum EpdDrawMode updateMode = MODE_DU;
 /* Display initialization routine */
 void epdiy_init(void)
 {
-    epd_init(EPD_OPTIONS_DEFAULT);
+    epd_init(&epd_board_v7, &ED060XC3, EPD_LUT_64K);
+  // Set VCOM for boards that allow to set this in software (in mV).
+  // This will print an error if unsupported. In this case,
+  // set VCOM using the hardware potentiometer and delete this line.
+    epd_set_vcom(1760);
     hl = epd_hl_init(EPD_BUILTIN_WAVEFORM);
     framebuffer = epd_hl_get_framebuffer(&hl);    
     epd_poweron();
-    //Clear all always in init:
+    //Clear all display in initialization to remove any ghosts
     epd_fullclear(&hl, temperature);
 }
 
-/* Suggested by @kisvegabor https://forum.lvgl.io/t/lvgl-port-to-be-used-with-epaper-displays/5630/26 */
+/* Suggested by @kisvegabor https://forum.lvgl.io/t/lvgl-port-to-be-used-with-epaper-displays/5630/26 
+ * @deprecated 
+*/
 void buf_area_to_framebuffer(const lv_area_t *area, const uint8_t *image_data) {
   assert(framebuffer != NULL);
-  uint8_t *fb_ptr = &framebuffer[area->y1 * EPD_WIDTH / 2 + area->x1 / 2];
+  uint8_t *fb_ptr = &framebuffer[area->y1 * epd_width() / 2 + area->x1 / 2];
   lv_coord_t img_w = lv_area_get_width(area);
   for(uint32_t y = area->y1; y < area->y2; y++) {
       memcpy(fb_ptr, image_data, img_w / 2);
-      fb_ptr += EPD_WIDTH / 2;
+      fb_ptr += epd_width() / 2;
       image_data += img_w / 2;
   }
 }
@@ -50,17 +46,16 @@ void buf_copy_to_framebuffer(EpdRect image_area, const uint8_t *image_data) {
   assert(framebuffer != NULL);
 
   for (uint32_t i = 0; i < image_area.width * image_area.height; i++) {
-    uint8_t val = (i % 2) ? (image_data[i / 2] & 0xF0) >> 4
-                                    : image_data[i / 2] & 0x0F;
+    uint8_t val = (i % 2) ? (image_data[i / 2] & 0xF0) >> 4 : image_data[i / 2] & 0x0F;
     int xx = image_area.x + i % image_area.width;
-    if (xx < 0 || xx >= EPD_WIDTH) {
+    if (xx < 0 || xx >= epd_width()) {
       continue;
     }
     int yy = image_area.y + i / image_area.width;
-    if (yy < 0 || yy >= EPD_HEIGHT) {
+    if (yy < 0 || yy >= epd_height()) {
       continue;
     }
-    uint8_t *buf_ptr = &framebuffer[yy * EPD_WIDTH / 2 + xx / 2];
+    uint8_t *buf_ptr = &framebuffer[yy * epd_width() / 2 + xx / 2];
     if (xx % 2) {
       *buf_ptr = (*buf_ptr & 0x0F) | (val << 4);
     } else {
@@ -85,21 +80,24 @@ void epdiy_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_ma
 
     uint8_t* buf = (uint8_t *) color_map;
     // Buffer debug
-    /* 
-    for (int index=0; index<400; index++) {
+    /* for (int index=0; index<400; index++) {
         printf("%x ", buf[index]);
     } */
-
-    // UNCOMMENT only one of this options
-    // SAFE Option with EPDiy copy of epd_copy_to_framebuffer
+    // This is the slower version that works good without leaving any white line
     buf_copy_to_framebuffer(update_area, buf);
 
     //Faster mode suggested in LVGL forum (Leaves ghosting&prints bad sections / experimental) NOTE: Do NOT use in production
     //buf_area_to_framebuffer(area, buf);
-
+    if (lv_disp_flush_is_last(drv)) {
+      update_area = {
+        .x = 0,
+        .y = 0,
+        .width = epd_width(),
+        .height = epd_height()
+    };
     epd_hl_update_area(&hl, updateMode, temperature, update_area); //update_area
-
-    printf("epdiy_flush %d x:%d y:%d w:%d h:%d\n", flushcalls,(uint16_t)area->x1,(uint16_t)area->y1,w,h);
+    }
+    //printf("epdiy_flush %d x:%d y:%d w:%d h:%d\n", flushcalls,(uint16_t)area->x1,(uint16_t)area->y1,w,h);
     /* Inform the graphics library that you are ready with the flushing */
     lv_disp_flush_ready(drv);
 }
@@ -113,8 +111,8 @@ void epdiy_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t* buf,
 {
     // Test using RGB232
     int16_t epd_color = 255;
-    if ((int16_t)color.full<250) {
-        epd_color = (updateMode==MODE_DU) ? 0 : (int16_t)color.full/3;
+    if ((int16_t)color.full < 254) {
+        epd_color = (updateMode==MODE_DU) ? 0 : (int16_t)color.full / 3;
     }
 
     //Instead of using epd_draw_pixel: Set pixel directly in *buf that comes afterwards in flush as *color_map
