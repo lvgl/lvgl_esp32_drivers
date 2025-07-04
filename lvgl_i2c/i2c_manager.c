@@ -39,7 +39,7 @@ SOFTWARE.
 #include "sdkconfig.h"
 
 #include "i2c_manager.h"
-
+#include "gt911.h"
 
 #if defined __has_include
 	#if __has_include ("esp_idf_version.h")
@@ -83,10 +83,8 @@ static const uint8_t ACK_CHECK_EN = 1;
 	#define I2C_MANAGER_1_LOCK_TIMEOUT	( CONFIG_I2C_MANAGER_1_LOCK_TIMEOUT / portTICK_RATE_MS )
 #endif
 
-#define ERROR_PORT(port, fail) { \
-	ESP_LOGE(TAG, "Invalid port or not configured for I2C Manager: %d", (int)port); \
-	return fail; \
-}
+#define ERROR_PORT(port, fail) {}
+	
 
 #if defined(I2C_ZERO) && defined (I2C_ONE)
 	#define I2C_PORT_CHECK(port, fail) \
@@ -128,7 +126,7 @@ esp_err_t I2C_FN(_init)(i2c_port_t port) {
 
 	if (I2C_FN(_mutex)[port] == 0) {
 
-		ESP_LOGI(TAG, "Starting I2C master at port %d.", (int)port);
+		// ESP_LOGI(TAG, "Starting I2C master at port %d.", (int)port);
 
 		I2C_FN(_mutex)[port] = xSemaphoreCreateMutex();
 
@@ -163,14 +161,14 @@ esp_err_t I2C_FN(_init)(i2c_port_t port) {
 		ret = i2c_param_config(port, &conf);
 		ret |= i2c_driver_install(port, conf.mode, 0, 0, 0);
 
-		if (ret != ESP_OK) {
-			ESP_LOGE(TAG, "Failed to initialise I2C port %d.", (int)port);
-			ESP_LOGW(TAG, "If it was already open, we'll use it with whatever settings were used "
-			              "to open it. See I2C Manager README for details.");
-		} else {
-			ESP_LOGI(TAG, "Initialised port %d (SDA: %d, SCL: %d, speed: %d Hz.)",
-					 port, conf.sda_io_num, conf.scl_io_num, conf.master.clk_speed);
-		}
+		// if (ret != ESP_OK) {
+		// 	ESP_LOGE(TAG, "Failed to initialise I2C port %d.", (int)port);
+		// 	ESP_LOGW(TAG, "If it was already open, we'll use it with whatever settings were used "
+		// 	              "to open it. See I2C Manager README for details.");
+		// } else {
+		// 	ESP_LOGI(TAG, "Initialised port %d (SDA: %d, SCL: %d, speed: %d Hz.)",
+		// 			 port, conf.sda_io_num, conf.scl_io_num, conf.master.clk_speed);
+		// }
 
 	}
 
@@ -186,7 +184,7 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
     // May seem weird, but init starts with a check if it's needed, no need for that check twice.
 	I2C_FN(_init)(port);
 
-   	ESP_LOGV(TAG, "Reading port %d, addr 0x%03x, reg 0x%04x", port, addr, reg);
+   	// ESP_LOGV(TAG, "Reading port %d, addr 0x%03x, reg 0x%04x", port, addr, reg);
 
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
@@ -217,15 +215,16 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
 		i2c_cmd_link_delete(cmd);
 		I2C_FN(_unlock)((int)port);
 	} else {
-		ESP_LOGE(TAG, "Lock could not be obtained for port %d.", (int)port);
+		// ESP_LOGE(TAG, "Lock could not be obtained for port %d.", (int)port);
 		return ESP_ERR_TIMEOUT;
 	}
 
     if (result != ESP_OK) {
-    	ESP_LOGW(TAG, "Error: %d", result);
+    	// ESP_LOGW(TAG, "Read Error: %d", result);
+		
     }
 
-	ESP_LOG_BUFFER_HEX_LEVEL(TAG, buffer, size, ESP_LOG_VERBOSE);
+	// ESP_LOG_BUFFER_HEX_LEVEL(TAG, buffer, size, ESP_LOG_VERBOSE);
 
     return result;
 }
@@ -239,7 +238,7 @@ esp_err_t I2C_FN(_write)(i2c_port_t port, uint16_t addr, uint32_t reg, const uin
     // May seem weird, but init starts with a check if it's needed, no need for that check twice.
 	I2C_FN(_init)(port);
 
-    ESP_LOGV(TAG, "Writing port %d, addr 0x%03x, reg 0x%04x", port, addr, reg);
+    //ESP_LOGV(TAG, "Writing port %d, addr 0x%03x, reg 0x%04x", port, addr, reg);
 
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
@@ -266,15 +265,15 @@ esp_err_t I2C_FN(_write)(i2c_port_t port, uint16_t addr, uint32_t reg, const uin
 		i2c_cmd_link_delete(cmd);
 		I2C_FN(_unlock)((int)port);
 	} else {
-		ESP_LOGE(TAG, "Lock could not be obtained for port %d.", (int)port);
+		// ESP_LOGE(TAG, "Lock could not be obtained for port %d.", (int)port);
 		return ESP_ERR_TIMEOUT;
 	}
 
     if (result != ESP_OK) {
-    	ESP_LOGW(TAG, "Error: %d", result);
+    	// ESP_LOGW(TAG, "Write Error: %d", result);
     }
 
-	ESP_LOG_BUFFER_HEX_LEVEL(TAG, buffer, size, ESP_LOG_VERBOSE);
+	// ESP_LOG_BUFFER_HEX_LEVEL(TAG, buffer, size, ESP_LOG_VERBOSE);
 
     return result;
 }
@@ -283,15 +282,15 @@ esp_err_t I2C_FN(_close)(i2c_port_t port) {
 	I2C_PORT_CHECK(port, ESP_FAIL);
     vSemaphoreDelete(I2C_FN(_mutex)[port]);
     I2C_FN(_mutex)[port] = NULL;
-    ESP_LOGI(TAG, "Closing I2C master at port %d", port);
+    // ESP_LOGI(TAG, "Closing I2C master at port %d", port);
     return i2c_driver_delete(port);
 }
 
 esp_err_t I2C_FN(_lock)(i2c_port_t port) {
 	I2C_PORT_CHECK(port, ESP_FAIL);
-	ESP_LOGV(TAG, "Mutex lock set for %d.", (int)port);
+	// ESP_LOGV(TAG, "Mutex lock set for %d.", (int)port);
 
-	TickType_t timeout;
+	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
 		if (port == I2C_NUM_0) {
 			timeout = (CONFIG_I2C_MANAGER_0_LOCK_TIMEOUT) / portTICK_RATE_MS;
@@ -306,7 +305,7 @@ esp_err_t I2C_FN(_lock)(i2c_port_t port) {
 	if (xSemaphoreTake(I2C_FN(_mutex)[port], timeout) == pdTRUE) {
 		return ESP_OK;
 	} else {
-		ESP_LOGE(TAG, "Removing stale mutex lock from port %d.", (int)port);
+		// ESP_LOGE(TAG, "Removing stale mutex lock from port %d.", (int)port);
 		I2C_FN(_force_unlock)(port);
 		return (xSemaphoreTake(I2C_FN(_mutex)[port], timeout) == pdTRUE ? ESP_OK : ESP_FAIL);
 	}
@@ -314,7 +313,7 @@ esp_err_t I2C_FN(_lock)(i2c_port_t port) {
 
 esp_err_t I2C_FN(_unlock)(i2c_port_t port) {
 	I2C_PORT_CHECK(port, ESP_FAIL);
-	ESP_LOGV(TAG, "Mutex lock removed for %d.", (int)port);
+	// ESP_LOGV(TAG, "Mutex lock removed for %d.", (int)port);
 	return (xSemaphoreGive(I2C_FN(_mutex)[port]) == pdTRUE) ? ESP_OK : ESP_FAIL;
 }
 
@@ -333,7 +332,7 @@ esp_err_t I2C_FN(_force_unlock)(i2c_port_t port) {
 
     void I2C_FN(_locking)(void* leader) {
         if (leader) {
-            ESP_LOGI(TAG, "Now following I2C Manager for locking");
+            // ESP_LOGI(TAG, "Now following I2C Manager for locking");
             I2C_FN(_mutex) = (SemaphoreHandle_t*)leader;
 		}
     }

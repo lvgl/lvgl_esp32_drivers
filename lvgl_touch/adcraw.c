@@ -5,17 +5,12 @@
 #include "adcraw.h"
 #include "esp_system.h"
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/timers.h"
-#include "driver/gpio.h"
-#include <stddef.h>
-#include "freertos/timers.h"
+
 //Mycode
 #include "soc/adc_channel.h"
 #include "soc/soc.h"
 #include "soc/soc_memory_layout.h"
-//#include "driver/adc_deprecated.h"
+
 
 /*
 Touch position accuacy
@@ -25,7 +20,6 @@ Decreasing this value will make the position more accurate, but less responsive.
 Increasing this value will make the position more inaccurate but more responsive.
 */
 
-#if CONFIG_LV_TOUCH_CONTROLLER_ADCRAW
 
 #define TAG "ADCRAW"
 #define CALIBRATIONINSET 1 // range 0 <= CALIBRATIONINSET <= 40
@@ -40,8 +34,9 @@ Increasing this value will make the position more inaccurate but more responsive
 
 #define ADCTESTING 0
 
+#define CONFIG_LV_TOUCH_XY_SWAP true 
 
-bool isinverted = true;
+bool isinverted_adcraw = true;
 bool stoptimer = false;
 bool landscapeadc = false;
 uint8_t touchcount = 0;
@@ -55,7 +50,7 @@ static void ad_touch_handler(void *arg);
 
 
 //SOFTWARE TIMER TEST
-static TimerHandle_t SWTIMER;
+TimerHandle_t SWTIMER = 0;
 StaticTimer_t xtimmerbuffer;
 
 // Current ADC values for X and Y channels
@@ -74,13 +69,31 @@ TOUCH_STATES state;
 
 const gpio_num_t yu = TOUCHSCREEN_RESISTIVE_PIN_YU;
 const gpio_num_t xl = TOUCHSCREEN_RESISTIVE_PIN_XL;
-const gpio_num_t yd = TOUCHSCREEN_RESISTIVE_PIN_YD;
-const gpio_num_t xr = TOUCHSCREEN_RESISTIVE_PIN_XR;
+const gpio_num_t yd = 33;//TOUCHSCREEN_RESISTIVE_PIN_YD; //ADC
+const gpio_num_t xr = 32;//TOUCHSCREEN_RESISTIVE_PIN_XR;  //ADC
+
+#define ADC1_CHANNEL_5 0x05
+#define ADC1_CHANNEL_4 0x04
+
+#if TEST_USE_ESP_ADC
+/// @brief it may use adc_continuous to implement these...
+/// @param channel 
+/// @return 
+uint16_t adc1_get_raw(uint8_t channel){
+	return 0;
+}
+#else
+void adc_gpio_init(uint8_t unit, uint8_t channel){
+	/// dummy no longer used.
+}
 
 static const int gpio_to_adc[] = {
-	GPIO_TO_ADC_ELEMENT(TOUCHSCREEN_RESISTIVE_PIN_YD),
-	GPIO_TO_ADC_ELEMENT(TOUCHSCREEN_RESISTIVE_PIN_XR)
+	// GPIO_TO_ADC_ELEMENT(TOUCHSCREEN_RESISTIVE_PIN_YD),
+	// GPIO_TO_ADC_ELEMENT(TOUCHSCREEN_RESISTIVE_PIN_XR), 
+	// ADC2_CHANNEL_0,ADC2_CHANNEL_2
+	ADC1_CHANNEL_5,ADC1_CHANNEL_4
 };
+#endif
 
 static void TouchCalculateCalPoints(void)
 {
@@ -145,18 +158,17 @@ static void TouchCalculateCalPoints(void)
 void adcraw_init(void)
 {
 	state = IDLE;      // set the state of the state machine to start the sampling
-
 	gpio_set_drive_capability(yu, GPIO_DRIVE_CAP_3);
-	gpio_set_drive_capability(yd, GPIO_DRIVE_CAP_3);
+	gpio_set_drive_capability(33, GPIO_DRIVE_CAP_3);
 	gpio_set_drive_capability(xl, GPIO_DRIVE_CAP_3);
-	gpio_set_drive_capability(xr, GPIO_DRIVE_CAP_3);
+	gpio_set_drive_capability(32, GPIO_DRIVE_CAP_3);
 	//ESP HARDWARE Timer Begin + Wait	
 	// (esp_timer_create(&periodic_timer_args, &periodic_timer));
 	// ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 5 * 1000));        //5ms (expressed as microseconds)
 	
 	//Timer SW TEST
-	//SWTIMER = xTimerCreate("ADCTEST", pdMS_TO_TICKS(10),true,1, ad_touch_handler); //Timer has ~ 45ms offset
-	SWTIMER = xTimerCreate("ADCTEST", pdMS_TO_TICKS(20),true,0, ad_touch_handler); //,&xtimmerbuffer
+	SWTIMER = xTimerCreate("ADCTEST", pdMS_TO_TICKS(20),true,1, ad_touch_handler); 
+	//SWTIMER = xTimerCreate("ADCTEST", pdMS_TO_TICKS(20),true,4, ad_touch_handler); 
 	xTimerStart(SWTIMER,0);
 
 	/*Load calibration data*/
@@ -171,7 +183,10 @@ void adcraw_init(void)
 
 	TouchCalculateCalPoints();
 }
+void adcraw_set_timer(bool en){
 
+
+}
 static void setup_axis(gpio_num_t plus, gpio_num_t minus, gpio_num_t measure, gpio_num_t ignore)
 {
 	// Set GPIOs:
@@ -198,29 +213,31 @@ static void setup_adc(gpio_num_t measure)
 {
 	// Init ADC
 	adc1_channel_t channel = gpio_to_adc[measure];
-	//adc_gpio_init(ADC_UNIT_1, channel);
+
+	adc_gpio_init(ADC_UNIT_1, channel);
 	adc1_config_width(ADC_WIDTH_BIT_10);
 	adc1_config_channel_atten(channel, ADC_ATTEN_DB_11);
+
 }
 static void setup_adc_y(gpio_num_t measure)
 {
-	// Init ADC
-	adc1_channel_t channel = gpio_to_adc[measure];
+	//Init ADC
+	adc1_channel_t channel = 5;
 	adc1_config_width(ADC_WIDTH_BIT_10);
-	//adc_gpio_init(ADC_UNIT_1, channel);
+	adc_gpio_init(ADC_UNIT_1, channel);
 	adc1_config_channel_atten(channel, ADC_ATTEN_DB_11);
 
-
 }
+
 static void setup_adc_x(gpio_num_t measure)
 {
 	// Init ADC
-	adc1_channel_t channel = gpio_to_adc[measure];
+	adc1_channel_t channel = 4;
 	adc1_config_width(ADC_WIDTH_BIT_10);
-	//adc_gpio_init(ADC_UNIT_1, channel);
+	adc_gpio_init(ADC_UNIT_1, channel);
 	adc1_config_channel_atten(channel, ADC_ATTEN_DB_11);
 }
-   
+    
 static void insert_sort(int16_t array[], uint8_t size) {
 	uint8_t j;
 	int16_t save;
@@ -233,6 +250,8 @@ static void insert_sort(int16_t array[], uint8_t size) {
 	}
 }
 
+//Some switch states have no breaks, due to LVGL's ADCRAW logic please refer to
+//https://github.com/lvgl/lvgl_esp32_drivers/blob/master/lvgl_touch/adcraw.c
 static void ad_touch_handler(void *arg)
 {
 	(void) arg;
@@ -240,57 +259,54 @@ static void ad_touch_handler(void *arg)
 	int16_t samples[NUMSAMPLES];
 	//esp_err_t r;
 	//int raw;
-	//vTaskDelay(0.75* portTICK_PERIOD_MS); 
-	//vTaskDelay(0.20* portTICK_PERIOD_MS); 
-	//vTaskDelay(4* portTICK_PERIOD_MS); 
-	//vTaskDelay(0.5* portTICK_PERIOD_MS); 
-
 	switch (state) {
 	case IDLE:
 		adcX = 0;
 		adcY = 0;
-
 	case SET_X :
 		setup_axis(yd, yu, xr, xl);
 		setup_adc_x(xr);
 		state = READ_X;
 		break;
-
 	case READ_X:
-		for (i = 0; i < NUMSAMPLES; i++)
-			samples[i] = adc1_get_raw(gpio_to_adc[xr]);
+		for (i = 0; i < NUMSAMPLES; i++){
+			// adc2_get_raw(2,1,&adcX);
+			// samples[i] = adcX;
+			samples[i] = adc1_get_raw(ADC1_CHANNEL_4);
+		}
 		insert_sort(samples, NUMSAMPLES);
 		temp_x = samples[NUMSAMPLES / 2];
-		
 	case SET_Y :
 		setup_axis(xl, xr, yd, yu);
 		setup_adc_y(yd);
 		state = READ_Y;
 		break;
-
 	case READ_Y:
-		for (i = 0; i < NUMSAMPLES; i++)
-			samples[i] = adc1_get_raw(gpio_to_adc[yd]);
+		for (i = 0; i < NUMSAMPLES; i++){
+			//adc2_get_raw(0,1,&adcY);
+			//samples[i] = adcY;
+			samples[i] = adc1_get_raw(ADC1_CHANNEL_5);
+		}
 		insert_sort(samples, NUMSAMPLES);
 		temp_y = samples[NUMSAMPLES / 2];
-		
 	case SET_Z1 :
 		setup_axis(yu, xl, yd, xr);
 		setup_adc_y(yd);
 		state = READ_Z1;
 		break;
-
 	case READ_Z1:
-		temp_z1 = adc1_get_raw(gpio_to_adc[yd]);
-
+		// adc2_get_raw(0,1,&adcY);
+		// temp_z1 = adcY;
+		temp_z1 = adc1_get_raw(ADC1_CHANNEL_5);
 	case SET_Z2 :
 		setup_axis(yu, xl, xr, yd);
 		setup_adc_y(yd);
 		state = READ_Z2;
 		break;
-
 	case READ_Z2:
-		temp_z2 = adc1_get_raw(gpio_to_adc[xr]);
+		// adc2_get_raw(2,1,&adcX);
+		// temp_z2 = adcX;
+		temp_z2 = adc1_get_raw(ADC1_CHANNEL_4);
 		
 		if (temp_z1 < TOUCHSCREEN_RESISTIVE_PRESS_THRESHOLD) {
 #if CONFIG_LV_TOUCH_XY_SWAP
@@ -309,9 +325,9 @@ static void ad_touch_handler(void *arg)
 			adcY = adcY2 = temp_y; 
 			adcX = adcX2 = temp_x; 
 			touchreset =touched = true;
+#endif
 #if ADCTESTING
 			printf("Touched x: %d   y: %d \n", adcX, adcY);
-#endif
 #endif
 		}
 		else {
@@ -345,7 +361,7 @@ static int16_t TouchGetRawX(void)
 // #if CONFIG_LV_TOUCH_INVERT_X
 // 	x = 1023 - x;
 // #endif
-	if( isinverted == true){
+	if( isinverted_adcraw == true){
 		x = 1023 - x;
 	}
 
@@ -390,7 +406,7 @@ static int16_t TouchGetRawY(void)
 // 	y = 1023 - y;
 // #endif
 
-	if( isinverted == true){
+	if( isinverted_adcraw == true){
 		y = 1023 - y;
 	}
 	return y;
@@ -441,6 +457,9 @@ bool adcraw_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 	//y = TouchGetY();
 	if(landscapeadc){
 		y = TouchGetY();  
+		if(isinverted_adcraw){
+			y = y - 40;
+		}
 	}else{
 		y = TouchGetY()-30;  
 	}
@@ -487,21 +506,4 @@ bool adcraw_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 
 
 
-void timercontrol(bool flag){
-	if(flag == true ){
-		printf("ADC timer stopped");
-		// esp_timer_stop(periodic_timer);
-		// esp_timer_delete(periodic_timer);
-		xTimerStop(SWTIMER,0);
-	}else{
-		printf("ADC timer started");
-		xTimerStart(SWTIMER,0);
-		//(esp_timer_create(&periodic_timer_args, &periodic_timer));
-		// (esp_timer_start_periodic(periodic_timer, 5 * 1000));     
-		//ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 5 * 100000)); 
-		//ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 5 * 1000));        //5ms (expressed as microseconds)
-		 
-	}
-}
-
-#endif //CONFIG_LV_TOUCH_CONTROLLER_ADCRAW
+//#endif

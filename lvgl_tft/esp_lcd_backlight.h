@@ -18,6 +18,23 @@ extern "C" { /* extern "C" */
  * GLOBAL PROTOTYPES
  **********************/
 
+
+/*  Useful Backlight Constants for PWM control
+//Backlight 
+
+#define BL 27  
+int dutyCycle;
+const int PWMFreq = 2000; 
+const int PWMChannel = 0;
+const int PWMResolution = 10;
+const int MAX_DUTY_CYCLE = (int)(pow(2, PWMResolution) - 1);
+dutyCycle=Lux;
+if (dutyCycle> MAX_DUTY_CYCLE || dutyCycle <= 0){dutyCycle=MAX_DUTY_CYCLE;}
+ledcWrite(PWMChannel, dutyCycle);
+
+*/
+
+
 /**
  * @brief Display backlight controller handle
  *
@@ -46,7 +63,7 @@ typedef struct {
  * @param[in] config Configuration structure of backlight controller
  * @return           Display backlight controller handle
  */
-disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config);
+extern disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config);
 
 /**
  * @brief Set backlight
@@ -57,8 +74,9 @@ disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config);
  * @param bckl                   Backlight controller handle
  * @param[in] brightness_percent Brightness in [%]
  */
-void disp_backlight_set(disp_backlight_h bckl, int brightness_percent);
-void disp_backlight_delete(disp_backlight_h bckl);
+extern void disp_backlight_set(disp_backlight_h bckl, int brightness_percent);
+extern void disp_backlight_delete(disp_backlight_h bckl);
+void setDisplay(int BLvalue);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -20,6 +20,11 @@ extern "C" {
 #include "lvgl/lvgl.h"
 #endif
 
+//Include both Capacitive and Resistive
+#define CAPACITIVE_TOUCH 2
+#define RESISTIVE_TOUCH 1
+extern uint8_t touchtype;
+
 #if defined (CONFIG_LV_TOUCH_CONTROLLER_XPT2046)
 #include "xpt2046.h"
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_FT6X06)
@@ -28,12 +33,14 @@ extern "C" {
 #include "stmpe610.h"
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
 #include "adcraw.h"
+#include "gt911.h"
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
 #include "FT81x.h"
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_RA8875)
 #include "ra8875_touch.h"
 #elif defined (CONFIG_LV_TOUCH_CONTROLLER_GT911)
 #include "gt911.h"
+#include "adcraw.h"
 #endif
 
 /*********************

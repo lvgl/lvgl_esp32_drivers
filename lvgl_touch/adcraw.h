@@ -9,31 +9,44 @@
 extern "C" {
 #endif
 
+#define TEST_USE_ESP_ADC		(0)
 #include <stdint.h>
 #include <stdbool.h>
-#include "driver/gpio.h"
-#include "driver/adc.h"
-#include "soc/adc_channel.h"
+#include "driver/gpio.h"    /// IDF4.xx
+#include "rom/gpio.h"   /// IDF 5.xx
+
+
+#if TEST_USE_ESP_ADC
+#include "esp_adc/adc_continuous.h"		/// IDF 5.xx
+#else
+#include "driver/adc.h"	/// IDF 4.xx
+
+#endif
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
 #include "lvgl/lvgl.h"
 #endif
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/timers.h"
+// #include "driver/gpio.h"
+#include <stddef.h>
+#include "freertos/timers.h"
 
-//#define LV_HOR_RES_MAX 240
-//#define LV_VER_RES_MAX 320
+#define portTICK_RATE_MS portTICK_PERIOD_MS  /// IDF 5.xx
 
-bool stoptimer;
-void timercontrol(bool flag);
-bool landscapeadc;
-bool touched;
-bool touchreset;
-uint8_t touchcount;
+extern bool stoptimer;
+extern bool landscapeadc;
+extern bool touched;
+extern bool touchreset;
+extern uint8_t touchcount;
 
-#define TOUCHSCREEN_RESISTIVE_PIN_YU CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_YU // Y+ any gpio
-#define TOUCHSCREEN_RESISTIVE_PIN_YD CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_YD // Y- also ADC
-#define TOUCHSCREEN_RESISTIVE_PIN_XL CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_XL // X- any gpio
-#define TOUCHSCREEN_RESISTIVE_PIN_XR CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_XR // X+ also ADC
+extern TimerHandle_t SWTIMER;
+#define TOUCHSCREEN_RESISTIVE_PIN_YU 19 // Y+ any gpio
+#define TOUCHSCREEN_RESISTIVE_PIN_YD 33 // Y- also ADC
+#define TOUCHSCREEN_RESISTIVE_PIN_XL 5 // X- any gpio
+#define TOUCHSCREEN_RESISTIVE_PIN_XR 32 // X+ also ADC
 
 // Default calibration points
 #define TOUCHCAL_ULX 29  // Upper Left X
@@ -47,7 +60,9 @@ uint8_t touchcount;
 
 #define TOUCHSCREEN_RESISTIVE_PRESS_THRESHOLD 1023
 
-extern bool isinverted;
+
+
+extern bool isinverted_adcraw;
 	
 /*GetMaxX Macro*/
 #if CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE
@@ -82,7 +97,7 @@ typedef enum {
 	READ_Z2
 } TOUCH_STATES; 
 
-int adcX, adcY,adcX2,adcY2;
+extern int adcX, adcY,adcX2,adcY2;
 
 
 

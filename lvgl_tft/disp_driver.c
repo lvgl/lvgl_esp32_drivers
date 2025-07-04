@@ -4,11 +4,10 @@
 
 #include "disp_driver.h"
 #include "disp_spi.h"
-#include "esp_lcd_backlight.h"
+// #include "esp_lcd_backlight.h"
 #include "sdkconfig.h"
 
-// Display backlight handle
-static disp_backlight_h disp_backlight_handle = NULL;
+
 void *disp_driver_init(void)
 {
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
@@ -48,32 +47,32 @@ void *disp_driver_init(void)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544
     pcd8544_init();
 #endif
-
+    //ILI Display initializes the BL 
     // We still use menuconfig for these settings
     // It will be set up during runtime in the future
-#if (defined(CONFIG_LV_DISP_BACKLIGHT_SWITCH) || defined(CONFIG_LV_DISP_BACKLIGHT_PWM))
-    const disp_backlight_config_t bckl_config = {
-        .gpio_num = CONFIG_LV_DISP_PIN_BCKL,
-#if defined CONFIG_LV_DISP_BACKLIGHT_PWM
-        .pwm_control = true,
-#else
-        .pwm_control = false,
-#endif
-#if defined CONFIG_LV_BACKLIGHT_ACTIVE_LVL
-        .output_invert = false, // Backlight on high
-#else
-        .output_invert = true, // Backlight on low
-#endif
-        .timer_idx = 0,
-        .channel_idx = 0 // @todo this prevents us from having two PWM controlled displays
-    };
-    disp_backlight_h bckl_handle = disp_backlight_new(&bckl_config);
-    disp_backlight_set(bckl_handle, 100);
-    disp_backlight_handle = bckl_handle;
-    return bckl_handle;
-#else
+    // #if (defined(CONFIG_LV_DISP_BACKLIGHT_SWITCH) || defined(CONFIG_LV_DISP_BACKLIGHT_PWM))
+    //     const disp_backlight_config_t bckl_config = {
+    //         .gpio_num = CONFIG_LV_DISP_PIN_BCKL,
+    // #if defined CONFIG_LV_DISP_BACKLIGHT_PWM
+    //         .pwm_control = true,
+    // #else
+    //         .pwm_control = false,
+    // #endif
+    // #if defined CONFIG_LV_BACKLIGHT_ACTIVE_LVL
+    //         .output_invert = false, // Backlight on high
+    // #else
+    //         .output_invert = true, // Backlight on low
+    // #endif
+    //         .timer_idx = 0,
+    //         .channel_idx = 0 // @todo this prevents us from having two PWM controlled displays
+    //     };
+    // disp_backlight_h bckl_handle = disp_backlight_new(&bckl_config);
+    // disp_backlight_set(bckl_handle, 100);
+    // return bckl_handle;
+    // #else
+    //     return NULL;
+    // #endif
     return NULL;
-#endif
 }
 
 void disp_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
@@ -150,9 +149,4 @@ void disp_driver_set_px(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544
    pcd8544_set_px_cb(disp_drv, buf, buf_w, x, y, color, opa);
 #endif
-}
-
-void setDisplay(uint32_t BLvalue)
-{
-    disp_backlight_set(disp_backlight_handle, BLvalue);
 }

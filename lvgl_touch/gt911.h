@@ -73,6 +73,8 @@ typedef struct {
     uint8_t i2c_dev_addr;
 } gt911_status_t;
 
+extern bool isinverted_gt911;
+extern gt911_status_t gt911_status;
 /**
   * @brief  Initialize for GT911 communication via I2C
   * @param  dev_addr: Device address on communication Bus (I2C slave address of GT911).
@@ -87,7 +89,7 @@ void gt911_init(uint8_t dev_addr);
   * @retval Always false
   */
 bool gt911_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
-
+void gt911_reset_CTP();
 #ifdef __cplusplus
 }
 #endif

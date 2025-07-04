@@ -29,8 +29,6 @@
 
  #define TAG "lvgl_helpers"
 
-#define SPI_HOST_MAX SPI3_HOST
-
 /**********************
  *      TYPEDEFS
  **********************/
@@ -156,9 +154,15 @@ bool lvgl_spi_driver_init(int host,
     int dma_channel,
     int quadwp_pin, int quadhd_pin)
 {
-    assert((0 <= host) && (SPI_HOST_MAX >= host));
+    //SPI_HOST_MAX
+    // assert((0 <= host) && (3 >= host));
+    // const char *spi_names[] = {
+    //     "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
+    // };
+
+    assert((SPI_HOST <= host) && (VSPI_HOST >= host));
     const char *spi_names[] = {
-        "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
+        "SPI_HOST", "HSPI_HOST", "VSPI_HOST"
     };
 
     ESP_LOGI(TAG, "Configuring SPI host %s", spi_names[host]);

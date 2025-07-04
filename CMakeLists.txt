@@ -67,12 +67,14 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
         list(APPEND SOURCES "lvgl_touch/stmpe610.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_ADCRAW)
         list(APPEND SOURCES "lvgl_touch/adcraw.c")
+        list(APPEND SOURCES "lvgl_touch/gt911.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_FT81X)
         list(APPEND SOURCES "lvgl_touch/FT81x.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_RA8875)
         list(APPEND SOURCES "lvgl_touch/ra8875_touch.c")
     elseif(CONFIG_LV_TOUCH_CONTROLLER_GT911)
         list(APPEND SOURCES "lvgl_touch/gt911.c")
+        list(APPEND SOURCES "lvgl_touch/adcraw.c")
     endif()
 
     if(CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
@@ -86,9 +88,13 @@ endif()
 
 idf_component_register(SRCS ${SOURCES}
                        INCLUDE_DIRS ${LVGL_INCLUDE_DIRS}
-                       REQUIRES lvgl)
-
+                       REQUIRES lvgl driver esp_adc esp_rom soc esp_common freertos)
+                    #    
 target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_LVGL_H_INCLUDE_SIMPLE")
+# list(APPEND EXTRA_COMPILER_OPTIONS "-Wno-error=format" "-nostartfiles")
+set(EXTRA_COMPILER_OPTIONS ${EXTRA_COMPILER_OPTIONS} "-Wno-error=format" "-nostartfiles" )
+# "-Wno-format")
+add_compile_options(${EXTRA_COMPILER_OPTIONS})
 
 else()
     message(FATAL_ERROR "LVGL ESP32 drivers: ESP_PLATFORM is not defined. Try reinstalling ESP-IDF.")

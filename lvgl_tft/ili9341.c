@@ -22,6 +22,8 @@
  *      DEFINES
  *********************/
  #define TAG "ILI9341"
+#define SIG_GPIO_OUT_IDX 	(128)   /// IDF 5.xx
+
 uint8_t rotationvalue = 0;
 
 /**********************
@@ -49,6 +51,69 @@ static void ili9341_send_color(void * data, uint16_t length);
  **********************/
 disp_backlight_config_t PWM_LGVL;
 disp_backlight_h PWM_LGVL_handle;
+
+typedef struct {
+    bool pwm_control; // true: LEDC is used, false: GPIO is used
+    int index;        // Either GPIO or LEDC channel
+} disp_backlight_t;
+
+
+disp_backlight_h disp_backlight_new(const disp_backlight_config_t *config)
+{
+    // Check input parameters
+    if (config == NULL)
+        return NULL;
+    if (!GPIO_IS_VALID_OUTPUT_GPIO(config->gpio_num)) {
+        ESP_LOGI(TAG, "Invalid GPIO number");
+        return NULL;
+    }
+    disp_backlight_t *bckl_dev = calloc(1, sizeof(disp_backlight_t));
+    if (bckl_dev == NULL){
+        ESP_LOGI(TAG, "Not enough memory");
+        return NULL;
+    }
+    if (config->pwm_control){
+        // Configure LED (Backlight) pin as PWM for Brightness control.
+		ESP_LOGI(TAG, "PWM for Brightness control.");
+        bckl_dev->pwm_control = true;
+        bckl_dev->index = config->channel_idx;
+        const ledc_channel_config_t LCD_backlight_channel = {
+            .gpio_num = 27,
+            .speed_mode = LEDC_HIGH_SPEED_MODE,
+            .channel = 0,
+            .intr_type = LEDC_INTR_DISABLE,
+            .timer_sel = LEDC_TIMER_0, //0
+            .duty = 0,
+            .hpoint = 0
+        };
+        const ledc_timer_config_t LCD_backlight_timer = {
+            .speed_mode = LEDC_HIGH_SPEED_MODE,
+            // .bit_num = LEDC_TIMER_12_BIT, //LEDC_TIMER_10_BIT,    /// IDF 5.xx, it may become deprecated, no-long useful
+			.duty_resolution  = LEDC_TIMER_8_BIT,//LEDC_TIMER_13_BIT,LEDC_TIMER_13_BIT
+            .timer_num = LEDC_TIMER_0,
+            .freq_hz = 5000,
+            .clk_cfg = LEDC_USE_APB_CLK
+		};
+
+        ESP_ERROR_CHECK(ledc_timer_config(&LCD_backlight_timer));
+        ESP_ERROR_CHECK(ledc_channel_config(&LCD_backlight_channel));
+		ESP_ERROR_CHECK(ledc_set_duty(LEDC_HIGH_SPEED_MODE, 0,255 )); // 8190 Set duty to 50%. ((2 ** 13) - 1) * 50% = 4095   8190 => 100%
+		ESP_ERROR_CHECK(ledc_update_duty(LEDC_HIGH_SPEED_MODE, 0));
+       // gpio_matrix_out(config->gpio_num, ledc_periph_signal[LEDC_LOW_SPEED_MODE].sig_out0_idx + config->channel_idx, config->output_invert, 0);
+    }
+    else
+    {
+        // Configure GPIO for output
+		ESP_LOGI(TAG, "GPIO for output");
+        bckl_dev->index = config->gpio_num;
+        gpio_pad_select_gpio(config->gpio_num);
+        ESP_ERROR_CHECK(gpio_set_direction(config->gpio_num, GPIO_MODE_OUTPUT));
+        gpio_matrix_out(config->gpio_num, SIG_GPIO_OUT_IDX, config->output_invert, false);
+    }
+
+    return (disp_backlight_h)bckl_dev;
+}
+
 
 
 /**********************
@@ -89,20 +154,36 @@ void ili9341_init(void)
 		{0, {0}, 0xff},
 	};
 
+#if ILI9341_BCKL == 15
+	gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_SEL_15;
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&io_conf);
+#endif
+
 	//Initialize non-SPI GPIOs
     gpio_pad_select_gpio(ILI9341_DC);
 	gpio_set_direction(ILI9341_DC, GPIO_MODE_OUTPUT);
 
-#if ILI9341_USE_RST
-    gpio_pad_select_gpio(ILI9341_RST);
-	gpio_set_direction(ILI9341_RST, GPIO_MODE_OUTPUT);
+	//Initilize the BL
+	PWM_LGVL.pwm_control = true;
+	PWM_LGVL.output_invert = false;
+	PWM_LGVL.gpio_num = 27;
+	PWM_LGVL.timer_idx = 0;
+	PWM_LGVL.channel_idx = 0;
+	ESP_LOGI(TAG, "Setting new backlight.");
+	disp_backlight_new(&PWM_LGVL);
 
 	//Reset the display
+	gpio_pad_select_gpio(ILI9341_RST);
+	gpio_set_direction(ILI9341_RST, GPIO_MODE_OUTPUT);
 	gpio_set_level(ILI9341_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(ILI9341_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
 
 	ESP_LOGI(TAG, "Initialization.");
 
@@ -118,6 +199,10 @@ void ili9341_init(void)
 	}
 
 	ili9341_enable_backlight(true);
+	if((rotationvalue > 3) || (rotationvalue < 0)){
+		//Invalid orientation
+		rotationvalue = 0;
+	}
 	ili9341_set_orientation(rotationvalue);
        // ili9341_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
 		// 0 for portrait, 1 for landscape
