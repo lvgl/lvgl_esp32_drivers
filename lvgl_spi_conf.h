@@ -37,7 +37,7 @@ extern "C" {
 #define DISP_SPI_IO3 (-1)
 #endif
 #define DISP_SPI_CLK CONFIG_LV_DISP_SPI_CLK
-#if defined (CONFIG_LV_DISPLAY_USE_SPI_CS)
+#if CONFIG_LV_DISPLAY_USE_SPI_CS
     #define DISP_SPI_CS CONFIG_LV_DISP_SPI_CS
 #else
     #define DISP_SPI_CS (-1)
