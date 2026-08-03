@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> Archived, used [lvgl/lv_esp_idf](https://github.com/lvgl/lv_esp_idf) instead!
+
 # Display and touchpad drivers for ESP32 using LVGL
 
 For a ready to use ESP32 project take look at the [lv_port_esp32](https://github.com/lvgl/lv_port_esp32) repository.
