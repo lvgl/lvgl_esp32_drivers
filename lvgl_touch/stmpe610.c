@@ -63,7 +63,7 @@ void stmpe610_init(void)
 	
     // Attempt a software reset
 	write_8bit_reg(STMPE_SYS_CTRL1, STMPE_SYS_CTRL1_RESET);
-	vTaskDelay(10 / portTICK_RATE_MS);
+	vTaskDelay(10 / portTICK_PERIOD_MS);
 	
 	// Reset the SPI configuration, making sure auto-increment is set
 	u8 = read_8bit_reg(STMPE_SPI_CFG);

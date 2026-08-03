@@ -14,6 +14,10 @@
 
 #include "disp_spi.h"
 #include "driver/gpio.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -86,20 +90,28 @@ void st7789_init(void)
     };
 
     //Initialize non-SPI GPIOs
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(ST7789_DC);
+#else
+    esp_rom_gpio_pad_select_gpio(ST7789_DC);
+#endif
     gpio_set_direction(ST7789_DC, GPIO_MODE_OUTPUT);
 
 #if !defined(ST7789_SOFT_RST)
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(ST7789_RST);
+#else
+    esp_rom_gpio_pad_select_gpio(ST7789_RST);
+#endif
     gpio_set_direction(ST7789_RST, GPIO_MODE_OUTPUT);
 #endif
 
     //Reset the display
 #if !defined(ST7789_SOFT_RST)
     gpio_set_level(ST7789_RST, 0);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(ST7789_RST, 1);
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 #else
     st7789_send_cmd(ST7789_SWRESET);
 #endif
@@ -112,7 +124,7 @@ void st7789_init(void)
         st7789_send_cmd(st7789_init_cmds[cmd].cmd);
         st7789_send_data(st7789_init_cmds[cmd].data, st7789_init_cmds[cmd].databytes&0x1F);
         if (st7789_init_cmds[cmd].databytes & 0x80) {
-                vTaskDelay(100 / portTICK_RATE_MS);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
         }
         cmd++;
     }
@@ -162,8 +174,17 @@ void st7789_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
         offsety1 += 40;
         offsety2 += 40;
     #endif
+#elif (LV_HOR_RES_MAX == 320) && (LV_VER_RES_MAX == 170) // 1.9 inch 170×320 LCD, physically landscape
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT) || (CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+        offsety1 += 35;
+        offsety2 += 35;
+    #endif
+#elif (LV_HOR_RES_MAX == 170) && (LV_VER_RES_MAX == 320) // 1.9 inch 170×320 LCD, physically vertical
+    #if (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE) || (CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED)
+        offsetx1 += 35;
+        offsetx2 += 35;
+    #endif
 #endif
-
     /*Column addresses*/
     st7789_send_cmd(ST7789_CASET);
     data[0] = (offsetx1 >> 8) & 0xFF;

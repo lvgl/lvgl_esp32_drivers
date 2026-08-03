@@ -29,9 +29,9 @@ extern "C" {
 #define STR_QUOTE(s) STR_EXPAND(STR_EXPAND(s))
 
 #ifdef I2C_OEM
-    #define I2C_NAME_PREFIX CONCAT(I2C_OEM, _i2c)
+#define I2C_NAME_PREFIX CONCAT(I2C_OEM, _i2c)
 #else
-    #define I2C_NAME_PREFIX i2c_manager
+#define I2C_NAME_PREFIX i2c_manager
 #endif
 #define I2C_TAG STR_EXPAND(I2C_NAME_PREFIX)
 
@@ -53,19 +53,19 @@ esp_err_t I2C_FN(_force_unlock)(i2c_port_t port);
 
 #ifdef I2C_OEM
 
-    void I2C_FN(_locking)(void* leader);
+void I2C_FN(_locking)(void* leader);
 
 #else
 
-    void* i2c_manager_locking();
+void* i2c_manager_locking();
 
-    typedef struct {
-        int32_t (* read)(void *handle, uint8_t address, uint8_t reg, uint8_t *buffer, uint16_t size);
-        int32_t (* write)(void *handle, uint8_t address, uint8_t reg, const uint8_t *buffer, uint16_t size);
-        void *handle;
-    } i2c_hal_t;
+typedef struct {
+    int32_t (* read)(void *handle, uint8_t address, uint8_t reg, uint8_t *buffer, uint16_t size);
+    int32_t (* write)(void *handle, uint8_t address, uint8_t reg, const uint8_t *buffer, uint16_t size);
+    void *handle;
+} i2c_hal_t;
 
-    void* i2c_hal(i2c_port_t port);
+void* i2c_hal(i2c_port_t port);
 
 #endif
 

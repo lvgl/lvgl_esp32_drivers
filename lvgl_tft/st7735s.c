@@ -12,6 +12,10 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 #ifdef CONFIG_LV_M5STICKC_HANDLE_AXP192
     #include "lvgl_i2c/i2c_manager.h"
@@ -98,18 +102,26 @@ void st7735s_init(void)
     };
 
 	//Initialize non-SPI GPIOs
-        gpio_pad_select_gpio(ST7735S_DC);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ST7735S_DC);
+#else
+    esp_rom_gpio_pad_select_gpio(ST7735S_DC);
+#endif
 	gpio_set_direction(ST7735S_DC, GPIO_MODE_OUTPUT);
 
 #if ST7735S_USE_RST
-        gpio_pad_select_gpio(ST7735S_RST);
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
+    gpio_pad_select_gpio(ST7735S_RST);
+#else
+    esp_rom_gpio_pad_select_gpio(ST7735S_RST);
+#endif
 	gpio_set_direction(ST7735S_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
 	gpio_set_level(ST7735S_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	gpio_set_level(ST7735S_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 #endif
 
 	ESP_LOGI(TAG, "ST7735S initialization.");
@@ -120,7 +132,7 @@ void st7735s_init(void)
 		st7735s_send_cmd(init_cmds[cmd].cmd);
 		st7735s_send_data(init_cmds[cmd].data, init_cmds[cmd].databytes&0x1F);
 		if (init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		cmd++;
 	}

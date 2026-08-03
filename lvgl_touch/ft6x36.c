@@ -150,7 +150,7 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     data->point.x = touch_inputs.last_x;
     data->point.y = touch_inputs.last_y;
     data->state = touch_inputs.current_state;
-    ESP_LOGD(TAG, "X=%u Y=%u", data->point.x, data->point.y);
+    ESP_LOGV(TAG, "X=%u Y=%u", data->point.x, data->point.y);
 
 #if CONFIG_LV_FT6X36_COORDINATES_QUEUE
     xQueueOverwrite( ft6x36_touch_queue_handle, &touch_inputs );

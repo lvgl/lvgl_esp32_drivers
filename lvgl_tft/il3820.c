@@ -33,6 +33,10 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_idf_version.h"
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5,0,0)
+#include "rom/gpio.h"
+#endif
 
 #include "il3820.h"
 
@@ -196,21 +200,33 @@ void il3820_init(void)
     uint8_t tmp[3] = {0};
 
     /* Initialize non-SPI GPIOs */
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(IL3820_DC_PIN);
+#else
+    esp_rom_gpio_pad_select_gpio(IL3820_DC_PIN);
+#endif
     gpio_set_direction(IL3820_DC_PIN, GPIO_MODE_OUTPUT);
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(IL3820_BUSY_PIN);
+#else
+    esp_rom_gpio_pad_select_gpio(IL3820_BUSY_PIN);
+#endif
     gpio_set_direction(IL3820_BUSY_PIN,  GPIO_MODE_INPUT);
 
 #if IL3820_USE_RST
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5,0,0)
     gpio_pad_select_gpio(IL3820_RST_PIN);
+#else
+    esp_rom_gpio_pad_select_gpio(IL3820_RST_PIN);
+#endif
     gpio_set_direction(IL3820_RST_PIN, GPIO_MODE_OUTPUT);
 
     /* Harware reset */
     gpio_set_level( IL3820_RST_PIN, 0);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+    vTaskDelay(IL3820_RESET_DELAY / portTICK_PERIOD_MS);
     gpio_set_level( IL3820_RST_PIN, 1);
-    vTaskDelay(IL3820_RESET_DELAY / portTICK_RATE_MS);
+    vTaskDelay(IL3820_RESET_DELAY / portTICK_PERIOD_MS);
 #endif
 
     /* Software reset */
@@ -267,14 +283,14 @@ static void il3820_waitbusy(int wait_ms)
 {
     int i = 0;
 
-    vTaskDelay(10 / portTICK_RATE_MS); // 10ms delay
+    vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay
 
     for(i = 0; i < (wait_ms * 10); i++) {
 	if(gpio_get_level(IL3820_BUSY_PIN) != IL3820_BUSY_LEVEL) {
             return;
         }
 
-        vTaskDelay(10 / portTICK_RATE_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 
     ESP_LOGE( TAG, "busy exceeded %dms", i*10 );
