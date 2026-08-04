@@ -43,6 +43,38 @@ esp_err_t gt911_i2c_write8(uint8_t slave_addr, uint16_t register_addr, uint8_t d
 }
 
 /**
+  * @brief  set GT911 slave address via RST and INT pin
+  * @param  dev_addr: Device address on communication Bus (I2C slave address of GT911).
+  * @retval None
+  */
+void gt911_set_addr(uint8_t dev_addr){
+//fix show error the first time
+		gpio_config_t io_conf;
+		io_conf.intr_type = GPIO_INTR_DISABLE;
+		io_conf.mode = GPIO_MODE_OUTPUT;
+		io_conf.pin_bit_mask = (1ULL << CONFIG_GT911_INT_PIN)|(1ULL << CONFIG_GT911_RST_PIN);
+		io_conf.pull_down_en = 0;
+		io_conf.pull_up_en = 0;
+		gpio_config(&io_conf);
+		gpio_pad_select_gpio(CONFIG_GT911_INT_PIN);
+		gpio_set_direction(CONFIG_GT911_INT_PIN, GPIO_MODE_OUTPUT);
+		gpio_pad_select_gpio(CONFIG_GT911_RST_PIN);
+		gpio_set_direction(CONFIG_GT911_RST_PIN, GPIO_MODE_OUTPUT);
+
+		// 设置引脚电平
+		gpio_set_level(CONFIG_GT911_INT_PIN, 0);
+		gpio_set_level(CONFIG_GT911_RST_PIN, 0);
+		vTaskDelay(pdMS_TO_TICKS(10));
+		gpio_set_level(CONFIG_GT911_INT_PIN, GT911_I2C_SLAVE_ADDR==0x29);
+		vTaskDelay(pdMS_TO_TICKS(1));
+		gpio_set_level(CONFIG_GT911_RST_PIN, 1);
+		vTaskDelay(pdMS_TO_TICKS(5));
+		gpio_set_level(CONFIG_GT911_INT_PIN, 0);
+		vTaskDelay(pdMS_TO_TICKS(50));
+		vTaskDelay(pdMS_TO_TICKS(50));
+}
+
+/**
   * @brief  Initialize for GT911 communication via I2C
   * @param  dev_addr: Device address on communication Bus (I2C slave address of GT911).
   * @retval None
@@ -53,10 +85,12 @@ void gt911_init(uint8_t dev_addr) {
         uint8_t data_buf;
         esp_err_t ret;
 
+        gt911_set_addr(dev_addr);//fix show error the first time
+
         ESP_LOGI(TAG, "Checking for GT911 Touch Controller");
         if ((ret = gt911_i2c_read(dev_addr, GT911_PRODUCT_ID1, &data_buf, 1) != ESP_OK)) {
             ESP_LOGE(TAG, "Error reading from device: %s",
-                        esp_err_to_name(ret));    // Only show error the first time
+                        esp_err_to_name(ret));
             return;
         }
 

@@ -459,6 +459,22 @@ menu "LVGL Touch controller"
             prompt "Invert Y coordinate value."
             default y
 
+        config GT911_INT_PIN
+            int
+            prompt "GPIO for GT911 Interrupt"
+
+            default 40
+            help
+            Configure the touchpanel MISO pin here.
+
+        config GT911_RST_PIN
+            int
+            prompt "GPIO for GT911 Reset"
+
+            default 39
+            help
+            Configure the touchpanel MOSI pin here.
+
     endmenu
 
     choice
