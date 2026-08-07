@@ -27,7 +27,7 @@ extern "C" {
  *********************/
 #define ILI9488_DC      CONFIG_LV_DISP_PIN_DC
 #define ILI9488_RST     CONFIG_LV_DISP_PIN_RST
-#define ILI9488_USE_RST CONFIG_LV_DISP_USE_RSTS
+#define ILI9488_USE_RST CONFIG_LV_DISP_USE_RST
 
 /*******************
  * ILI9488 REGS
