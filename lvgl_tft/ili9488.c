@@ -119,7 +119,10 @@ void ili9488_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
     uint8_t *mybuf;
     do {
         mybuf = (uint8_t *) heap_caps_malloc(3 * size * sizeof(uint8_t), MALLOC_CAP_DMA);
-        if (mybuf == NULL)  ESP_LOGW(TAG, "Could not allocate enough DMA memory!");
+        if (mybuf == NULL) {
+		    ESP_LOGW(TAG, "Could not allocate enough DMA memory! (wait");
+			vTaskDelay(1000);
+		} 
     } while (mybuf == NULL);
 
     uint32_t LD = 0;
