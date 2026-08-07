@@ -80,20 +80,31 @@ void ili9341_init(void)
 		{0, {0}, 0xff},
 	};
 
-	//Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(ILI9341_DC);
-	gpio_set_direction(ILI9341_DC, GPIO_MODE_OUTPUT);
+#if ILI9341_BCKL == 15
+	gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_SEL_15;
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&io_conf);
+#endif
 
-#if ILI9341_USE_RST
-    gpio_pad_select_gpio(ILI9341_RST);
+	//Initialize non-SPI GPIOs
+        gpio_pad_select_gpio(ILI9341_DC);
+	gpio_set_direction(ILI9341_DC, GPIO_MODE_OUTPUT);
+        gpio_pad_select_gpio(ILI9341_RST);
 	gpio_set_direction(ILI9341_RST, GPIO_MODE_OUTPUT);
 
+#if ILI9341_ENABLE_BACKLIGHT_CONTROL
+    gpio_pad_select_gpio(ILI9341_BCKL);
+    gpio_set_direction(ILI9341_BCKL, GPIO_MODE_OUTPUT);
+#endif
 	//Reset the display
 	gpio_set_level(ILI9341_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(ILI9341_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
 
 	ESP_LOGI(TAG, "Initialization.");
 
@@ -108,7 +119,9 @@ void ili9341_init(void)
 		cmd++;
 	}
 
-    ili9341_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
+	ili9341_enable_backlight(true);
+
+        ili9341_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
 
 #if ILI9341_INVERT_COLORS == 1
 	ili9341_send_cmd(0x21);
@@ -140,8 +153,27 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 
 	/*Memory write*/
 	ili9341_send_cmd(0x2C);
+
+
 	uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
+
 	ili9341_send_color((void*)color_map, size * 2);
+}
+
+void ili9341_enable_backlight(bool backlight)
+{
+#if ILI9341_ENABLE_BACKLIGHT_CONTROL
+    ESP_LOGI(TAG, "%s backlight.", backlight ? "Enabling" : "Disabling");
+    uint32_t tmp = 0;
+
+#if (ILI9341_BCKL_ACTIVE_LVL==1)
+    tmp = backlight ? 1 : 0;
+#else
+    tmp = backlight ? 0 : 1;
+#endif
+
+    gpio_set_level(ILI9341_BCKL, tmp);
+#endif
 }
 
 void ili9341_sleep_in()
@@ -196,8 +228,6 @@ static void ili9341_set_orientation(uint8_t orientation)
 
 #if defined CONFIG_LV_PREDEFINED_DISPLAY_M5STACK
     uint8_t data[] = {0x68, 0x68, 0x08, 0x08};
-#elif defined (CONFIG_LV_PREDEFINED_DISPLAY_M5CORE2)
-	uint8_t data[] = {0x08, 0x88, 0x28, 0xE8};
 #elif defined (CONFIG_LV_PREDEFINED_DISPLAY_WROVER4)
     uint8_t data[] = {0x6C, 0xEC, 0xCC, 0x4C};
 #elif defined (CONFIG_LV_PREDEFINED_DISPLAY_NONE)

@@ -35,10 +35,18 @@ extern "C" {
  /*********************
  *      DEFINES
  *********************/
-#define HX8357_DC             CONFIG_LV_DISP_PIN_DC
-#define HX8357_RST            CONFIG_LV_DISP_PIN_RST
-#define HX8357_USE_RST        CONFIG_LV_DISP_USE_RST
-#define HX8357_INVERT_COLORS  CONFIG_LV_INVERT_COLORS
+#define HX8357_DC   CONFIG_LV_DISP_PIN_DC
+#define HX8357_RST  CONFIG_LV_DISP_PIN_RST
+#define HX8357_BCKL CONFIG_LV_DISP_PIN_BCKL
+
+#define HX8357_ENABLE_BACKLIGHT_CONTROL CONFIG_LV_ENABLE_BACKLIGHT_CONTROL
+#define HX8357_INVERT_COLORS            CONFIG_LV_INVERT_COLORS
+
+#if CONFIG_LV_BACKLIGHT_ACTIVE_LVL
+  #define HX8357_BCKL_ACTIVE_LVL 1
+#else
+  #define HX8357_BCKL_ACTIVE_LVL 0
+#endif
 
 
 /*******************
@@ -127,6 +135,7 @@ extern "C" {
 
 void hx8357_init(void);
 void hx8357_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);
+void hx8357_enable_backlight(bool backlight);
 void hx8357_set_rotation(uint8_t r);
 
 /**********************

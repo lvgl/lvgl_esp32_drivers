@@ -26,12 +26,19 @@ extern "C"
 /*********************
  *      DEFINES
  *********************/
-#define ST7796S_DC                  CONFIG_LV_DISP_PIN_DC
-#define ST7796S_RST                 CONFIG_LV_DISP_PIN_RST
-#define ST7796S_USE_RST             CONFIG_LV_DISP_USE_RST
-#define ST7796S_INVERT_COLORS       CONFIG_LV_INVERT_COLORS
+#define ST7796S_DC CONFIG_LV_DISP_PIN_DC
+#define ST7796S_RST CONFIG_LV_DISP_PIN_RST
+#define ST7796S_BCKL CONFIG_LV_DISP_PIN_BCKL
+
+#define ST7796S_ENABLE_BACKLIGHT_CONTROL CONFIG_LV_ENABLE_BACKLIGHT_CONTROL
+#define ST7796S_INVERT_COLORS CONFIG_LV_INVERT_COLORS
 #define ST7796S_DISPLAY_ORIENTATION CONFIG_LV_DISPLAY_ORIENTATION
 
+#if CONFIG_LV_BACKLIGHT_ACTIVE_LVL
+#define ST7796S_BCKL_ACTIVE_LVL 1
+#else
+#define ST7796S_BCKL_ACTIVE_LVL 0
+#endif
 
 /*******************
  * ST7796S REGS
@@ -111,6 +118,7 @@ extern "C"
 
   void st7796s_init(void);
   void st7796s_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
+  void st7796s_enable_backlight(bool backlight);
 
   /**********************
  *      MACROS

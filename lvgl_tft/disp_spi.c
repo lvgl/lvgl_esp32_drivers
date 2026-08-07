@@ -310,12 +310,7 @@ static void IRAM_ATTR spi_ready(spi_transaction_t *trans)
         disp = lv_refr_get_disp_refreshing();
 #endif
 
-#if LVGL_VERSION_MAJOR < 8
         lv_disp_flush_ready(&disp->driver);
-#else
-        lv_disp_flush_ready(disp->driver);
-#endif
-
     }
 
     if (chained_post_cb) {

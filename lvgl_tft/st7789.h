@@ -23,16 +23,16 @@ extern "C"
 
 #define ST7789_DC       CONFIG_LV_DISP_PIN_DC
 #define ST7789_RST      CONFIG_LV_DISP_PIN_RST
+#define ST7789_BCKL     CONFIG_LV_DISP_PIN_BCKL
 
-#if CONFIG_LV_DISP_USE_RST
-  #if CONFIG_LV_DISP_ST7789_SOFT_RESET
-    #define ST7789_SOFT_RST
-  #endif
-#else
-  #define ST7789_SOFT_RST
-#endif
-
+#define ST7789_ENABLE_BACKLIGHT_CONTROL CONFIG_LV_ENABLE_BACKLIGHT_CONTROL
 #define ST7789_INVERT_COLORS            CONFIG_LV_INVERT_COLORS
+
+#if CONFIG_LV_BACKLIGHT_ACTIVE_LVL
+  #define ST7789_BCKL_ACTIVE_LVL 1
+#else
+  #define ST7789_BCKL_ACTIVE_LVL 0
+#endif
 
 /* ST7789 commands */
 #define ST7789_NOP      0x00
@@ -112,9 +112,7 @@ extern "C"
 
 void st7789_init(void);
 void st7789_flush(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
-
-void st7789_send_cmd(uint8_t cmd);
-void st7789_send_data(void *data, uint16_t length);
+void st7789_enable_backlight(bool backlight);
 
 #ifdef __cplusplus
 } /* extern "C" */

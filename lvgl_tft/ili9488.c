@@ -50,7 +50,7 @@ static void ili9488_send_color(void * data, uint16_t length);
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
-// From github.com/jeremyjh/ESP32_TFT_library
+// From github.com/jeremyjh/ESP32_TFT_library 
 // From github.com/mvturnho/ILI9488-lvgl-ESP32-WROVER-B
 void ili9488_init(void)
 {
@@ -76,26 +76,28 @@ void ili9488_init(void)
 	};
 
 	//Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(ILI9488_DC);
+        gpio_pad_select_gpio(ILI9488_DC);
 	gpio_set_direction(ILI9488_DC, GPIO_MODE_OUTPUT);
-
-#if ILI9488_USE_RST
-    gpio_pad_select_gpio(ILI9488_RST);
+        gpio_pad_select_gpio(ILI9488_RST);
 	gpio_set_direction(ILI9488_RST, GPIO_MODE_OUTPUT);
+
+#if ILI9488_ENABLE_BACKLIGHT_CONTROL
+        gpio_pad_select_gpio(ILI9488_BCKL);
+	gpio_set_direction(ILI9488_BCKL, GPIO_MODE_OUTPUT);
+#endif
 
 	//Reset the display
 	gpio_set_level(ILI9488_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	gpio_set_level(ILI9488_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
-#endif
 
 	ESP_LOGI(TAG, "ILI9488 initialization.");
 
 	// Exit sleep
 	ili9488_send_cmd(0x01);	/* Software reset */
 	vTaskDelay(100 / portTICK_RATE_MS);
-
+	
 	//Send all the commands
 	uint16_t cmd = 0;
 	while (ili_init_cmds[cmd].databytes!=0xff) {
@@ -107,7 +109,9 @@ void ili9488_init(void)
 		cmd++;
 	}
 
-    ili9488_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
+	ili9488_enable_backlight(true);
+
+        ili9488_set_orientation(CONFIG_LV_DISPLAY_ORIENTATION);
 }
 
 // Flush function based on mvturnho repo
@@ -142,7 +146,7 @@ void ili9488_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 	    (uint8_t) (area->x2 >> 8) & 0xFF,
 	    (uint8_t) (area->x2) & 0xFF,
 	};
-
+	
 	/* Page addresses  */
 	uint8_t yb[] = {
 	    (uint8_t) (area->y1 >> 8) & 0xFF,
@@ -164,6 +168,22 @@ void ili9488_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 
 	ili9488_send_color((void *) mybuf, size * 3);
 	heap_caps_free(mybuf);
+}
+
+void ili9488_enable_backlight(bool backlight)
+{
+#if ILI9488_ENABLE_BACKLIGHT_CONTROL
+    ESP_LOGI(TAG, "%s backlight.", backlight ? "Enabling" : "Disabling");
+    uint32_t tmp = 0;
+
+#if (ILI9488_BCKL_ACTIVE_LVL==1)
+    tmp = backlight ? 1 : 0;
+#else
+    tmp = backlight ? 0 : 1;
+#endif
+
+    gpio_set_level(ILI9488_BCKL, tmp);
+#endif
 }
 
 /**********************

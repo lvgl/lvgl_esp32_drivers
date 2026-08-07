@@ -160,19 +160,21 @@ static uint8_t displayType = HX8357D;
 void hx8357_init(void)
 {
 	//Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(HX8357_DC);
+        gpio_pad_select_gpio(HX8357_DC);
 	gpio_set_direction(HX8357_DC, GPIO_MODE_OUTPUT);
-
-#if HX8357_USE_RST
-    gpio_pad_select_gpio(HX8357_RST);
+        gpio_pad_select_gpio(HX8357_RST);
 	gpio_set_direction(HX8357_RST, GPIO_MODE_OUTPUT);
+
+#if HX8357_ENABLE_BACKLIGHT_CONTROL
+        gpio_pad_select_gpio(HX8357_BCKL);
+	gpio_set_direction(HX8357_BCKL, GPIO_MODE_OUTPUT);
+#endif
 
 	//Reset the display
 	gpio_set_level(HX8357_RST, 0);
 	vTaskDelay(10 / portTICK_RATE_MS);
 	gpio_set_level(HX8357_RST, 1);
 	vTaskDelay(120 / portTICK_RATE_MS);
-#endif
 
 	ESP_LOGI(TAG, "Initialization.");
 
@@ -203,6 +205,8 @@ void hx8357_init(void)
 #else
     hx8357_send_cmd(HX8357_INVOFF);
 #endif
+
+	hx8357_enable_backlight(true);
 }
 
 
@@ -238,6 +242,23 @@ void hx8357_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 	hx8357_send_cmd(HX8357_RAMWR);
 	hx8357_send_color((void*)color_map, size * 2);
 }
+
+void hx8357_enable_backlight(bool backlight)
+{
+#if HX8357_ENABLE_BACKLIGHT_CONTROL
+    ESP_LOGD(TAG, "%s backlight.\n", backlight ? "Enabling" : "Disabling");
+    uint32_t tmp = 0;
+
+#if (HX8357_BCKL_ACTIVE_LVL==1)
+    tmp = backlight ? 1 : 0;
+#else
+    tmp = backlight ? 0 : 1;
+#endif
+
+    gpio_set_level(HX8357_BCKL, tmp);
+#endif
+}
+
 
 void hx8357_set_rotation(uint8_t r)
 {

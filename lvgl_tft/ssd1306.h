@@ -25,6 +25,8 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
+#define SSD1306_SDA     CONFIG_LV_DISP_PIN_SDA
+#define SSD1306_SCL     CONFIG_LV_DISP_PIN_SCL
 #define SSD1306_DISPLAY_ORIENTATION     TFT_ORIENTATION_LANDSCAPE
 
 /**********************
