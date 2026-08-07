@@ -34,6 +34,12 @@ extern "C" {
  * color format being used, for RGB565 each pixel needs 2 bytes.
  * When using the mono theme, the display pixels can be represented in one bit,
  * so the buffer size can be divided by 8, e.g. see SSD1306 display size. */
+
+//[BJ] Source: https://github.com/lvgl/lvgl_esp32_drivers/issues/202
+# define LV_HOR_RES_MAX 320
+# define LV_VER_RES_MAX 240
+# define SPI_HOST_MAX   3
+
 #if defined (CONFIG_CUSTOM_DISPLAY_BUFFER_SIZE)
 #define DISP_BUF_SIZE   CONFIG_CUSTOM_DISPLAY_BUFFER_BYTES
 #else

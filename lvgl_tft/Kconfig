@@ -739,6 +739,20 @@ menu "LVGL TFT Display controller"
             help
                 Use software reset and ignores configured reset pin (some hardware does not use a reset pin).
 
+        config LV_DISPLAY_USE_TE_PIN
+            bool "Enable TE (Tearing effect) pin"
+            default y
+            help
+                Enable the TE pin to control the display. You can disable
+                it when the display does not need MISO signal to be controlled.
+
+        config LV_DISPLAY_TE_PIN
+            int "GPIO for TE (Tearing effect) pin"
+            depends on LV_DISPLAY_USE_TE_PIN
+            default 38
+            help
+                Configure the display TE pin here.
+
     endmenu
 
     # menu will be visible only when LV_PREDEFINED_DISPLAY_NONE is y
