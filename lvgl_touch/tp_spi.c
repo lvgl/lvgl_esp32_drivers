@@ -59,7 +59,7 @@ void tp_spi_add_device(spi_host_device_t host)
 		.command_bits = 8,
 		.address_bits = 0,
 		.dummy_bits = 0,
-		.flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_NO_DUMMY,
+		.flags = SPI_DEVICE_NO_DUMMY,
 	};
 	
 	//Attach the Touch controller to the SPI bus

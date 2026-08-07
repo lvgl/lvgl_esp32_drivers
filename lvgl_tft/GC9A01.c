@@ -121,9 +121,9 @@ void GC9A01_init(void)
 
 	//Reset the display
 	gpio_set_level(GC9A01_RST, 0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_DELAY_MS);
 	gpio_set_level(GC9A01_RST, 1);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	vTaskDelay(100 / portTICK_DELAY_MS);
 #endif
 
 	ESP_LOGI(TAG, "Initialization.");
@@ -134,7 +134,7 @@ void GC9A01_init(void)
 		GC9A01_send_cmd(GC_init_cmds[cmd].cmd);
 		GC9A01_send_data(GC_init_cmds[cmd].data, GC_init_cmds[cmd].databytes&0x1F);
 		if (GC_init_cmds[cmd].databytes & 0x80) {
-			vTaskDelay(100 / portTICK_RATE_MS);
+			vTaskDelay(100 / portTICK_DELAY_MS);
 		}
 		cmd++;
 	}
