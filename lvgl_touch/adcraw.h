@@ -13,13 +13,14 @@ extern "C" {
 #include <stdbool.h>
 #include "driver/gpio.h"
 #include "driver/adc.h"
+#include "soc/adc_channel.h"
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
 #include "lvgl/lvgl.h"
 #endif
 
-#define TOUCHSCREEN_RESISTIVE_PIN_YU CONFIG_LV_TOUCHSCREEN_RESSITIVE_PIN_YU // Y+ any gpio
+#define TOUCHSCREEN_RESISTIVE_PIN_YU CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_YU // Y+ any gpio
 #define TOUCHSCREEN_RESISTIVE_PIN_YD CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_YD // Y- also ADC
 #define TOUCHSCREEN_RESISTIVE_PIN_XL CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_XL // X- any gpio
 #define TOUCHSCREEN_RESISTIVE_PIN_XR CONFIG_LV_TOUCHSCREEN_RESISTIVE_PIN_XR // X+ also ADC

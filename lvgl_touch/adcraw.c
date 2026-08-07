@@ -158,7 +158,6 @@ static void setup_adc(gpio_num_t measure)
 {
 	// Init ADC
 	adc1_channel_t channel = gpio_to_adc[measure];
-	adc_gpio_init(ADC_UNIT_1, channel);
 	adc1_config_width(ADC_WIDTH_BIT_10);
 	adc1_config_channel_atten(channel, ADC_ATTEN_DB_11);
 }
